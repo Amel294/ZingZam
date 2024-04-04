@@ -1,0 +1,23 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "V1": true
+    },
+    "hide-files.files": [
+        "V1"
+    ],
+    "cSpell.words": [
+        "cloudinary",
+        "Navs",
+        "nextui",
+        "persistor",
+        "reduxjs",
+        "signup",
+        "tailwindcss"
+    ]
+}

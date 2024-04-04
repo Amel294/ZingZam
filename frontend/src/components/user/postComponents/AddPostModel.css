@@ -1,0 +1,29 @@
+.container { 
+    background-color: #111827; 
+  }
+  
+  /* Image Preview Background (when no image is uploaded) */
+  #image-preview {
+    background-color: #1F2937;
+  }
+  
+  /* Upload Button */
+  .upload-button {  
+    background-color: #059669; 
+    color: white; 
+  }
+  .upload-button:hover {
+    background-color: #34D399; 
+  }
+  
+  /* Text colors */
+  h5, p, label { 
+    color: #f8fafc; /* Light gray for contrast */
+  }
+  
+  /* Input fields */
+  input[type="file"], textarea {
+    background-color: #1F2937;
+    border: 1px solid #374151;
+    color: #f8fafc; 
+  }
