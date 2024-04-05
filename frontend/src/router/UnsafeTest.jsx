@@ -8,6 +8,9 @@ import Home from '../pages/user/Home';
 import Login from '../pages/user/Login';
 import Signup from '../pages/user/Signup';
 import NotFound from '../pages/user/NotFound';
+import AdminHome from '../pages/admin/AdminHome';
+import UserManagement from '../pages/admin/UserManagement';
+import UserManagementUI from '../pages/admin/UserManagementUI';
 
 const UnsafeTest = () => {
     
@@ -24,7 +27,10 @@ const UnsafeTest = () => {
                 <Route path="/signup" element={<Signup />} />
             </Route>
             <Route path="*" element={<NotFound/>} />
-
+            <Route >
+                <Route path="/admin" index element={<AdminHome />} />
+                <Route path="/usermanagement" element={<UserManagementUI />} />
+            </Route>
         </Routes>
     );
 };

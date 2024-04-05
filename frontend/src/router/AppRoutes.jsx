@@ -10,6 +10,8 @@ import Login from '../pages/user/Login';
 import Signup from '../pages/user/Signup';
 import FooterLayout from './layouts/FooterLayout';
 import NotFound from '../pages/user/NotFound';
+import UserManagement from '../pages/admin/UserManagement';
+import AdminHome from '../pages/admin/AdminHome';
 
 const AppRoutes = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -70,6 +72,11 @@ const AppRoutes = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
             </Route>
+            <Route >
+                <Route path="/admin" index element={<AdminHome />} />
+                <Route path="/usermanagement" element={<UserManagement />} />
+            </Route>
+
             <Route path="*" element={<NotFound/>} />
 
         </Routes>
