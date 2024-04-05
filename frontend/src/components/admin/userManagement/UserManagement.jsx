@@ -8,7 +8,7 @@ export default function UserManagement() {
     const [isLoading, setIsLoading] = useState(false);
     const [users, setUsers] = useState([]);
     const [page, setPage] = React.useState(1);
-    const rowsPerPage = 8;
+    const rowsPerPage = 10;
 
     const pages = Math.ceil(users.length / rowsPerPage);
 
