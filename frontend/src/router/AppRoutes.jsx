@@ -10,7 +10,7 @@ import Login from '../pages/user/Login';
 import Signup from '../pages/user/Signup';
 import FooterLayout from './layouts/FooterLayout';
 import NotFound from '../pages/user/NotFound';
-import UserManagement from '../pages/admin/UserManagement';
+import UserManagement from '../components/admin/userManagement/UserManagement';
 import AdminHome from '../pages/admin/AdminHome';
 
 const AppRoutes = () => {

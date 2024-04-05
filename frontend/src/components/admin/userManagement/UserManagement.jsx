@@ -2,17 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, User, Pagination, Tooltip, Switch, Button } from "@nextui-org/react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { DeleteIcon } from "../../../public/icons/admin/userManagement/DeleteIcon";
-import { EditIcon } from "../../../public/icons/admin/userManagement/EditIcon";
-import { EyeIcon } from "../../../public/icons/admin/userManagement/EyeIcon";
-import BlockUser from "../../../public/icons/admin/userManagement/BlockUser";
 
-export default function App() {
+export default function UserManagement() {
     const [selectedKeys, setSelectedKeys] = React.useState(new Set(["2"]));
     const [isLoading, setIsLoading] = useState(false);
     const [users, setUsers] = useState([]);
     const [page, setPage] = React.useState(1);
-    const rowsPerPage = 10;
+    const rowsPerPage = 8;
 
     const pages = Math.ceil(users.length / rowsPerPage);
 
@@ -97,7 +93,7 @@ export default function App() {
     }, []);
 
     return (
-        <div className=" text-left p-10 h-screen">
+        <div className=" text-left p-10 h-screen w-full">
             <Table
                 aria-label="Example table with client side pagination"
                 bottomContent={
