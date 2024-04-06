@@ -6,8 +6,8 @@ import UnsafeTest from './router/UnsafeTest';
 function App() {
   return (
     <BrowserRouter>
-    <UnsafeTest/>
-      {/* <AppRoutes /> */}
+    {/* <UnsafeTest/> */}
+      <AppRoutes />
     </BrowserRouter>
   );
 }

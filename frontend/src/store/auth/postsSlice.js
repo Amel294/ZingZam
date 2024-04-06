@@ -1,23 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-    posts: [{ 
-        id: 1, 
-        content: "Hello, world!", 
-        author: { id: 101, name: "Alice" }, 
-        createdAt: "2023-12-21T10:25:00Z",
-        likes: [],
-        comments: []
-      },],             // Array to hold all posts
+    posts: [],             // Array to hold all posts
     isLoading: false,      // Flag for loading state
     error: null,           // To store any errors
 };
-
-// const initialState = {
-//     posts: [],             // Array to hold all posts
-//     isLoading: false,      // Flag for loading state
-//     error: null,           // To store any errors
-// };
 
 const postsSlice = createSlice({
     name: 'posts',
@@ -28,10 +15,10 @@ const postsSlice = createSlice({
             state.error = null;
         },
         fetchPostsSuccess(state, action) {
-            state.posts = action.payload;
+            state.posts = [...state.posts, ...action.payload];
             state.isLoading = false;
             state.error = null;
-        },
+        },        
         fetchPostsFailure(state, action) {
             state.isLoading = false;
             state.error = action.payload;

@@ -11,7 +11,7 @@ export default function AddPost() {
     return (
         <>
 
-            <Card className="flex grow max-w-[400px] md:max-w-[440px] md:min-w-[400px]">
+            <Card className="flex grow max-w-[400px] md:max-w-[440px] md:min-w-[400px] max-h-[130px]">
                 <CardHeader className="flex gap-3" >
                     <Image
                         alt="nextui logo"

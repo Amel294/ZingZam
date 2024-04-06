@@ -1,3 +1,4 @@
+const { getDataFromJWTCookie_id } = require("../helpers/dataFromJwtCookies");
 const { textToxicity } = require("../helpers/textToxicity");
 const PostModel = require('../models/PostModel')
 const cloudinary = require('cloudinary').v2;
@@ -17,7 +18,7 @@ exports.postPhoto = async (req, res) => {
         }
         console.log("you have and access token")
         console.log(jwtToken)
-            // Decode JWT to access payload data
+        // Decode JWT to access payload data
         const decodedPayload = jwt.verify(jwtToken, process.env.ACCESS_TOKEN_SECRET);
 
         // Access data from decoded payload
@@ -58,3 +59,28 @@ exports.postPhoto = async (req, res) => {
         // Handle error here if needed
     }
 }
+
+exports.getPosts = async (req, res) => {
+    try {
+        const jwtToken = req?.cookies?.accessToken;
+        const id = getDataFromJWTCookie_id(res, jwtToken);
+
+        const page = parseInt(req.params.page) || 1;
+        const limit = 2;
+
+        const skip = (page - 1) * limit;
+
+        const posts = await PostModel.find({ userId: id })
+            .populate({
+                path: 'userId',
+                select: '_id username picture name', // Specify the fields you want to populate
+            })
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({ posts: posts });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to fetch posts' });
+    }
+};

@@ -10,6 +10,7 @@ import Signup from '../pages/user/Signup';
 import NotFound from '../pages/user/NotFound';
 import AdminHome from '../pages/admin/AdminHome';
 import UserManagement from '../components/admin/userManagement/UserManagement';
+import ContentModeration from '../pages/admin/ContentModeration';
 
 const UnsafeTest = () => {
     
@@ -29,6 +30,7 @@ const UnsafeTest = () => {
             <Route >
                 <Route path="/admin" index element={<AdminHome />} />
                 <Route path="/usermanagement" element={<UserManagement />} />
+                <Route path="/moderation" element={<ContentModeration />} />
             </Route>
         </Routes>
     );
