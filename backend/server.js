@@ -34,6 +34,7 @@ const UserRoute = require('./routes/user');
 const ApiRoute = require('./routes/api');
 const PostRoute = require('./routes/post');
 const adminRoutes = require('./routes/admin/userManagement')
+const profileRoute = require('./routes/profile')
 // Enhance error handling:
 app.use((err, req, res, next) => { // Catch unhandled errors
   console.error(err.stack);
@@ -44,6 +45,7 @@ app.use('/user', UserRoute)
 app.use('/api', ApiRoute)
 app.use('/post',PostRoute )
 app.use('/admin', adminRoutes)
+app.use('/profile', profileRoute)
 mongoose.connect(process.env.DATABASE_URL_LOCAL)
   .then(() => console.log("Connected to the database"))
   .catch((err) => {

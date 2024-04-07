@@ -7,7 +7,6 @@ const TempUserModel = require('../models/TempUserModel');
 const { generateOtpForUser, sendOtpEmail } = require('../helpers/mail');
 const jwt = require('jsonwebtoken');
 const { generateAccessToken, generateRefreshToken, generateTempToken } = require('../helpers/tokens');
-const { transformName } = require('../helpers/usernameTrimmer');
 exports.register = async (req, res) => {
     try {
         let { email, name, gender, password, birthday } = req.body;
@@ -40,7 +39,7 @@ exports.register = async (req, res) => {
             });
         }
 
-        let username = transformName(name)
+        let username = name.trim().toLowerCase().replace(/\s/g, '')
         let foundUserName = await UserModel.findOne({ username });
 
         while (foundUserName) {

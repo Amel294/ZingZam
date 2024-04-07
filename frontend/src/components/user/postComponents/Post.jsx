@@ -8,6 +8,7 @@ import BookMark from "/public/icons/BookMark";
 import toast, { Toaster } from "react-hot-toast";
 import CommentModal from "../comment/CommentModal";
 import dummyPost from '/Post/rain.jpg'
+import { useNavigate } from 'react-router-dom';
 
 export default function Post({ post, userId }) {
     console.log("userId in post data is   ", userId)
@@ -20,16 +21,20 @@ export default function Post({ post, userId }) {
         if (!bookmarked) toast.success("Added to Saved")
         else toast.error("Removed from Saved")
     }
-    const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate()
 
+    const [isOpen, setIsOpen] = useState(false);
+    const handleGoToProfile = ()=> {
+        navigate(`/profile/${post.userId.username}`);
+    }
     return (
         <>
             <Card className="max-w-[400px] ">
                 <CardHeader className="flex justify-between">
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
                         <Image alt="nextui logo" height={40} radius="lg" src={avatar} width={40} />
                         <div className="flex flex-col text-left">
-                            <p className="text-md">{post.userId.username}</p>
+                            <p className="text-md" >{post.userId.username}</p>
                             <p className="text-small text-default-500">{post.userId.name}</p>
                         </div>
                     </div>

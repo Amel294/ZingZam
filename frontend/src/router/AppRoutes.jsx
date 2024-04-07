@@ -13,6 +13,7 @@ import NotFound from '../pages/user/NotFound';
 import UserManagement from '../components/admin/userManagement/UserManagement';
 import AdminHome from '../pages/admin/AdminHome';
 import ForgotPassword from '../pages/user/ForgotPassword';
+import Profile from '../pages/user/Profile';
 
 const AppRoutes = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,17 +58,20 @@ const AppRoutes = () => {
                     <Route path="/forgotpassword" element={<Navigate to="/home" replace />} />
                 </>
             )}
-            {!isAuthenticated && !storedAuthStatus && (
+            {!isAuthenticated || !storedAuthStatus && (
                 <>
                     {console.log("User is not authenticated")}
                     <Route index element={<Login />} />
+                    <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="/home" element={<Navigate to="/login" replace />} />
+                    <Route path="/profile/:username" element={<Navigate to="/login" replace />} />
                 </>
             )}
 
             <Route element={<MainNavLayout />}>
                 <Route index element={<Home />} />
                 <Route path="/home" element={<Home />} />
+                <Route path="/profile/:username" element={<Profile />} />
             </Route>
             <Route >
                 <Route index element={<Home />} />
@@ -80,7 +84,7 @@ const AppRoutes = () => {
                 <Route path="/usermanagement" element={<UserManagement />} />
             </Route>
 
-            <Route path="*" element={<NotFound/>} />
+            <Route path="*" element={<NotFound />} />
 
         </Routes>
     );
