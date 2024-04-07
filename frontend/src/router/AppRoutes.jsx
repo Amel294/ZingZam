@@ -12,6 +12,7 @@ import FooterLayout from './layouts/FooterLayout';
 import NotFound from '../pages/user/NotFound';
 import UserManagement from '../components/admin/userManagement/UserManagement';
 import AdminHome from '../pages/admin/AdminHome';
+import ForgotPassword from '../pages/user/ForgotPassword';
 
 const AppRoutes = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -53,6 +54,7 @@ const AppRoutes = () => {
                     <Route path="/" element={<Navigate to="/home" replace />} />
                     <Route path="/login" element={<Navigate to="/home" replace />} />
                     <Route path="/signup" element={<Navigate to="/home" replace />} />
+                    <Route path="/forgotpassword" element={<Navigate to="/home" replace />} />
                 </>
             )}
             {!isAuthenticated && !storedAuthStatus && (
@@ -71,6 +73,7 @@ const AppRoutes = () => {
                 <Route index element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/forgotpassword" element={<ForgotPassword />} />
             </Route>
             <Route >
                 <Route path="/admin" index element={<AdminHome />} />
