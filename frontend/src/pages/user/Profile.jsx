@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Card, CardBody, Image, Button } from "@nextui-org/react";
+import { Card, CardBody, Image, Button, User, Link, CardHeader, CardFooter, Divider } from "@nextui-org/react";
 import defaultAvatar from '../../../public/Avatar/default.png'
 import EditIcon from '../../../public/icons/EditIcon';
 import OwnPostProfile from '../../components/user/profile/OwnPostProfile';
 import ProfileTabs from '../../components/user/profile/ProfileTabs';
+import Followers from '../../components/user/profile/Followers';
 function Profile() {
     const [userData, setUserData] = useState();
     const { username } = useParams();
@@ -26,14 +27,14 @@ function Profile() {
 
         fetchData();
     }, [username]);
-    
+
     return (
-        <div className='flex flex-col items-center w-full gap-4 pt-4 justify-center pt-4'>
+        <div className='flex flex-col items-center w-full gap-4 pt-4 justify-center '>
             {userData && <>
                 <Card className='w-[400px]'>
                     <CardBody >
                         <div className=' grid grid-cols-3 w-full'>
-                            <Image className='col-span-1' 
+                            <Image className='col-span-1'
                                 shadow="sm"
                                 radius="lg"
                                 alt="Profile pic"
@@ -59,9 +60,9 @@ function Profile() {
                     </CardBody>
                 </Card>
             </>}
-            <div className='sticky top-16 z-20  rounded-b-lg w-[400px]'>
-
-                <ProfileTabs  />
+            <Followers/>
+            <div className='sticky top-16 z-20  pt-2 rounded-b-lg w-[400px]'>
+                <ProfileTabs />
             </div>
             <OwnPostProfile />
         </div>

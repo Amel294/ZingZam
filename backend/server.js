@@ -35,7 +35,7 @@ const ApiRoute = require('./routes/api');
 const PostRoute = require('./routes/post');
 const adminRoutes = require('./routes/admin/userManagement')
 const profileRoute = require('./routes/profile')
-// Enhance error handling:
+const connectionsRoute = require('./routes/connections')
 app.use((err, req, res, next) => { // Catch unhandled errors
   console.error(err.stack);
   res.status(500).send("Internal Server Error");
@@ -46,6 +46,8 @@ app.use('/api', ApiRoute)
 app.use('/post',PostRoute )
 app.use('/admin', adminRoutes)
 app.use('/profile', profileRoute)
+app.use('/connections',connectionsRoute)
+
 mongoose.connect(process.env.DATABASE_URL_LOCAL)
   .then(() => console.log("Connected to the database"))
   .catch((err) => {

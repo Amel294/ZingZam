@@ -45,11 +45,15 @@ const userSchema = mongoose.Schema({
     type: Boolean,
     default: false
   },
-  role:{
-    type:String,
-    default:"user",
+  role: {
+    type: String,
+    default: "user",
     enum: ["user", "admin"]
   },
+  friends: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Connections',
+  }],
 }, {
   timestamps: true,
 })
