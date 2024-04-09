@@ -1,18 +1,39 @@
 import { Button, User, Link, CardHeader } from "@nextui-org/react";
+import axios from 'axios'
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 function SuggestedFriendsUsers({ suggestions }) {
-    if (!Array.isArray(suggestions)) {
-        return <div>No suggestions available</div>;
-    }
+    const [isLoading, setIsLoading] = useState(false)
+    const handleRequest = async (userId) => {
+        try {
+            setIsLoading(true)
+            const response = await axios.post(
+                `http://localhost:8000/connections/request`,
+                { request: userId },
+                { withCredentials: true } // Move withCredentials to the third argument
+            );
+            if (response.data.error) {
+                toast.error(response.data.error);
+                setIsLoading(false)
+            } else {
+                toast.success(response.data.message);
+                setIsLoading(false)
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
+        <>
         <div>
             {suggestions.map((user) => (
                 <CardHeader key={user._id} className="flex justify-between">
                     <User
                         name={user.name}
                         description={(
-                            <Link href={`https://twitter.com/${user.username}`} size="sm" isExternal>
+                            <Link href={`https://twitter.com/${ user.username }`} size="sm" isExternal>
                                 {user.name}
                             </Link>
                         )}
@@ -20,13 +41,15 @@ function SuggestedFriendsUsers({ suggestions }) {
                             src: user.picture || "https://via.placeholder.com/150" // Placeholder image URL
                         }}
                     />
-                    <Button size="sm" onClick={() => alert("Add friend clicked")}>
-                        Follow
+                    <Button size="sm" onClick={() => handleRequest(user._id)} disabled={isLoading}>
+                        {isLoading ? "Loading..." : "Send Request"}
                     </Button>
+
                 </CardHeader>
             ))}
         </div>
-    );
+        </>
+    )
 }
 
-export default SuggestedFriendsUsers;
+export default SuggestedFriendsUsers

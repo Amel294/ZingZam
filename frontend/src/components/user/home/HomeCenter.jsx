@@ -23,7 +23,8 @@ function HomeCenter() {
         toast.error(`${ response.data.error }`);
         dispatch(fetchPostsFailure(response.data.error)); // Pass error message to failure action
       } else {
-        const newPosts = response.data.posts || [];
+        console.log(response.data)
+        const newPosts = response.data || [];
         dispatch(fetchPostsSuccess(newPosts));
         setPage(page + 1);
         setHasMore(newPosts.length > 0);
@@ -33,6 +34,7 @@ function HomeCenter() {
       toast.error("This didn't work. Check the console for more details.");
       dispatch(fetchPostsFailure("Failed to fetch posts")); // Generic error message
     }
+    
   };
   return (
     <div className="flex justify-center flex-col items-center gap-4 pt-4 min-h-screen">
@@ -49,6 +51,7 @@ function HomeCenter() {
           </p>
         }
       >
+        {console.log(posts.length)}
         {posts.length > 0 ? (
           posts.map((post) => (
             <div key={post._id} className="mb-4">

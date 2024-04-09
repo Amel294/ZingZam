@@ -18,6 +18,7 @@
         "persistor",
         "reduxjs",
         "signup",
-        "tailwindcss"
+        "tailwindcss",
+        "Unsave"
     ]
 }

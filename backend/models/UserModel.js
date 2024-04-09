@@ -50,10 +50,6 @@ const userSchema = mongoose.Schema({
     default: "user",
     enum: ["user", "admin"]
   },
-  friends: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Connections',
-  }],
 }, {
   timestamps: true,
 })
