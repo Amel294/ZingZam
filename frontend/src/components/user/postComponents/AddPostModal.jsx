@@ -68,6 +68,10 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
                 toast.error("Please upload an image.");
                 return;
             }
+            if(caption.trim() === "") {
+                toast.error("Please add a caption");
+                return;
+            }
     
             const formData = new FormData();
             formData.append("image", fileInputRef.current.files[0]);
