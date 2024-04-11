@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddPost from "../postComponents/AddPost";
 import Post from "../postComponents/Post";
 import axios from "axios";
@@ -15,6 +15,9 @@ function HomeCenter() {
   const userId = useSelector((state) => state.auth.id).toString()
   console.log("userId  ", userId)
   console.log("userId type ", typeof userId)
+  useEffect(()=>{
+    fetchPosts()
+  },[])
   const fetchPosts = async () => {
     try {
       dispatch(fetchPostsStart());
@@ -37,7 +40,7 @@ function HomeCenter() {
     
   };
   return (
-    <div className="flex justify-center flex-col items-center gap-4 pt-4 min-h-screen">
+    <div className="flex  flex-col items-center gap-4 pt-4 min-h-screen">
       <AddPost />
       <InfiniteScroll
 

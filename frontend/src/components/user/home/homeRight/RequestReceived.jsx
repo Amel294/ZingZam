@@ -1,4 +1,4 @@
-import { Card, Divider } from "@nextui-org/react";
+import { Card } from "@nextui-org/react";
 import { useEffect, useState, } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
