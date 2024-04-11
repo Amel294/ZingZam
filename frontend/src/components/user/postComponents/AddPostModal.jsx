@@ -9,7 +9,8 @@ import {
     Button,
     Textarea,
     Modal,
-    ModalContent
+    ModalContent,
+    Checkbox
 } from "@nextui-org/react";
 import DeleteIcon from '../../../../public/icons/DeleteIcon';
 import UploadImage from "../../../../public/icons/UploadImage";
@@ -24,7 +25,11 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
     const [caption, setCaption] = useState("")
     const fileInputRef = useRef(null);
     const [uploadProgress, setUploadProgress] = useState(0); // State to track upload progress
-
+    const [showProgress, setShowProgress] = useState(false)
+    const [isPrivate, setIsPrivate] = useState(false)
+    const handlePrivate = () => {
+        setIsPrivate(!isPrivate)
+    }
     const handleDragEvents = useCallback((e) => {
         e.preventDefault();
 
@@ -68,15 +73,16 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
                 toast.error("Please upload an image.");
                 return;
             }
-            if(caption.trim() === "") {
+            if (caption.trim() === "") {
                 toast.error("Please add a caption");
                 return;
             }
-    
+            setShowProgress(true);
             const formData = new FormData();
             formData.append("image", fileInputRef.current.files[0]);
             formData.append("caption", caption);
-    
+            formData.append("isPrivate", isPrivate);
+
             axios.post('http://localhost:8000/post/uploadPhoto', formData, {
                 withCredentials: true, // Include withCredentials option here
                 onUploadProgress: (progressEvent) => {
@@ -84,30 +90,35 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
                     setUploadProgress(progress);
                 }
             })
-            .then(response => {
-                if (response.data.posted === true) {
-                    toast.success(response.data.message)
-                } else {
-                    toast.error(response.data.message)
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                // Handle error here if needed
-            });
+                .then(response => {
+                    if (response.data.posted === true) {
+                        toast.success(response.data.message)
+                        setUploadProgress(0)
+                        setImageSrc(null)
+                        onOpenChange(false)
+                        setCaption("")
+                        setShowProgress(false)
+                    } else {
+                        toast.error(response.data.message)
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Handle error here if needed
+                });
         } catch (error) {
             console.error('Error:', error);
             // Handle error here if needed
         }
     };
-    
+
     return (
         <>
-            <Modal backdrop="blur" placement="center" hideCloseButton isOpen={isOpen} onOpenChange={onOpenChange} className="bg-zinc-900 p-2 shadow-secondary-700 border-secondary-700 border-1">
-                <ModalContent className="bg-zinc-900">
+            <Modal placement="center" hideCloseButton isOpen={isOpen} onOpenChange={onOpenChange} className="dark  ">
+                <ModalContent >
                     {/* eslint-disable-next-line no-unused-vars */}
                     {(onClose) => (
-                        <Card className="bg-zinc-900 text-white">
+                        <Card className="text-white">
                             <CardHeader className=" ">
                                 <CardBody className="flex flex-row w-full justify-between items-center px-1  ">
                                     <p className="text-xl">Add Post</p>
@@ -118,10 +129,10 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
                                     <div className="bg-gray-500 px-3 pb-1 pt-1 rounded-3xl text-md" onClick={onOpenChange}><span>x</span></div>
                                 </CardBody>
                             </CardHeader>
-                            <CardBody className="bg-zinc-900" >
-                                <Card className="bg-zinc-900">
+                            <CardBody className="   " >
+                                <Card className="   ">
                                     <CardBody
-                                        className="overflow-visible flex items-center bg-zinc-900 text-white border-0"
+                                        className="overflow-visible flex items-center    text-white border-0"
                                         onDragOver={handleDragEvents}
                                         onDragEnter={handleDragEvents}
                                         onDragLeave={handleDragEvents}
@@ -151,7 +162,7 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
                                             onChange={(e) => handleImageChange(e.target.files[0])}
                                         />
                                     </CardBody>
-                                    <div className="pb-3 flex px-3 justify-end gap-5 bg-zinc-900">
+                                    <div className="pb-3 flex px-3 justify-end gap-5    ">
                                         {imageSrc && (
                                             <Button onClick={handleDelete} color="danger" variant="bordered" size="sm" endContent={<DeleteIcon />}></Button>
                                         )}
@@ -160,7 +171,7 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
                                     <Textarea
                                         color="secondary"
                                         variant="underlined"
-                                        className=" px-3 bg-zinc-900 text-white "
+                                        className=" px-3     text-white "
                                         maxRows={3}
                                         placeholder="Enter your caption..."
                                         onValueChange={setCaption}
@@ -168,6 +179,13 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
                                     />
                                 </Card>
                             </CardBody>
+
+                            <CardFooter className="px-5 pb-5">
+                                <Checkbox color="secondary" size="sm" className="dark" onValueChange={handlePrivate}>
+                                    Set as Private
+                                </Checkbox>
+
+                            </CardFooter>
                             <CardFooter className="px-5 pb-5">
 
                                 <Button color="secondary" className="w-full " onClick={handlePostImage}>
@@ -175,10 +193,12 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
                                 </Button>
 
                             </CardFooter>
-                            <CardFooter className="px-5 pb-5">
+                            {showProgress &&
 
-                                <Progress aria-label="Loading..." value={uploadProgress} className="max-w-md" />
-                            </CardFooter>
+                                <CardFooter className="px-5 pb-5">
+                                    <Progress aria-label="Loading..." value={uploadProgress} className="max-w-md" />
+                                </CardFooter>
+                            }
                         </Card>
                     )}
                 </ModalContent>

@@ -5,6 +5,7 @@ const SavedPostModel = require("../models/SavedPostModel");
 const PostModel = require('../models/PostModel')
 const cloudinary = require('cloudinary').v2;
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -26,17 +27,16 @@ exports.postPhoto = async (req, res) => {
         console.log("From JWT ", id)
 
         const caption = req.body.caption;
+        const isPrivate = req.body.isPrivate;
         const file = req.file;
-        console.log(caption)
-        const testingToxicity = await textToxicity(caption)
-        for (const [category, value] of Object.entries(testingToxicity)) {
-            // Check if the value exceeds the threshold of 0.5
-            if (value > 0.5) {
-                // If any value is above 0.5, send a response indicating that the post cannot be posted
-                return res.status(200).json({ posted: false, message: `Cannot be posted.Your post is identified as ${ category }` });
-            }
-        }
-        console.log(testingToxicity)
+
+        // const testingToxicity = await textToxicity(caption)
+        // for (const [category, value] of Object.entries(testingToxicity)) {
+        //     if (value > 0.5) {
+        //         return res.status(200).json({ posted: false, message: `Cannot be posted.Your post is identified as ${ category }` });
+        //     }
+        // }
+        // console.log(testingToxicity)
         const result = await cloudinary.uploader.upload(req.file.path, {
             folder: "zingzam/posts/660bec6ae609cf875fd1e70b" // Specify the folder name here
         });
@@ -46,7 +46,8 @@ exports.postPhoto = async (req, res) => {
             userId: id,
             imageUrl: result.secure_url,
             username: decodedPayload.username,
-            caption: caption
+            caption: caption,
+            isPrivate
         })
         newPost.save()
         res.status(200).json({ posted: true, message: 'Image uploaded successfully.', file: file, caption: caption });
@@ -55,25 +56,21 @@ exports.postPhoto = async (req, res) => {
     }
 }
 
-exports.getPosts = async (req, res) => {
+exports.getOwnPosts = async (req, res) => {
     try {
         const jwtToken = req?.cookies?.accessToken;
-        const userId = getDataFromJWTCookie_id(res, jwtToken);
+        const usersId = getDataFromJWTCookie_id(res, jwtToken);
 
-        // Get friends' IDs
-        const connections = await ConnectionsModel.findOne({ user: userId }, { friends: 1, _id: 0 });
-        const friends = connections?.friends || [];
-        friends.push(userId); 
-        console.log("friends")
-        console.log(friends)
-
+        const username = req.params.username; 
+     
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
 
-        // Aggregation Pipeline
         const posts = await PostModel.aggregate([
-            { $match: { userId: { $in: friends } } },
+            {
+                $match: { userId: usersId } 
+            },
             {
                 $lookup: {
                     from: 'users',
@@ -94,8 +91,8 @@ exports.getPosts = async (req, res) => {
                 $addFields: {
                     'comments.username': { $arrayElemAt: ['$commentUsers.username', 0] },
                     'comments.picture': { $arrayElemAt: ['$commentUsers.picture', 0] },
-                    'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] }, // Include userId of the comment maker
-                    'user': { $arrayElemAt: ['$user', 0] } // Include data of the post creator
+                    'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] }, 
+                    'user': { $arrayElemAt: ['$user', 0] } 
                 }
             },
             {
@@ -117,25 +114,29 @@ exports.getPosts = async (req, res) => {
             { $skip: skip },
             { $limit: limit }
         ]);
-        console.log(posts)
+
         res.status(200).json(posts);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Failed to fetch posts' });
     }
 };
-exports.getPostsProfile = async (req, res) => {
+
+exports.getPosts = async (req, res) => {
     try {
         const jwtToken = req?.cookies?.accessToken;
         const userId = getDataFromJWTCookie_id(res, jwtToken);
 
-        const page = parseInt(req.params.page) || 1;                          
+        const connections = await ConnectionsModel.findOne({ user: userId }, { friends: 1, _id: 0 });
+        const friends = connections?.friends || [];
+
+        const page = parseInt(req.params.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
 
-        // Aggregation Pipeline
-        const posts = await PostModel.aggregate([
-            { $match: { userId: userId } }, // Filter posts by userId
+        // Query 1: Fetch posts from friends (if any)
+        let posts = await PostModel.aggregate([
+            { $match: { userId: { $in: friends } } },
             {
                 $lookup: {
                     from: 'users',
@@ -156,8 +157,90 @@ exports.getPostsProfile = async (req, res) => {
                 $addFields: {
                     'comments.username': { $arrayElemAt: ['$commentUsers.username', 0] },
                     'comments.picture': { $arrayElemAt: ['$commentUsers.picture', 0] },
-                    'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] }, // Include userId of the comment maker
-                    'user': { $arrayElemAt: ['$user', 0] } // Include data of the post creator
+                    'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] },
+                    'user': { $arrayElemAt: ['$user', 0] }
+                }
+            },
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
+
+        // Query 2: If no friend posts found, fetch public posts
+        if (posts.length === 0) {
+            posts = await PostModel.aggregate([
+                { $match: { isPrivate: false } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'user'
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'comments.userId',
+                        foreignField: '_id',
+                        as: 'commentUsers'
+                    }
+                },
+                {
+                    $addFields: {
+                        'comments.username': { $arrayElemAt: ['$commentUsers.username', 0] },
+                        'comments.picture': { $arrayElemAt: ['$commentUsers.picture', 0] },
+                        'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] },
+                        'user': { $arrayElemAt: ['$user', 0] }
+                    }
+                },
+                { $sort: { createdAt: -1 } },
+                { $skip: skip },
+                { $limit: limit }
+            ]);
+
+        }
+
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch posts' });
+    }
+};
+
+exports.getPostsProfile = async (req, res) => {
+    try {
+        const jwtToken = req?.cookies?.accessToken;
+        const userId = getDataFromJWTCookie_id(res, jwtToken);
+
+        const page = parseInt(req.params.page) || 1;
+        const limit = 2;
+        const skip = (page - 1) * limit;
+
+        const posts = await PostModel.aggregate([
+            { $match: { userId: userId } }, 
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'comments.userId',
+                    foreignField: '_id',
+                    as: 'commentUsers'
+                }
+            },
+            {
+                $addFields: {
+                    'comments.username': { $arrayElemAt: ['$commentUsers.username', 0] },
+                    'comments.picture': { $arrayElemAt: ['$commentUsers.picture', 0] },
+                    'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] }, 
+                    'user': { $arrayElemAt: ['$user', 0] } 
                 }
             },
             {
@@ -198,7 +281,7 @@ exports.addComment = async (req, res) => {
         }
         post.comments.push({
             text: comment,
-            userId: userId 
+            userId: userId
         });
         await post.save();
         return res.status(200).json({ message: 'Comment added successfully' });
@@ -221,18 +304,16 @@ exports.saveUnsavePost = async (req, res) => {
                 savedPost: [postId]
             });
             await newSavedPost.save();
-            res.status(200).json({ saved : true ,message: 'Post saved' });
+            res.status(200).json({ saved: true, message: 'Post saved' });
         } else {
-            const isPostSaved = savedPost.savedPost.includes(postId); 
+            const isPostSaved = savedPost.savedPost.includes(postId);
             if (isPostSaved) {
-                savedPost.savedPost.pull(postId); // Remove if already saved
+                savedPost.savedPost.pull(postId); 
             } else {
-                savedPost.savedPost.push(postId); // Add if not yet saved
+                savedPost.savedPost.push(postId); 
             }
             await savedPost.save();
-
-            // Updated response for frontend clarity
-            res.status(200).json({ saved: !isPostSaved, message: !isPostSaved ? 'Post saved' : 'Post unsaved' }); 
+            res.status(200).json({ saved: !isPostSaved, message: !isPostSaved ? 'Post saved' : 'Post unsaved' });
         }
     } catch (error) {
         console.error('Error saving/unsaving post:', error);

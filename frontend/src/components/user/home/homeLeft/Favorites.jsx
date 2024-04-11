@@ -20,26 +20,26 @@ function Favorites() {
                     <div className="p-4 w-full ">
                         <div className="grid grid-cols-3 justify-between gap-4">
                             <div className="flex justify-center">
-                                <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+                                <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" size="lg"/>
                             </div>
                             <div className="flex justify-center">
-                                <Avatar src="https://i.pravatar.cc/150?u=a04258a2462d826712d" />
+                                <Avatar src="https://i.pravatar.cc/150?u=a04258a2462d826712d" size="lg"/>
                             </div>
                             <div className="flex justify-center">
-                                <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+                                <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" size="lg"/>
                             </div>
                         </div>
                     </div>
                     <div className="p-4 w-full ">
                         <div className="grid grid-cols-3 justify-between gap-4">
                             <div className="flex justify-center">
-                                <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+                                <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" size="lg"/>
                             </div>
                             <div className="flex justify-center">
-                                <Avatar src="https://i.pravatar.cc/150?u=a04258a2462d826712d" />
+                                <Avatar src="https://i.pravatar.cc/150?u=a04258a2462d826712d" size="lg"/>
                             </div>
                             <div className="flex justify-center">
-                                <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" />
+                                <Avatar src="https://i.pravatar.cc/150?u=a042581f4e29026024d" size="lg"/>
                             </div>
                         </div>
                     </div>

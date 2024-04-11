@@ -8,10 +8,9 @@ function RequestSendUsers({ requestsSend }) {
     const handleRequestResponse = async (userId,isAccept) => {
         try {
             setIsLoading(true)
-            const response = await axios.post(
-                `http://localhost:8000/connections/requestResponse`,
-                { request: userId,isaccept : isAccept === "accept" ? true : false  },
-                { withCredentials: true } // Move withCredentials to the third argument
+            const response = await axios.delete(
+                `http://localhost:8000/connections/deleterequest/${userId}`,
+                { withCredentials: true } 
             );
             if (response.data.error) {
                 toast.error(response.data.error);

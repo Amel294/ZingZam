@@ -41,6 +41,10 @@ const postsSchema = mongoose.Schema({
     commentCount :{
         type:Number,
         default:0
+    },
+    isPrivate: { 
+        type: Boolean,
+        default: false 
     }
 }, {
     timestamps: true,

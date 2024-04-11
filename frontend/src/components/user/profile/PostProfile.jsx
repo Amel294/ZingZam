@@ -2,21 +2,23 @@ import { fetchPostsFailure, fetchPostsStart, fetchPostsSuccess } from "../../../
 import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Post from "../postComponents/Post";
+import { useParams } from 'react-router-dom';
 
-function OwnPostProfile() {
+function PostProfile() {
     const dispatch = useDispatch();
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const posts = useSelector((state) => state.posts.posts); 
     const userId = useSelector((state) => state.auth.id).toString()
-
+    const { username } = useParams();
+    console.log(username);
     const fetchPosts = async () => {
         try {
             dispatch(fetchPostsStart());
-            const response = await axios.get(`http://localhost:8000/post/get-posts/${ page }`, { withCredentials: true });
+            const response = await axios.get(`http://localhost:8000/post/get-profile-posts/${username}/${ page }`, { withCredentials: true });
             if (response.data.error) {
                 toast.error(`${ response.data.error }`);
                 dispatch(fetchPostsFailure(response.data.error)); // Pass error message to failure action
@@ -32,10 +34,12 @@ function OwnPostProfile() {
             dispatch(fetchPostsFailure("Failed to fetch posts")); // Generic error message
         }
     };
+    useEffect(()=>{
+        fetchPosts()
+    },[])
     return (
         <div className="flex justify-center flex-col items-center   min-h-screen">
             <InfiniteScroll
-
                 dataLength={posts.length}
                 next={fetchPosts}
                 hasMore={hasMore}
@@ -46,11 +50,11 @@ function OwnPostProfile() {
                     </p>
                 }
             >
+                
                 {posts.length > 0 ? (
                     posts.map((post) => (
                         <div key={post._id} className="mb-4">
                             <Post post={post} userId={userId} />
-
                         </div>
                     ))
                 ) : null}
@@ -59,4 +63,4 @@ function OwnPostProfile() {
     )
 }
 
-export default OwnPostProfile
+export default PostProfile

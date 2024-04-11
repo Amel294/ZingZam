@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Card, CardBody, Image, Button, User, Link, CardHeader, CardFooter, Divider } from "@nextui-org/react";
+import { Card, CardBody, Image, Button } from "@nextui-org/react";
 import defaultAvatar from '../../../public/Avatar/default.png'
 import EditIcon from '../../../public/icons/EditIcon';
-import OwnPostProfile from '../../components/user/profile/OwnPostProfile';
+import OwnPostProfile from '../../components/user/profile/PostProfile';
 import ProfileTabs from '../../components/user/profile/ProfileTabs';
 import Followers from '../../components/user/profile/Followers';
 function Profile() {
