@@ -8,14 +8,11 @@ exports.getSuggestions = async (req, res) => {
         const jwtToken = req?.cookies?.accessToken;
         const userId = new mongoose.Types.ObjectId(getDataFromJWTCookie_id(res, jwtToken));
         console.log(userId)
-        const connections = await ConnectionsModel.findOne({ user: userId }, { requests: 1, friends: 1, _id: 0 });
+        const connections = await ConnectionsModel.findOne({ user: userId }, { requestsSend: 1,requestsReceived:1, friends: 1, _id: 0 });
         let cantSuggest = [];
-        let requests = [];
-        let friends = [];
         if (connections) {
-            requests = connections?.requests || [];
-            friends = connections?.friends || [];
-            cantSuggest = [...requests, ...friends];
+            const { requestsSend, requestsReceived, friends } = connections;
+            cantSuggest = [...requestsSend, ...requestsReceived, ...friends, userId];
         }
         const suggestions = await UserModel.aggregate([
             { $match: { _id: { $nin: cantSuggest } } },
