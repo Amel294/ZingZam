@@ -2,7 +2,6 @@ import { Card, Divider } from "@nextui-org/react";
 import { useEffect, useState, } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import RequestedFriendsUsers from "./RequestReceivedUsers";
 import RequestReceivedUsers from "./RequestReceivedUsers";
 
 function RequestReceived() {
