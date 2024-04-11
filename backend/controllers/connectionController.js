@@ -15,10 +15,11 @@ exports.getSuggestions = async (req, res) => {
         if (connections) {
             requests = connections?.requests || [];
             friends = connections?.friends || [];
-            cantSuggest = [...requests, ...friends, userId];
+            cantSuggest = [...requests, ...friends];
         }
         const suggestions = await UserModel.aggregate([
             { $match: { _id: { $nin: cantSuggest } } },
+            { $match: { _id: { $ne: userId } } },
             { $sample: { size: 1 } },
         ]);
         res.status(200).json({ suggestions });
