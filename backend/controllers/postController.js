@@ -62,8 +62,10 @@ exports.getPosts = async (req, res) => {
 
         // Get friends' IDs
         const connections = await ConnectionsModel.findOne({ user: userId }, { friends: 1, _id: 0 });
-        const friendIds = connections?.friends || [];
-        friendIds.push(userId); // Include the user's own posts
+        const friends = connections?.friends || [];
+        friends.push(userId); 
+        console.log("friends")
+        console.log(friends)
 
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
@@ -71,7 +73,7 @@ exports.getPosts = async (req, res) => {
 
         // Aggregation Pipeline
         const posts = await PostModel.aggregate([
-            { $match: { userId: { $in: friendIds } } },
+            { $match: { userId: { $in: friends } } },
             {
                 $lookup: {
                     from: 'users',
@@ -115,7 +117,7 @@ exports.getPosts = async (req, res) => {
             { $skip: skip },
             { $limit: limit }
         ]);
-
+        console.log(posts)
         res.status(200).json(posts);
     } catch (error) {
         console.log(error);
@@ -127,7 +129,7 @@ exports.getPostsProfile = async (req, res) => {
         const jwtToken = req?.cookies?.accessToken;
         const userId = getDataFromJWTCookie_id(res, jwtToken);
 
-        const page = parseInt(req.params.page) || 1;
+        const page = parseInt(req.params.page) || 1;                          
         const limit = 2;
         const skip = (page - 1) * limit;
 
@@ -177,7 +179,7 @@ exports.getPostsProfile = async (req, res) => {
             { $skip: skip },
             { $limit: limit }
         ]);
-
+        console.log(posts)
         res.status(200).json(posts);
     } catch (error) {
         console.log(error);

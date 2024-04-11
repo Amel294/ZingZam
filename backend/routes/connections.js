@@ -1,8 +1,10 @@
 const express = require('express');
-const { getSuggestions,requestHandle,requestResponse,getRequests } = require('../controllers/connectionController');
+const { getSuggestions,sendRequest,requestResponse,getRequestsReceived, deleteRequest,getRequestSend } = require('../controllers/connectionController');
 const router = express.Router();
 router.get('/suggestions', getSuggestions);
-router.post('/request', requestHandle);
-router.get('/requests',getRequests)
+router.post('/sendrequest', sendRequest);
+router.delete('/deleterequest', deleteRequest);
+router.get('/getrequestsend' ,  getRequestSend) ;
+router.get('/getrequestsreceived',getRequestsReceived)
 router.post('/requestResponse', requestResponse);
 module.exports = router;

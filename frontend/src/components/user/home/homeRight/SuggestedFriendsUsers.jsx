@@ -5,12 +5,12 @@ import toast from "react-hot-toast";
 
 function SuggestedFriendsUsers({ suggestions }) {
     const [isLoading, setIsLoading] = useState(false)
-    const handleRequest = async (userId) => {
+    const handleRequest = async (friendsId) => {
         try {
             setIsLoading(true)
             const response = await axios.post(
-                `http://localhost:8000/connections/request`,
-                { request: userId },
+                `http://localhost:8000/connections/sendrequest`,
+                { receiverId:friendsId },
                 { withCredentials: true } // Move withCredentials to the third argument
             );
             if (response.data.error) {

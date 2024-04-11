@@ -1,5 +1,6 @@
-import RequestedFriends from "./homeRight/RequestedFriends"
+import RequestReceived from "./homeRight/RequestReceived"
 import SuggestedFriends from "./homeRight/SuggestedFriends"
+import RequestSend from "./homeRight/requestSend/RequestSend"
 
 function HomeRightSide() {
 
@@ -9,7 +10,8 @@ function HomeRightSide() {
         <div className='flex flex-col items-center w-full gap-4 pt-4 justify-center'>
           <div className="max-[90vh]  rounded-lg min-w-[200px] fixed top-20 flex flex-col gap-4">
             <SuggestedFriends />
-            <RequestedFriends />
+            <RequestReceived />
+            <RequestSend/>
           </div>
         </div>
       </div>

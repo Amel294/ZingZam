@@ -9,12 +9,17 @@ const connectionsSchema = mongoose.Schema({
     friends: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        default:[]
     }],
-    requests: [{
+    requestsSend: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        default:[]
+    }],
+    requestsReceived: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default:[]
     }],
 });
 

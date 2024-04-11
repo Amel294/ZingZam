@@ -3,7 +3,7 @@ import axios from 'axios'
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-function RequestedFriendsUsers({ requests }) {
+function RequestSendUsers({ requestsSend }) {
     const [isLoading, setIsLoading] = useState(false)
     const handleRequestResponse = async (userId,isAccept) => {
         try {
@@ -28,7 +28,7 @@ function RequestedFriendsUsers({ requests }) {
     return (
         <>
             <div>
-                {requests.map((user) => (
+                {requestsSend.map((user) => (
                     <CardHeader key={user._id} className="flex justify-between">
                         <User
                             name={user.name}
@@ -42,12 +42,8 @@ function RequestedFriendsUsers({ requests }) {
                             }}
                         />
                         <div className="flex gap-2">
-
-                        <Button size="sm" onClick={() => handleRequestResponse(user._id,"accept")} disabled={isLoading}>
-                            {isLoading ? "Loading..." : "accept"}
-                        </Button>
                         <Button size="sm" onClick={() => handleRequestResponse(user._id,"decline")} disabled={isLoading}>
-                            {isLoading ? "Loading..." : "Decline"}
+                            {isLoading ? "Loading..." : "Cancel Request"}
                         </Button>
                         </div>
 
@@ -58,4 +54,4 @@ function RequestedFriendsUsers({ requests }) {
     )
 }
 
-export default RequestedFriendsUsers
+export default RequestSendUsers
