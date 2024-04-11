@@ -10,7 +10,7 @@ function RequestReceivedUsers({ requests }) {
             setIsLoading(true)
             const response = await axios.post(
                 `http://localhost:8000/connections/requestResponse`,
-                { request: userId,isaccept : isAccept === "accept" ? true : false  },
+                { request: userId,isAccept : isAccept === "accept" ? true : false  },
                 { withCredentials: true } // Move withCredentials to the third argument
             );
             if (response.data.error) {
