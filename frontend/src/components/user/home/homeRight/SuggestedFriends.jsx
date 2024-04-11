@@ -14,11 +14,10 @@ function SuggestedFriends() {
                 if (response.data.error) {
                     toast.error(`${ response.data.error }`);
                 } else {
-                    setSuggestions(response.data.suggestions); 
+                    setSuggestions(response.data.suggestions);
                 }
             } catch (error) {
                 console.error("Error fetching suggestions:", error);
-                // Consider more specific error handling if needed, e.g., a toast message
             }
         };
 
@@ -26,11 +25,10 @@ function SuggestedFriends() {
     }, []);
 
     return (
-        <Card className="w-[300px]">
-            <div className="flex flex-col">
-                <p className="text-lg text-left ps-3 py-3 bold">Suggested Friends</p>
+        <Card className="w-[300px] ">
+            <div className="flex flex-col bg-secondary-400">
+                <p className="text-md text-left ps-3 py-3 bold">Suggested Friends</p>
             </div>
-            <Divider />
             {suggestions &&
                 <SuggestedFriendsUsers suggestions={suggestions} />}
         </Card>

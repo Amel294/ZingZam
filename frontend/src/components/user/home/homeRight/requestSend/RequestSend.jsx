@@ -27,9 +27,8 @@ function RequestSend() {
     return (
         <Card className="w-[300px]">
             <div className="flex flex-col">
-                <p className="text-lg text-left ps-3 py-3 bold">Requests Send</p>
+                <p className="text-md text-left ps-3 py-3 bold bg-secondary-400">Requests Send</p>
             </div>
-            <Divider />
             {requestsSend &&
                 <RequestSendUsers requestsSend={requestsSend} />}
         </Card>

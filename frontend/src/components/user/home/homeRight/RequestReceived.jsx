@@ -14,7 +14,7 @@ function RequestReceived() {
                 if (response.data.error) {
                     toast.error(`${ response.data.error }`);
                 } else {
-                    setRequests(response.data.requestsReceived); 
+                    setRequests(response.data.requestsReceived);
                 }
             } catch (error) {
                 console.error("Error fetching requests:", error);
@@ -27,9 +27,8 @@ function RequestReceived() {
     return (
         <Card className="w-[300px]">
             <div className="flex flex-col">
-                <p className="text-lg text-left ps-3 py-3 bold">Requests Received</p>
+                <p className="text-md text-left ps-3 py-3 bold bg-secondary-400">Requests Received</p>
             </div>
-            <Divider />
             {requests &&
                 <RequestReceivedUsers requests={requests} />}
         </Card>

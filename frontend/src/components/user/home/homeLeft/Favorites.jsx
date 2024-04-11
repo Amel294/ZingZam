@@ -12,7 +12,7 @@ function Favorites() {
                 <Card className="pb-2">
                     <div className=" w-full bg-secondary-400 flex justify-center p-2">
                         <FavoritesIcon />
-                        <Chip className=" w-full" variant="light" >
+                        <Chip className=" w-full text-md" variant="light" >
                             Favorite&apos;s
                         </Chip>
 
