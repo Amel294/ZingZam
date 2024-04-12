@@ -12,7 +12,7 @@ function HomeCenter() {
   const [hasMore, setHasMore] = useState(true);
   const posts = useSelector((state) => state.posts.posts); // Accessing posts array from Redux state
   const dispatch = useDispatch();
-  const userId = useSelector((state) => state.auth.id).toString()
+  const userId = useSelector((state) => state.auth.id)
   useEffect(()=>{
     fetchPosts()
   },[])

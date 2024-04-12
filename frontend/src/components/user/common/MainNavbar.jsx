@@ -5,11 +5,13 @@ import SocialSide from '/icons/MainSocial.svg';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../../../store/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
+import { clearPosts } from '../../../store/auth/postsSlice';
 
 export default  function MainNavbar() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleRedirectToLogin = () => {
+        dispatch(clearPosts())
         navigate("/login");
     };
     const handleLogOut = async () => {

@@ -121,13 +121,13 @@ export default function LoginSide() {
                                 Login
                             </Button>
                         </div>
-                        <p className="text-center text-small">
+                        <div className="text-center text-small">
                             <div>
                                 Need to create an account?
                                 <Link to="/signup" className="text-purple-400">  Sign Up</Link>
                             </div>
                             <Link to="/forgotPassword" className="text-purple-400">Forgot password ? </Link>
-                        </p>
+                        </div>
                     </form>
                 </CardBody>
             </Card>

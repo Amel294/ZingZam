@@ -129,7 +129,7 @@ exports.getRequestsReceived = async (req, res) => {
         const jwtToken = req?.cookies?.accessToken;
         const userId = getDataFromJWTCookie_id(res, jwtToken);
         const requests = await ConnectionsModel.findOne({ user: userId }, { requestsReceived: 1, _id: 0 }).populate('requestsReceived', 'name username picture');
-        return res.status(200).json({ requestsReceived: requests.requestsReceived });
+            return res.status(200).json({ requestsReceived: requests.requestsReceived });
     } catch (error) {
 
     }

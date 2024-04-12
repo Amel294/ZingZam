@@ -35,6 +35,11 @@ const postsSlice = createSlice({
         deletePost(state, action) {
             state.posts = state.posts.filter(post => post.id !== action.payload);
         },
+        clearPosts(state) {
+            state.posts = [];
+            state.isLoading = false;
+            state.error = null;
+        }
     },
 });
 
@@ -44,7 +49,8 @@ export const {
     fetchPostsFailure,
     addPost,
     updatePost,
-    deletePost
+    deletePost,
+    clearPosts
 } = postsSlice.actions;
 
 export default postsSlice.reducer;
