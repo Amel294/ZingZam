@@ -7,6 +7,7 @@ const TempUserModel = require('../models/TempUserModel');
 const { generateOtpForUser, sendOtpEmail } = require('../helpers/mail');
 const jwt = require('jsonwebtoken');
 const { generateAccessToken, generateRefreshToken, generateTempToken } = require('../helpers/tokens');
+const { getDataFromJWTCookie_temporaryToken } = require('../helpers/dataFromJwtCookies');
 exports.register = async (req, res) => {
     try {
         let { email, name, gender, password, birthday } = req.body;
@@ -49,26 +50,34 @@ exports.register = async (req, res) => {
 
         const cryptedPassword = await bcrypt.hash(password, 12);
         console.log(cryptedPassword);
-        const tempToken = await generateTempToken({ email })
         const otp = generateOtpForUser()
-        console.log("generated tempToken is " + tempToken)
-        console.log("generated OTP is " + otp)
-        const tempUser = new TempUserModel({
+        const tempUser = {
             name,
             email,
             password: cryptedPassword,
             username,
             gender,
             birthday,
-            tempToken,
             otp
+        };
+        const expiresIn = new Date(Date.now() + 5 * 60 * 1000)
+        const tempToken = await generateTempToken({ ...tempUser })
+        await TempUserModel.create({
+            email: tempUser.email,
+            otp,
+            expiresIn
         });
         await sendOtpEmail(otp, email)
-        console.log("otp send")
-        await tempUser.save();
+        const tempTokenMaxAge = 5 * 60 * 1000;
+
+        res.cookie('tempToken', tempToken, {
+            // httpOnly: true,
+            // secure: true,
+            // sameSite: 'strict',
+            maxAge: tempTokenMaxAge,
+        })
         res.status(200).json({
-            tempToken: tempUser.tempToken,
-            name: tempUser.name,
+            message: "OTP send to User",
         });
 
     } catch (error) {
@@ -78,27 +87,22 @@ exports.register = async (req, res) => {
 
 exports.verify = async (req, res) => {
     try {
-        const { token, otp } = req.body;
-        const decodedToken = await new Promise((resolve, reject) => {
-            jwt.verify(token, process.env.TEMP_TOKEN_SECRET, (err, decoded) => {
-                if (err) {
-                    if (err.name === 'TokenExpiredError') {
-                        reject(new Error('OTP time expired'));
-                    } else reject(err);
-                }
-                resolve(decoded);
-            });
-        });
-        const otpUser = await TempUserModel.findOne({ email: decodedToken.email });
+        const jwtToken = req?.cookies?.tempToken;
+        const data = getDataFromJWTCookie_temporaryToken(res, jwtToken);
+        console.log("data form jwt cookie temp for verification")
+        console.log(data.email)
+        const { otp } = req.body;
+
+        const otpUser = await TempUserModel.findOne({ email: data.email });
         if (!otpUser) return res.status(400).send({ error: 'Invalid OTP' });
         if (otpUser.otp !== otp) return res.status(400).send({ error: 'Invalid OTP' });
         const newUser = new UserModel({
-            name: otpUser.name,
-            username: otpUser.username,
-            email: otpUser.email,
-            password: otpUser.password,
-            gender: otpUser.gender,
-            birthday: otpUser.birthday,
+            name: data.name,
+            username: data.username,
+            email: data.email,
+            password: data.password,
+            gender: data.gender,
+            birthday: data.birthday,
             verified: true,
         });
         await newUser.save();
@@ -112,14 +116,48 @@ exports.verify = async (req, res) => {
         }
     }
 };
+exports.resend = async (req, res) => {
+    try {
+        const jwtToken = req?.cookies?.tempToken;
+        const data = getDataFromJWTCookie_temporaryToken(res, jwtToken);
+        console.log("data form jwt cookie temp")
+        console.log(data)
+        const otp = generateOtpForUser()
+        const tempTokenMaxAge = 5 * 60 * 1000;
+        const tempToken = await generateTempToken({
+            name:data.name,
+            email:data.email,
+            password: data.password,
+            username:data.username,
+            gender:data.gender,
+            birthday:data.birthday,
+            otp
+        });
+        await TempUserModel.deleteOne({ email: data.email });
+        const expiresIn = new Date(Date.now() + 5 * 60 * 1000)
+        await TempUserModel.create({
+            email: data.email,
+            otp,
+            expiresIn
+        });
+        await sendOtpEmail(otp, data.email, isResend = true)
+        res.cookie('tempToken', tempToken, {
+            // httpOnly: true,
+            // secure: true,
+            // sameSite: 'strict',
+            maxAge: tempTokenMaxAge,
+        });
+        res.status(200).json({
+            message:"Resend OTP send successfully"
+        });
 
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+}
 exports.login = async (req, res) => {
     try {
-        console.log("Request came through");
-        console.log(req.body);
         const { email, password } = req.body;
-        console.log(email);
-        console.log(password);
         const user = await UserModel.findOne({ email });
         if (!user) return res.status(400).json({ error: "This Email is not Registered. Try again with a valid Email Address." });
         if (user.isBlocked) return res.status(403).json({ error: 'This Account is Blocked. Please contact the Admin', isBlocked: true });

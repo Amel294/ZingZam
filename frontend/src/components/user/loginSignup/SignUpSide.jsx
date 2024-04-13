@@ -1,17 +1,16 @@
 // SignUpSide.js
 import { useState } from "react";
 import toast, { Toaster } from 'react-hot-toast';
-
 import { Button, Card, CardBody, CardHeader } from "@nextui-org/react";
 import EmailInput from "./EmailInput";
 import axios from 'axios';
 import PasswordInputSignUp from "./PasswordInputSignUp";
-import { Link,  useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import DateInput from "./DateInput";
 import GenderRadio from "./GenderRadio";
 import NameInput from "./NameInput";
 import OtpInput from "./OtpInput";
-import { useSelector,useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { addTempToken } from "../../../store/auth/OtpSlice";
 export default function SignUpSide() {
     const dispatcher = useDispatch()
@@ -43,6 +42,8 @@ export default function SignUpSide() {
                     name: name,
                     gender: gender,
                     birthday: bday
+                }, {
+                    withCredentials: true
                 });
                 console.log(response);
                 console.log("testing toast success")
@@ -71,9 +72,11 @@ export default function SignUpSide() {
             setIsLoading(true);
             try {
                 const response = await axios.post('http://localhost:8000/user/verify', {
-                    token: tempToken,
                     otp: otp,
+                }, {
+                    withCredentials: true
                 });
+
                 console.log(response);
                 console.log("testing toast success")
                 if (response.data.error) {
@@ -85,10 +88,9 @@ export default function SignUpSide() {
                 }
                 await setTimeout(() => {
                     setIsLoading(false);
-                    navigate('/login'); 
+                    navigate('/login');
                 }, 2000);
             } catch (error) {
-                console.log("testing toast error")
                 toast.error("This didn't work.")
             } finally {
                 setIsLoading(false);
@@ -126,7 +128,7 @@ export default function SignUpSide() {
                 </Card>
             ) : (
                 <div>
-                    <Card className="max-w-full w-[340px] h-[200px]">
+                    <Card className="max-w-full w-[340px] h-auto">
                         <CardHeader className="flex justify-center items-center gap-4">
                             <div className="flex flex-col ">
                                 <p className="text-lg">Sign Up to Zing Zam</p>
@@ -140,7 +142,7 @@ export default function SignUpSide() {
                                         Verify Otp
                                     </Button>
                                 </div>
-                                
+
                             </form>
                         </CardBody>
                     </Card>

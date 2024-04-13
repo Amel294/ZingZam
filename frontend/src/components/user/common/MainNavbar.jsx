@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { logoutUser } from '../../../store/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { clearPosts } from '../../../store/auth/postsSlice';
+import toast from "react-hot-toast";
 
 export default  function MainNavbar() {
     const dispatch = useDispatch();
@@ -15,15 +16,14 @@ export default  function MainNavbar() {
         navigate("/login");
     };
     const handleLogOut = async () => {
-        console.log('Logout button clicked');
         const cookies = document.cookie.split(';');
-
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i];
             const eqPos = cookie.indexOf('=');
             const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
             document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
         }
+        
         await dispatch(logoutUser());
         setTimeout(()=>{
             handleRedirectToLogin()

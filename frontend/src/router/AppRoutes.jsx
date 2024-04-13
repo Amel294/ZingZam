@@ -58,7 +58,7 @@ const AppRoutes = () => {
                     <Route path="/forgotpassword" element={<Navigate to="/home" replace />} />
                 </>
             )}
-            {!isAuthenticated || !storedAuthStatus && (
+            {!storedAuthStatus && !isAuthenticated && (
                 <>
                     {console.log("User is not authenticated")}
                     <Route index element={<Login />} />

@@ -45,7 +45,6 @@ export default function LoginSide() {
                     birthday: response.data.birthday,
                     isLoggedIn: true,
                 }));
-                toast.success(`Hurray! I am happy to see you again ${ response.data.name }`)
                 setTimeout(() => {
                     navigate("/home");
                 }, 2000)

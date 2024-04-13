@@ -4,13 +4,7 @@ const { generateAccessToken } = require('../helpers/tokens');
 exports.accessTokenValidation = async (req, res) => {
     try {
         const accessToken = req?.cookies?.accessToken;
-        console.log("access token came")
-        console.log(accessToken)
-        console.log("access token came")
-        console.log("accessToken")
-        console.log(process.env.ACCESS_TOKEN_SECRET)
-        console.log("refresh Token")
-        console.log(process.env.REFRESH_TOKEN_SECRET)
+        
         if (!accessToken) {
             await refreshToken(req, res); 
         } else {
