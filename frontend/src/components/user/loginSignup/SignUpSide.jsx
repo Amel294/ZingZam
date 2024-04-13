@@ -76,7 +76,6 @@ export default function SignUpSide() {
                 }, {
                     withCredentials: true
                 });
-
                 console.log(response);
                 console.log("testing toast success")
                 if (response.data.error) {

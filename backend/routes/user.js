@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, verify,resend } = require('../controllers/UserController');
+const { register, login, verify,resend,forgetPassword,forgetPasswordOtpVerify,forgetPasswordChange } = require('../controllers/UserController');
 const TokenModel = require("../models/RefreshTokenModel")
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -22,6 +22,9 @@ const jwt = require('jsonwebtoken');
 router.post("/register", register);
 router.post("/login", login);
 router.post("/resend-otp", resend);
+router.post("/forget-password", forgetPassword);
+router.post("/forget-password-otp-verify", forgetPasswordOtpVerify);
+router.post("/forget-password-change", forgetPasswordChange);
 router.post("/verify",verify )
 router.post("/check", async (req, res) => {
    res.send("Hai")

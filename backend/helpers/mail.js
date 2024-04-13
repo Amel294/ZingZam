@@ -13,13 +13,14 @@ function generateOtpForUser() {
     return otp;
 }
 
-async function sendOtpEmail(otp,user,isResend = false) {
-    const subject = isResend ? `Your Resend OTP Code ` : 'Your OTP Code';
+async function sendOtpEmail(otp, user, isResend = false, isReset = false) {
+    let subject = isResend ? `Your Resend OTP Code` : `Your OTP Code`;
+    let expirationTime = isReset ? 10 : 5; 
     let mailOptions = {
         from: process.env.SMTP_EMAIL,
         to: user,
-        subject: subject,
-        text: `Your OTP code is: ${ otp } . It will expire in 5 min`
+        subject: isReset ? `Your Forget Password OTP Code` : subject,
+        text: `Your OTP code is: ${otp}. It will expire in ${expirationTime} min`
     };
 
     try {

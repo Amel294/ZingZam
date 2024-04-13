@@ -4,6 +4,7 @@ const RefreshTokenModel = require('../models/RefreshTokenModel')
 const validator = require('validator');
 const bcrypt = require("bcrypt");
 const TempUserModel = require('../models/TempUserModel');
+const ForgetPasswordModel = require('../models/ForgetPasswordModel');
 const { generateOtpForUser, sendOtpEmail } = require('../helpers/mail');
 const jwt = require('jsonwebtoken');
 const { generateAccessToken, generateRefreshToken, generateTempToken } = require('../helpers/tokens');
@@ -49,7 +50,6 @@ exports.register = async (req, res) => {
         }
 
         const cryptedPassword = await bcrypt.hash(password, 12);
-        console.log(cryptedPassword);
         const otp = generateOtpForUser()
         const tempUser = {
             name,
@@ -125,12 +125,12 @@ exports.resend = async (req, res) => {
         const otp = generateOtpForUser()
         const tempTokenMaxAge = 5 * 60 * 1000;
         const tempToken = await generateTempToken({
-            name:data.name,
-            email:data.email,
+            name: data.name,
+            email: data.email,
             password: data.password,
-            username:data.username,
-            gender:data.gender,
-            birthday:data.birthday,
+            username: data.username,
+            gender: data.gender,
+            birthday: data.birthday,
             otp
         });
         await TempUserModel.deleteOne({ email: data.email });
@@ -148,7 +148,7 @@ exports.resend = async (req, res) => {
             maxAge: tempTokenMaxAge,
         });
         res.status(200).json({
-            message:"Resend OTP send successfully"
+            message: "Resend OTP send successfully"
         });
 
     } catch (error) {
@@ -197,3 +197,57 @@ exports.login = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+exports.forgetPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await UserModel.findOne({ email });
+        if (!user) return res.status(400).json({ error: "Email id you entered is not associated with any account | Try a different email id " });
+        const otp = generateOtpForUser();
+        const haveOTP = await ForgetPasswordModel.findOne({ email });
+        if (haveOTP) {
+            return res.status(200).json({ message: "OTP already sent to this email. Please check your email." });
+        }
+        await sendOtpEmail(otp, email, isResend = true,isReset = true)
+
+        await ForgetPasswordModel.create({
+            email,
+            otp,
+            expiresIn: new Date(new Date().getTime() + 10 * 60000)
+        });
+        res.status(200).json({ message: "Forget password request successful" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+exports.forgetPasswordOtpVerify = async(req,res ) =>{
+    try{
+    const {email,otp} = req.body;
+    let data=await ForgetPasswordModel.findOne({email,otp});
+    if(!data) return res.status(400).json({error:"Invalid OTP or OTP expired"});
+    res.status(200).json({success:true, message:"OTP Verified Successfully"});
+    }catch(e){
+        return res.status(400).json({error:"Invalid OTP or OTP expired"})
+    }
+}
+
+exports.forgetPasswordChange = async (req, res) => {
+    try {
+        const {password,email,otp} = req.body
+        console.log(password,email,otp)
+        const user = await UserModel.findOne({email})
+        if(!user) res.send({message:"User not found"})
+        const checkPassword = await bcrypt.compare(password, user.password);
+        if(checkPassword) res.status(400).json({error : "New password and old password cannot be same"})
+        else{
+            let hashedPassword = await bcrypt.hash(password,10);
+            await UserModel.updateOne({email},{password:hashedPassword});
+            await ForgetPasswordModel.deleteOne({email});
+            res.status(200).json({message:"Password changed successfully. Please login with new password."});
+        }
+    } catch (error) {
+        
+    }
+}

@@ -15,9 +15,6 @@ exports.accessTokenValidation = async (req, res) => {
             }
         }
     } catch (error) {
-        console.log("********")
-        console.log(error.name);
-        console.log("********")
         if (error.name === 'TokenExpiredError') {
             await refreshToken(req, res);
         } else {
@@ -28,7 +25,6 @@ exports.accessTokenValidation = async (req, res) => {
 
 const refreshToken = async (req, res) => {
     try {
-        console.log("In refresh token")
         const refreshToken = req?.cookies?.refreshToken;
         if (!refreshToken) {
             return res.status(200).json({  message: 'No refresh token',isValid: false });
