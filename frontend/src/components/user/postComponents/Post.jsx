@@ -13,13 +13,26 @@ import axios from "axios";
 export default function Post({ post, userId }) {
     const [liked, setLiked] = useState(post.liked)
     const [saved, setSaved] = useState(post.saved)
+    const [commentCount,setCommentCount] = useState(post.commentCount)
     const [comments, setComments] = useState(post.comments)
     const [writeComment, setWriteComment] = useState("")
     useEffect(() => {
 
         console.log("comments", comments)
     })
-
+    const handleDeleteComment = async (postId, commentId) => {
+        const response = await axios.delete(`http://localhost:8000/post/comment/${ postId }/${ commentId }`, {
+            withCredentials: true
+        });
+        if (response.status === 200) {
+            toast.success("Comment Posted")
+            setCommentCount(prevCount => prevCount - 1);
+            const newComment = await axios.post(`http://localhost:8000/post/get-comment-fromPostId`, { postId }, { withCredentials: true });
+            console.log("newComment", newComment)
+            setComments(newComment.data)
+        }
+        console.log(response)
+    }
     const handlesavePost = async (postId) => {
         const response = await axios.post(`http://localhost:8000/post/saveunsave`, { postId }, { withCredentials: true });
         if (response.data.saved === true) {
@@ -43,6 +56,9 @@ export default function Post({ post, userId }) {
         const response = await axios.post(`http://localhost:8000/post/addcomment`, { postId, comment: writeComment }, { withCredentials: true });
         if (response.status === 200) {
             toast.success("Comment Posted")
+            setWriteComment('')
+            setCommentCount(prevCount => prevCount + 1);
+
             const newComment = await axios.post(`http://localhost:8000/post/get-comment-fromPostId`, { postId }, { withCredentials: true });
             console.log("newComment", newComment)
             setComments(newComment.data)
@@ -101,7 +117,7 @@ export default function Post({ post, userId }) {
                 <CardFooter className="flex flex-row justify-between">
                     <div className="flex items-center gap-1">
                         <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={liked ? "#661FCC" : "none"} stroke={liked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
-                        <p><span>{post?.likeCount} Likes</span><span> |  </span><span>{post?.commentCount ? post?.commentCount : 0} Comments</span> </p>
+                        <p><span>{post?.likeCount} Likes</span><span> |  </span><span>{commentCount ? commentCount : 0} Comments</span> </p>
                     </div>
                     <div className="flex flex-row gap-10">
                         <Share height="25px" fill="#661FCC" />
@@ -121,7 +137,7 @@ export default function Post({ post, userId }) {
                                         <span>{comment.text}</span>
                                     </div>
                                 </div>
-                                <Button>Delete</Button> 
+                                <Button size="sm"  onClick={()=>handleDeleteComment(post._id,comment._id)}>Delete</Button>
                                 {/* del action for authenticated user only */}
                             </div>
                         ))}

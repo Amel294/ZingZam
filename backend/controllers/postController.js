@@ -394,6 +394,44 @@ exports.likeUnlikePost = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+exports.deleteComment = async (req, res) => {
+    try {
+        const jwtToken = req?.cookies?.accessToken;
+        const userId = getDataFromJWTCookie_id(res, jwtToken);
+        const { postId, commentId } = req.params; // Access postId and commentId from req.params
+
+        // Find the post by postId
+        const post = await PostModel.findById(postId);
+
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        // Find the index of the comment to delete
+        const commentIndex = post.comments.findIndex(comment => String(comment._id) === commentId);
+
+        if (commentIndex === -1) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        // Check if the comment belongs to the user
+        if (String(post.comments[commentIndex].userId) !== userId) {
+            return res.status(403).json({ error: 'You are not authorized to delete this comment' });
+        }
+
+        // Remove the comment from the comments array
+        post.comments.splice(commentIndex, 1);
+
+        // Save the updated post
+        await post.save();
+
+        res.status(200).json({ message: 'Comment deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting comment:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
 exports.postComments = async (req, res) => {
     try {
         const jwtToken = req?.cookies?.accessToken;
