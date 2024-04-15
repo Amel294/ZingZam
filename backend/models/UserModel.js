@@ -37,6 +37,10 @@ const userSchema = mongoose.Schema({
     type: Date, // Store the complete birthday as a Date field
     required: true,
   },
+  bio:{
+    type: String,
+    default: ""
+  },
   verified: {
     type: Boolean,
     default: false

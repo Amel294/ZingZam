@@ -125,7 +125,8 @@ exports.getOwnPosts = async (req, res) => {
 exports.getPosts = async (req, res) => {
     try {
         const jwtToken = req?.cookies?.accessToken;
-        const userId = getDataFromJWTCookie_id(res, jwtToken);
+        const userId = new mongoose.Types.ObjectId(getDataFromJWTCookie_id(res, jwtToken)); // Convert userId to ObjectID
+        console.log("User id from JWT Token is", userId)
 
         const connections = await ConnectionsModel.findOne({ user: userId }, { friends: 1, _id: 0 });
         const friends = connections?.friends || [];
@@ -161,6 +162,31 @@ exports.getPosts = async (req, res) => {
                     'user': { $arrayElemAt: ['$user', 0] }
                 }
             },
+            {
+                $addFields: {
+                    'liked': {
+                        $in: [userId, { $map: { input: '$likes', as: 'like', in: '$$like._id' } }] // Updated $in with ObjectID conversion
+                    }
+                }
+            },
+            { $lookup: { // populate saved posts
+                from: 'savedposts',
+                let: { postId: '$_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ['$user', userId] },
+                                    { $in: ['$$postId', '$savedPost'] }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                as: 'saved'
+            }},
+            { $addFields: { saved: { $cond: { if: { $gt: [{ $size: '$saved' }, 0] }, then: true, else: false } } } }, // add saved field indicating whether the post is saved by the user
             { $sort: { createdAt: -1 } },
             { $skip: skip },
             { $limit: limit }
@@ -194,11 +220,35 @@ exports.getPosts = async (req, res) => {
                         'user': { $arrayElemAt: ['$user', 0] }
                     }
                 },
+                {
+                    $addFields: {
+                        'liked': {
+                            $in: [userId, { $map: { input: '$likes', as: 'like', in: '$$like._id' } }] // Updated $in with ObjectID conversion
+                        }
+                    }
+                },
+                { $lookup: { // populate saved posts
+                    from: 'savedposts',
+                    let: { postId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$user', userId] },
+                                        { $in: ['$$postId', '$savedPost'] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'saved'
+                }},
+                { $addFields: { saved: { $cond: { if: { $gt: [{ $size: '$saved' }, 0] }, then: true, else: false } } } }, // add saved field indicating whether the post is saved by the user
                 { $sort: { createdAt: -1 } },
                 { $skip: skip },
                 { $limit: limit }
             ]);
-
         }
 
         res.status(200).json(posts);
@@ -317,6 +367,63 @@ exports.saveUnsavePost = async (req, res) => {
         }
     } catch (error) {
         console.error('Error saving/unsaving post:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.likeUnlikePost = async (req, res) => {
+    try {
+        const jwtToken = req?.cookies?.accessToken;
+        const userId = getDataFromJWTCookie_id(res, jwtToken);
+        const { postId } = req.body;
+        const post = await PostModel.findById(postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+        const userIdString = userId.toString(); // Convert userId to string
+        const isPostLiked = post.likes.some(like => like._id.toString() === userIdString);
+        if (isPostLiked) {
+            post.likes = post.likes.filter(like => like._id.toString() !== userIdString);
+        } else {
+            post.likes.push({ _id: userId }); // Push userId as an object
+        }
+        await post.save();
+        res.status(201).json({ message: !isPostLiked ? 'Post liked' : 'Post unliked' });
+    } catch (err) {
+        console.error('Error liking/unliking post:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+exports.postComments = async (req, res) => {
+    try {
+        const jwtToken = req?.cookies?.accessToken;
+        const userId = getDataFromJWTCookie_id(res, jwtToken);
+        const { postId } = req.body;
+        
+        // Find the post by postId and populate the comments' userId field
+        const post = await PostModel.findById(postId)
+            .populate({
+                path: 'comments.userId',
+                select: 'picture',
+            })
+            .lean(); // Use lean() to convert Mongoose documents into plain JavaScript objects
+        
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+        
+        // Iterate over the comments array to modify userId field
+        const comments = post.comments.map(comment => {
+            return {
+                ...comment,
+                userId: comment.userId._id, // Use only the ObjectId
+                picture: comment.userId.picture, // Add the picture field to comments
+            };
+        });
+        
+        res.status(200).json(comments);
+    } catch (err) {
+        console.error('Error getting new comments:', err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };

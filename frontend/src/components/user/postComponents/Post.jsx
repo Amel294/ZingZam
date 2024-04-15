@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input } from "@nextui-org/react";
 import avatar from '/public/Avatar/amel.jpg'
 import Heart from "/public/icons/Heart";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Share from "/public/icons/Share";
 import BookMark from "/public/icons/BookMark";
 import toast, { Toaster } from "react-hot-toast";
@@ -11,9 +11,15 @@ import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 
 export default function Post({ post, userId }) {
-    const [liked, setLiked] = useState(false)
-    const [saved, setSaved] = useState(false)
+    const [liked, setLiked] = useState(post.liked)
+    const [saved, setSaved] = useState(post.saved)
+    const [comments, setComments] = useState(post.comments)
     const [writeComment, setWriteComment] = useState("")
+    useEffect(() => {
+
+        console.log("comments", comments)
+    })
+
     const handlesavePost = async (postId) => {
         const response = await axios.post(`http://localhost:8000/post/saveunsave`, { postId }, { withCredentials: true });
         if (response.data.saved === true) {
@@ -35,8 +41,30 @@ export default function Post({ post, userId }) {
     }
     const addComment = async (postId) => {
         const response = await axios.post(`http://localhost:8000/post/addcomment`, { postId, comment: writeComment }, { withCredentials: true });
-        console.log(response)
+        if (response.status === 200) {
+            toast.success("Comment Posted")
+            const newComment = await axios.post(`http://localhost:8000/post/get-comment-fromPostId`, { postId }, { withCredentials: true });
+            console.log("newComment", newComment)
+            setComments(newComment.data)
+        }
     }
+    const handleLike = async (postId) => {
+        try {
+            const response = await axios.post(`http://localhost:8000/post/likeunlike`, { postId }, { withCredentials: true });
+            if (response.data.message === "Post liked") {
+                setLiked(true)
+                toast.success(response.data.message)
+            }
+            else if (response.data.message === "Post unliked") {
+                setLiked(false)
+                toast.success(response.data.message)
+            } else {
+                toast.error("Something went wrong")
+            }
+        } catch (err) {
+            console.log(err)
+        }
+    };
     return (
         <>
             <Card className="max-w-[400px] ">
@@ -72,7 +100,7 @@ export default function Post({ post, userId }) {
                 <Divider />
                 <CardFooter className="flex flex-row justify-between">
                     <div className="flex items-center gap-1">
-                        <Heart className="rounded-none m-1" height="25px" fill={liked ? "#661FCC" : "none"} stroke={liked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => setLiked(!liked)} />
+                        <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={liked ? "#661FCC" : "none"} stroke={liked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
                         <p><span>{post?.likeCount} Likes</span><span> |  </span><span>{post?.commentCount ? post?.commentCount : 0} Comments</span> </p>
                     </div>
                     <div className="flex flex-row gap-10">
@@ -80,17 +108,21 @@ export default function Post({ post, userId }) {
                         <BookMark height="25px" fill={saved ? "#661FCC" : "none"} stroke={saved ? "none" : "#661FCC"} onClick={() => handlesavePost(post?._id)} />
                     </div>
                 </CardFooter>
-                {post.comments && post.comments.length > 0 ? (
+                {comments && comments.length > 0 ? (
                     <CardFooter className="flex flex-col gap-2 items-start pb-0 w-full">
-                        {post.comments.map(comment => (
-                            <div key={comment._id} className="flex flex-row gap-4">
-                                <div>
-                                    <img className="rounded-full w-10" src={comment.picture} alt="avatar" />
+                        {comments.map(comment => (
+                            <div key={comment._id} className="flex justify-between w-full">
+                                <div className="flex flex-row gap-4">
+                                    <div>
+                                        <img className="rounded-full w-10" src={comment.picture} alt="avatar" />
+                                    </div>
+                                    <div className="flex flex-col text-left">
+                                        <span className="text-xs">{comment?.username}&nbsp;&nbsp;</span>
+                                        <span>{comment.text}</span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col text-left">
-                                    <span className="text-xs">{comment?.username}&nbsp;&nbsp;</span>
-                                    <span>{comment.text}</span>
-                                </div>
+                                <Button>Delete</Button> 
+                                {/* del action for authenticated user only */}
                             </div>
                         ))}
                         <div className="underline cursor-pointer" onClick={() => setIsOpen(true)}>Show more comments</div>

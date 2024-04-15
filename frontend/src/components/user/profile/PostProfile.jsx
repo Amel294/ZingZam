@@ -11,14 +11,14 @@ function PostProfile() {
     const dispatch = useDispatch();
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const posts = useSelector((state) => state.posts.posts); 
+    const posts = useSelector((state) => state.posts.posts);
     const userId = useSelector((state) => state.auth.id).toString()
     const { username } = useParams();
     console.log(username);
     const fetchPosts = async () => {
         try {
             dispatch(fetchPostsStart());
-            const response = await axios.get(`http://localhost:8000/post/get-profile-posts/${username}/${ page }`, { withCredentials: true });
+            const response = await axios.get(`http://localhost:8000/post/get-profile-posts/${ username }/${ page }`, { withCredentials: true });
             if (response.data.error) {
                 toast.error(`${ response.data.error }`);
                 dispatch(fetchPostsFailure(response.data.error)); // Pass error message to failure action
@@ -34,32 +34,35 @@ function PostProfile() {
             dispatch(fetchPostsFailure("Failed to fetch posts")); // Generic error message
         }
     };
-    useEffect(()=>{
+    useEffect(() => {
         fetchPosts()
-    },[])
+    }, [])
     return (
-        <div className="flex justify-center flex-col items-center   min-h-screen">
-            <InfiniteScroll
-                dataLength={posts.length}
-                next={fetchPosts}
-                hasMore={hasMore}
-                loader={<h4>Loading...</h4>}
-                endMessage={
-                    <p className="text-xl py-4">
-                        <b>Yay! You have seen it all</b>
-                    </p>
-                }
-            >
-                
-                {posts.length > 0 ? (
-                    posts.map((post) => (
-                        <div key={post._id} className="mb-4">
-                            <Post post={post} userId={userId} />
-                        </div>
-                    ))
-                ) : null}
-            </InfiniteScroll>
-        </div>
+        <>
+            {posts.length === 0  && <div>No posts here</div>}
+            <div className="flex justify-center flex-col items-center   min-h-screen">
+                <InfiniteScroll
+                    dataLength={posts.length}
+                    next={fetchPosts}
+                    hasMore={hasMore}
+                    loader={<h4>Loading...</h4>}
+                    endMessage={
+                        <p className="text-xl py-4">
+                            <b>Yay! You have seen it all</b>
+                        </p>
+                    }
+                >
+
+                    {posts.length > 0 ? (
+                        posts.map((post) => (
+                            <div key={post._id} className="mb-4">
+                                <Post post={post} userId={userId} />
+                            </div>
+                        ))
+                    ) : null}
+                </InfiniteScroll>
+            </div>
+        </>
     )
 }
 

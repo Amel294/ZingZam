@@ -5,8 +5,7 @@ function ProfileTabs() {
         <div>
             <Tabs size="sm" variant="solid" color="secondary" aria-label="Tabs variants">
                 <Tab key="post" title="Post" />
-                <Tab key="followers" title="Followers" />
-                <Tab key="following" title="Following" />
+                <Tab key="friends" title="Friends" />
             </Tabs>
         </div>
     )

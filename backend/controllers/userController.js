@@ -190,6 +190,7 @@ exports.login = async (req, res) => {
             gender: user.gender,
             birthday: user.birthday,
             isLoggedIn: true,
+            bio: user.bio,
         });
 
     } catch (error) {

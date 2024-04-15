@@ -44,6 +44,7 @@ export default function LoginSide() {
                     gender: response.data.gender,
                     birthday: response.data.birthday,
                     isLoggedIn: true,
+                    bio: response.data.bio,
                 }));
                 setTimeout(() => {
                     navigate("/home");
@@ -91,7 +92,7 @@ export default function LoginSide() {
                     </div>
                 </CardHeader>
                 <CardBody className="overflow-hidden">
-                    <form className="flex flex-col gap-4">
+                    <form className="flex flex-col gap-4" onSubmit={handleLogin}>
                         <Input
                             value={email}
                             type="email"
@@ -116,7 +117,7 @@ export default function LoginSide() {
                             onChange={(e) => setPassword(e.target.value)}
                             className="max-w-xs"
                         />                        <div className="flex gap-2 justify-end">
-                            <Button fullWidth color="secondary" onClick={handleLogin} >
+                            <Button fullWidth color="secondary" type="submit" >
                                 Login
                             </Button>
                         </div>

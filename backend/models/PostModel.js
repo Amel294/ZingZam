@@ -30,10 +30,12 @@ const postsSchema = mongoose.Schema({
             default: Date.now
         }
     }],
-    likes: {
-        type: Number,
-        default: 0
-    },
+    likes: [{
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    }],
     likeCount:{
         type:Number,
         default:0
