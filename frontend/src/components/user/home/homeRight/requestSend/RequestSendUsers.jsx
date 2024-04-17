@@ -1,15 +1,15 @@
 import { Button, User, Link, CardHeader } from "@nextui-org/react";
-import axios from 'axios'
 import { useState } from "react";
 import toast from "react-hot-toast";
+import AxiosWithBaseURLandCredentials from "../../../../../axiosInterceptor";
 
 function RequestSendUsers({ requestsSend }) {
     const [isLoading, setIsLoading] = useState(false)
     const handleRequestResponse = async (userId,isAccept) => {
         try {
             setIsLoading(true)
-            const response = await axios.delete(
-                `http://localhost:8000/connections/deleterequest/${userId}`,
+            const response = await AxiosWithBaseURLandCredentials.delete(
+                `/connections/deleterequest/${userId}`,
                 { withCredentials: true } 
             );
             if (response.data.error) {

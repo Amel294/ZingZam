@@ -1,13 +1,13 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
 import defaultAvatar from '../../../public/Avatar/default.png'
 import OwnPostProfile from '../../components/user/profile/PostProfile';
 import ProfileTabs from '../../components/user/profile/ProfileTabs';
 import Friends from '../../components/user/profile/Friends';
 import { UserProfile } from '../../components/user/profile/UserProfile';
 import EditUserData from '../../components/user/profile/EditName';
+import AxiosWithBaseURLandCredentials from '../../axiosInterceptor';
 
 function Profile() {
     const [userData, setUserData] = useState();
@@ -17,7 +17,7 @@ function Profile() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/profile/${ username }`, {
+                const response = await AxiosWithBaseURLandCredentials.get(`/profile/${ username }`, {
                     withCredentials: true
                 });
 

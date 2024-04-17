@@ -1,7 +1,7 @@
-import axios from "axios"
+import AxiosWithBaseURLandCredentials from "../../axiosInterceptor";
 function Check() {
   const handleclick = async()=>{
-    const response = await axios.post('http://localhost:8000/api/test', {}, {
+    const response = await AxiosWithBaseURLandCredentials.post('/api/test', {}, {
             withCredentials: true // Include cookies
         });
         console.log(response)

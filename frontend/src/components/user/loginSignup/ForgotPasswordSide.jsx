@@ -1,12 +1,12 @@
 // ForgotPassword.jsx
 import { useMemo, useState } from "react";
 import toast, { Toaster } from 'react-hot-toast';
-import axios from 'axios';
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Input } from "@nextui-org/react";
 import { validateEmail } from "../../../utils/validation/formValidation";
 import OtpInputForgetPassword from "./OtpInputForgetPassword";
 import ForgetPasswordOtpInput from "./ForgetPasswordOtpInput";
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 export default function ForgotPasswordSide() {
     const [step, setStep] = useState(1)
     const [email, setEmail] = useState("");
@@ -23,7 +23,7 @@ export default function ForgotPasswordSide() {
                 toast.error("Invalid Username or password")
                 return
             }
-            const response = await axios.post('http://localhost:8000/user/forget-password', {
+            const response = await AxiosWithBaseURLandCredentials.post('/user/forget-password', {
                 email,
             }, {
                 withCredentials: true

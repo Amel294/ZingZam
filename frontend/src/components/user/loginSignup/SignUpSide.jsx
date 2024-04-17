@@ -3,7 +3,6 @@ import { useState } from "react";
 import toast, { Toaster } from 'react-hot-toast';
 import { Button, Card, CardBody, CardHeader } from "@nextui-org/react";
 import EmailInput from "./EmailInput";
-import axios from 'axios';
 import PasswordInputSignUp from "./PasswordInputSignUp";
 import { Link, useNavigate } from "react-router-dom";
 import DateInput from "./DateInput";
@@ -12,6 +11,7 @@ import NameInput from "./NameInput";
 import OtpInput from "./OtpInput";
 import { useSelector, useDispatch } from "react-redux";
 import { addTempToken } from "../../../store/auth/OtpSlice";
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 export default function SignUpSide() {
     const dispatcher = useDispatch()
     const navigate = useNavigate();
@@ -36,7 +36,7 @@ export default function SignUpSide() {
             console.log('validated');
             setIsLoading(true);
             try {
-                const response = await axios.post('http://localhost:8000/user/register', {
+                const response = await AxiosWithBaseURLandCredentials.post('/user/register', {
                     email: email,
                     password: password,
                     name: name,
@@ -71,7 +71,7 @@ export default function SignUpSide() {
         if (tempToken !== null) {
             setIsLoading(true);
             try {
-                const response = await axios.post('http://localhost:8000/user/verify', {
+                const response = await AxiosWithBaseURLandCredentials.post('/user/verify', {
                     otp: otp,
                 }, {
                     withCredentials: true

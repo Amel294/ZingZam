@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { isValidToken } from '../utils/token/isValidToken';
 import { useSelector } from 'react-redux';
 
 import MainNavLayout from './layouts/MainNavLayout';

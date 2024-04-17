@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import AddPost from "../postComponents/AddPost";
 import Post from "../postComponents/Post";
-import axios from "axios";
 import toast from "react-hot-toast";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchPostsFailure, fetchPostsStart, fetchPostsSuccess } from "../../../store/auth/postsSlice";
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 function HomeCenter() {
   const [page, setPage] = useState(1); // Start with page 1
@@ -19,7 +19,7 @@ function HomeCenter() {
   const fetchPosts = async () => {
     try {
       dispatch(fetchPostsStart());
-      const response = await axios.get(`http://localhost:8000/post/get-posts/${ page }`, { withCredentials: true });
+      const response = await AxiosWithBaseURLandCredentials.get(`/post/get-posts/${ page }`);
       if (response.data.error) {
         toast.error(`${ response.data.error }`);
         dispatch(fetchPostsFailure(response.data.error)); // Pass error message to failure action

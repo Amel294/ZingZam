@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, User, Pagination, Tooltip, Switch, Button } from "@nextui-org/react";
-import axios from "axios";
 import toast from "react-hot-toast";
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 export default function UserManagement() {
     const [selectedKeys, setSelectedKeys] = React.useState(new Set(["2"]));
@@ -23,7 +23,7 @@ export default function UserManagement() {
             setIsLoading(true);
 
             try {
-                const response = await axios.get('http://localhost:8000/admin/usermanagement', {
+                const response = await AxiosWithBaseURLandCredentials.get('/admin/usermanagement', {
                     withCredentials: true
                 });
 

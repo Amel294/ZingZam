@@ -8,7 +8,7 @@ const ForgetPasswordModel = require('../models/ForgetPasswordModel');
 const { generateOtpForUser, sendOtpEmail } = require('../helpers/mail');
 const jwt = require('jsonwebtoken');
 const { generateAccessToken, generateRefreshToken, generateTempToken } = require('../helpers/tokens');
-const { getDataFromJWTCookie_temporaryToken } = require('../helpers/dataFromJwtCookies');
+const { getDataFromJWTCookie_temporaryToken, getDataFromJWTCookie_id } = require('../helpers/dataFromJwtCookies');
 exports.register = async (req, res) => {
     try {
         let { email, name, gender, password, birthday } = req.body;
@@ -157,6 +157,8 @@ exports.resend = async (req, res) => {
 }
 exports.login = async (req, res) => {
     try {
+        console.log("In login")
+        console.log(req.body)
         const { email, password } = req.body;
         const user = await UserModel.findOne({ email });
         if (!user) return res.status(400).json({ error: "This Email is not Registered. Try again with a valid Email Address." });
@@ -195,7 +197,7 @@ exports.login = async (req, res) => {
 
     } catch (error) {
         console.error('Login Error:', error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+        return res.status(500).json({ error });
     }
 };
 
@@ -252,3 +254,20 @@ exports.forgetPasswordChange = async (req, res) => {
         
     }
 }
+
+exports.updateName = async (req, res) => {
+    try {
+        console.log("in Update name")
+        const jwtToken = req?.cookies?.accessToken;
+        const userId = getDataFromJWTCookie_id(res, jwtToken);
+        const { name } = req.body;
+        const user = await UserModel.findByIdAndUpdate(userId, { name }, { new: true });
+        res.status(200).json({
+            message: "Name updated successfully",
+            name: user.name,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};

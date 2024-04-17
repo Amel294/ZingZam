@@ -16,8 +16,8 @@ import DeleteIcon from '../../../../public/icons/DeleteIcon';
 import UploadImage from "../../../../public/icons/UploadImage";
 import { useState, useRef, useCallback } from "react";
 import { Progress } from "@nextui-org/react";
-import axios from "axios"
 import toast from "react-hot-toast";
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 // eslint-disable-next-line react/prop-types
 export default function AddPostModal({ isOpen, onOpenChange }) {
@@ -83,7 +83,7 @@ export default function AddPostModal({ isOpen, onOpenChange }) {
             formData.append("caption", caption);
             formData.append("isPrivate", isPrivate);
 
-            axios.post('http://localhost:8000/post/uploadPhoto', formData, {
+            AxiosWithBaseURLandCredentials.post('/post/uploadPhoto', formData, {
                 withCredentials: true, // Include withCredentials option here
                 onUploadProgress: (progressEvent) => {
                     const progress = Math.round((progressEvent.loaded / progressEvent.total) * 100);

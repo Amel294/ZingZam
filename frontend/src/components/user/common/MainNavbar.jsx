@@ -7,6 +7,7 @@ import { logoutUser } from '../../../store/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import { clearPosts } from '../../../store/auth/postsSlice';
 import toast from "react-hot-toast";
+import AxiosWithBaseURLandCredentials from '../../../axiosInterceptor';
 
 export default  function MainNavbar() {
     const dispatch = useDispatch();
@@ -29,11 +30,11 @@ export default  function MainNavbar() {
             handleRedirectToLogin()
         },2000)
     }
-
+    
     return (
         <Navbar isBordered isBlurred={false}>
             <NavbarBrand>
-                <Link href="#" aria-current="page">
+                <Link href="/" aria-current="page">
                     <Image radius="none" isBlurred width={35} alt="ZingZam logo" src={MainLogo} />
                     <p className="ps-4 font-bold text-secondary-500">Zing Zam</p>
                 </Link>

@@ -124,13 +124,18 @@ exports.getOwnPosts = async (req, res) => {
 
 exports.getPosts = async (req, res) => {
     try {
-        const jwtToken = req?.cookies?.accessToken;
-        const userId = new mongoose.Types.ObjectId(getDataFromJWTCookie_id(res, jwtToken)); // Convert userId to ObjectID
+        const id = req?.userData?.id;
+        console.log(typeof id);
+        if (!id) {
+            throw new Error('User ID not found in request');
+        }
+        const userId = new mongoose.Types.ObjectId(id); // Convert userId to ObjectID
         console.log("User id from JWT Token is", userId)
-
+        
         const connections = await ConnectionsModel.findOne({ user: userId }, { friends: 1, _id: 0 });
+        console.log(connections)
         const friends = connections?.friends || [];
-
+        
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
@@ -250,7 +255,6 @@ exports.getPosts = async (req, res) => {
                 { $limit: limit }
             ]);
         }
-
         res.status(200).json(posts);
     } catch (error) {
         console.error(error);
@@ -260,6 +264,7 @@ exports.getPosts = async (req, res) => {
 
 exports.getPostsProfile = async (req, res) => {
     try {
+        
         const jwtToken = req?.cookies?.accessToken;
         const userId = getDataFromJWTCookie_id(res, jwtToken);
 

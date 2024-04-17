@@ -5,10 +5,10 @@ const UserModel = require("../models/UserModel");
 const ConnectionsModel = require("../models/ConnectionsModel");
 exports.getSuggestions = async (req, res) => {
     try {
-        const jwtToken = req?.cookies?.accessToken;
-        const userId = new mongoose.Types.ObjectId(getDataFromJWTCookie_id(res, jwtToken));
+        const id = req?.userData?.id;
+        const userId = new mongoose.Types.ObjectId(id);
         console.log(userId)
-        const connections = await ConnectionsModel.findOne({ user: userId }, { requestsSend: 1,requestsReceived:1, friends: 1, _id: 0 });
+        const connections = await ConnectionsModel.findOne({ user: userId }, { requestsSend: 1, requestsReceived: 1, friends: 1, _id: 0 });
         let cantSuggest = [];
         if (connections) {
             const { requestsSend, requestsReceived, friends } = connections;
@@ -28,9 +28,9 @@ exports.getSuggestions = async (req, res) => {
 
 exports.sendRequest = async (req, res) => {
     try {
-        const jwtToken = req?.cookies?.accessToken;
-        const senderId = getDataFromJWTCookie_id(res, jwtToken); 
-        const { receiverId } = req.body; 
+        const id = req?.userData?.id;
+        const senderId = req?.userData?.id;
+        const { receiverId } = req.body;
         if (!mongoose.Types.ObjectId.isValid(receiverId)) {
             return res.status(400).json({ error: 'Invalid receiver ID' });
         }
@@ -68,11 +68,11 @@ exports.sendRequest = async (req, res) => {
 };
 exports.getRequestSend = async (req, res) => {
     try {
-        const jwtToken = req?.cookies?.accessToken;
-        const userId = new mongoose.Types.ObjectId(getDataFromJWTCookie_id(res, jwtToken));
+        const id = req?.userData?.id;
+        const userId = new mongoose.Types.ObjectId(id);
         const requestSend = await ConnectionsModel.findOne(
             { user: userId },
-            { requestsSend: 1, _id: 0 } 
+            { requestsSend: 1, _id: 0 }
         ).populate('requestsSend', '_id name picture');
         if (!requestSend) {
             return res.status(404).json({ message: "No requests found for this user" });
@@ -86,13 +86,13 @@ exports.getRequestSend = async (req, res) => {
 exports.deleteRequest = async (req, res) => {
     try {
         const jwtToken = req?.cookies?.accessToken;
-        const senderId = getDataFromJWTCookie_id(res, jwtToken); 
-        const  receiverId  = req.params.receiverId;
+        const senderId = getDataFromJWTCookie_id(res, jwtToken);
+        const receiverId = req.params.receiverId;
         if (!mongoose.Types.ObjectId.isValid(senderId) || !mongoose.Types.ObjectId.isValid(receiverId)) {
             return res.status(400).json({ message: 'Invalid senderId or receiverId' });
         }
         const receiverObjectId = new mongoose.Types.ObjectId(receiverId);
-        const senderObjectId = new mongoose.Types.ObjectId(senderId); 
+        const senderObjectId = new mongoose.Types.ObjectId(senderId);
         const senderExists = await ConnectionsModel.exists({
             user: senderObjectId,
             requestsSend: receiverObjectId
@@ -126,14 +126,27 @@ exports.deleteRequest = async (req, res) => {
 
 exports.getRequestsReceived = async (req, res) => {
     try {
-        const jwtToken = req?.cookies?.accessToken;
-        const userId = getDataFromJWTCookie_id(res, jwtToken);
-        const requests = await ConnectionsModel.findOne({ user: userId }, { requestsReceived: 1, _id: 0 }).populate('requestsReceived', 'name username picture');
-            return res.status(200).json({ requestsReceived: requests.requestsReceived });
-    } catch (error) {
+        console.log("In get request received");
+        const userId = req?.userData?.id;
 
+        // Find requests for the user
+        const requests = await ConnectionsModel.findOne({ user: userId }, { requestsReceived: 1, _id: 0 }).populate('requestsReceived', 'name username picture');
+
+        // If no requests or ConnectionsModel found for the user
+        if (!requests || !requests.requestsReceived || requests.requestsReceived.length === 0) {
+            console.log("No requests found for the user.");
+            return res.status(404).json({ error: "No requests found for the user." });
+        }
+
+        // Return the requests if found
+        return res.status(200).json({ requestsReceived: requests.requestsReceived });
+    } catch (error) {
+        // Handle any other errors
+        console.error("Error in getRequestsReceived:", error);
+        return res.status(500).json({ error: "Internal server error." });
     }
-}
+};
+
 exports.requestResponse = async (req, res) => {
     try {
         const { request, isAccept } = req.body;

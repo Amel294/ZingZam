@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { isValidToken } from '../utils/token/isValidToken';
+import {  useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import Loading from '../components/Loading';
@@ -16,40 +15,18 @@ import ForgotPassword from '../pages/user/ForgotPassword';
 import Profile from '../pages/user/Profile';
 
 const AppRoutes = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const storedAuthStatus = useSelector(state => state.auth.isLoggedIn);
-
-    useEffect(() => {
-        const checkToken = async () => {
-            try {
-                const validToken = await isValidToken();
-                console.log('isValidToken result:', validToken);
-                setIsAuthenticated(validToken);
-            } catch (error) {
-                console.error("Token validation error:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        checkToken();
-    }, []);
-    const location = useLocation();
-
-    useEffect(() => {
-        console.log('Location changed:', location);
-    }, [location]);
-
+    console.log("storedAuthStatus",storedAuthStatus);
     if (isLoading) {
         return <Loading />;
     }
 
-    console.log('AppRoutes rendered:', { isAuthenticated, storedAuthStatus });
+    console.log('AppRoutes rendered:', {  storedAuthStatus });
 
     return (
         <Routes>
-            {isAuthenticated && storedAuthStatus && (
+            { storedAuthStatus && (
                 <>
                     {console.log("User is  authenticated")}
                     <Route path="/" element={<Navigate to="/home" replace />} />
@@ -58,7 +35,7 @@ const AppRoutes = () => {
                     <Route path="/forgotpassword" element={<Navigate to="/home" replace />} />
                 </>
             )}
-            {!storedAuthStatus && !isAuthenticated && (
+            {!storedAuthStatus &&  (
                 <>
                     {console.log("User is not authenticated")}
                     <Route index element={<Login />} />

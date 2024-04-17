@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import { Input, Button } from "@nextui-org/react";
 import { validatePassword } from "../../../utils/validation/formValidation";
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import {  useNavigate } from "react-router-dom";
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 export default function ForgetPasswordOtpInput({email,otp}) {
     const [passwordValid, setPasswordValid] = useState(false);
@@ -29,7 +29,7 @@ export default function ForgetPasswordOtpInput({email,otp}) {
             if (!passwordValid) {
                 return;
             }
-            const response = await axios.post('http://localhost:8000/user/forget-password-change', {
+            const response = await AxiosWithBaseURLandCredentials.post('/user/forget-password-change', {
                 password,
                 email,
                 otp

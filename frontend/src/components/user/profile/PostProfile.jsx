@@ -1,11 +1,11 @@
 import { fetchPostsFailure, fetchPostsStart, fetchPostsSuccess } from "../../../store/auth/postsSlice";
-import axios from 'axios';
 import { useSelector, useDispatch } from 'react-redux';
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Post from "../postComponents/Post";
 import { useParams } from 'react-router-dom';
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 function PostProfile() {
     const dispatch = useDispatch();
@@ -18,7 +18,7 @@ function PostProfile() {
     const fetchPosts = async () => {
         try {
             dispatch(fetchPostsStart());
-            const response = await axios.get(`http://localhost:8000/post/get-profile-posts/${ username }/${ page }`, { withCredentials: true });
+            const response = await AxiosWithBaseURLandCredentials.get(`post/get-profile-posts/${ username }/${ page }`);
             if (response.data.error) {
                 toast.error(`${ response.data.error }`);
                 dispatch(fetchPostsFailure(response.data.error)); // Pass error message to failure action

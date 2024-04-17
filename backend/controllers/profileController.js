@@ -2,8 +2,8 @@ const { getDataFromJWTCookie_id } = require('../helpers/dataFromJwtCookies');
 const UserModel = require('../models/UserModel')
 const ConnectionModel = require('../models/ConnectionsModel')
 exports.getProfile = async (req, res) => {
-    const jwtToken = req?.cookies?.accessToken;
-    const id = getDataFromJWTCookie_id(res, jwtToken);
+    
+    const id = req.intercepted.id
 
     console.log(id);
     const requestedUserName = req.params.username.trim().toLowerCase().replace(/\s/g, '')
@@ -22,11 +22,9 @@ exports.getProfile = async (req, res) => {
         birthday:userData.birthday,
         ownProfile,
         bio:userData.bio,
-        friends : connection.friends,
+        friends : connection.friends || [],
         ownProfile
     }
         console.log(userData);
     res.status(200).json(resData);
 }
-
-

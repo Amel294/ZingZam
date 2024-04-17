@@ -1,18 +1,16 @@
 import { Button, User, Link, CardHeader } from "@nextui-org/react";
-import axios from 'axios'
 import { useState } from "react";
 import toast from "react-hot-toast";
+import AxiosWithBaseURLandCredentials from "../../../../axiosInterceptor";
 
 function SuggestedFriendsUsers({ suggestions }) {
     const [isLoading, setIsLoading] = useState(false)
     const handleRequest = async (friendsId) => {
         try {
             setIsLoading(true)
-            const response = await axios.post(
-                `http://localhost:8000/connections/sendrequest`,
-                { receiverId:friendsId },
-                { withCredentials: true } // Move withCredentials to the third argument
-            );
+            const response = await AxiosWithBaseURLandCredentials.post(
+                `/connections/sendrequest`,
+                { receiverId:friendsId }            );
             if (response.data.error) {
                 toast.error(response.data.error);
                 setIsLoading(false)

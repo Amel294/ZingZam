@@ -1,12 +1,12 @@
 // LoginSide.js
 import { useMemo, useState } from "react";
 import toast, { Toaster } from 'react-hot-toast';
-import axios from 'axios';
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, CardBody, CardHeader, Input } from "@nextui-org/react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../../store/auth/authSlice";
 import { validateEmail, validatePassword } from "../../../utils/validation/formValidation";
+import axios from "axios";
 export default function LoginSide() {
     const dispatch = useDispatch()
     const isAuthenticated = useSelector(state => state.auth.isLoggedIn)
@@ -28,9 +28,7 @@ export default function LoginSide() {
             const response = await axios.post('http://localhost:8000/user/login', {
                 email,
                 password,
-            }, {
-                withCredentials: true
-            });
+            },{withCredentials:true});
             console.log(response);
             if (response.data.error) {
                 toast.error(`${ response.data.error }`)
@@ -51,7 +49,7 @@ export default function LoginSide() {
                 }, 2000)
             }
         } catch (error) {
-            console.log(error.data)
+            console.log(error)
         } finally {
             setIsLoading(false);
         }

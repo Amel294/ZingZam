@@ -1,15 +1,15 @@
 import { Button, User, Link, CardHeader } from "@nextui-org/react";
-import axios from 'axios'
 import { useState } from "react";
 import toast from "react-hot-toast";
+import AxiosWithBaseURLandCredentials from "../../../../axiosInterceptor";
 
 function RequestReceivedUsers({ requests }) {
     const [isLoading, setIsLoading] = useState(false)
     const handleRequestResponse = async (userId,isAccept) => {
         try {
             setIsLoading(true)
-            const response = await axios.post(
-                `http://localhost:8000/connections/requestResponse`,
+            const response = await AxiosWithBaseURLandCredentials.post(
+                `/connections/requestResponse`,
                 { request: userId,isAccept : isAccept === "accept" ? true : false  },
                 { withCredentials: true } // Move withCredentials to the third argument
             );

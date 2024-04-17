@@ -1,15 +1,15 @@
 import { Card } from "@nextui-org/react";
 import { useEffect, useState, } from "react";
-import axios from "axios";
 import toast from "react-hot-toast";
 import RequestReceivedUsers from "./RequestReceivedUsers";
+import AxiosWithBaseURLandCredentials from "../../../../axiosInterceptor";
 
 function RequestReceived() {
     const [requests, setRequests] = useState([])
     useEffect(() => {
         const fetchRequests = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/connections/getrequestsreceived`, { withCredentials: true });
+                const response = await AxiosWithBaseURLandCredentials.get(`/connections/getrequestsreceived`);
                 console.log("request send");
                 if (response.data.error) {
                     toast.error(`${ response.data.error }`);

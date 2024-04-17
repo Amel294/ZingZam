@@ -1,8 +1,8 @@
 // OtpInput.js
 import { Input, Button } from "@nextui-org/react";
 import { useEffect, useMemo, useState } from "react";
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 export default function OtpInput({ otp, setOtp, setOtpVerify, onResend }) {
     const [seconds, setSeconds] = useState(300); // Initial countdown time in seconds
@@ -33,7 +33,7 @@ export default function OtpInput({ otp, setOtp, setOtpVerify, onResend }) {
     const handleResend = async () => {
         setSeconds(300);
         try {
-            const response = await axios.post('http://localhost:8000/user/resend-otp', null, {
+            const response = await AxiosWithBaseURLandCredentials.post('/user/resend-otp', null, {
                 withCredentials: true
             });
 

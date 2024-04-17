@@ -8,7 +8,7 @@ import toast, { Toaster } from "react-hot-toast";
 import CommentModal from "../comment/CommentModal";
 import dummyPost from '/Post/rain.jpg'
 import { useNavigate } from 'react-router-dom';
-import axios from "axios";
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 export default function Post({ post, userId }) {
     const [liked, setLiked] = useState(post.liked)
@@ -21,20 +21,20 @@ export default function Post({ post, userId }) {
         console.log("comments", comments)
     })
     const handleDeleteComment = async (postId, commentId) => {
-        const response = await axios.delete(`http://localhost:8000/post/comment/${ postId }/${ commentId }`, {
+        const response = await AxiosWithBaseURLandCredentials.delete(`/post/comment/${ postId }/${ commentId }`, {
             withCredentials: true
         });
         if (response.status === 200) {
             toast.success("Comment Posted")
             setCommentCount(prevCount => prevCount - 1);
-            const newComment = await axios.post(`http://localhost:8000/post/get-comment-fromPostId`, { postId }, { withCredentials: true });
+            const newComment = await AxiosWithBaseURLandCredentials.post(`/post/get-comment-fromPostId`, { postId });
             console.log("newComment", newComment)
             setComments(newComment.data)
         }
         console.log(response)
     }
     const handlesavePost = async (postId) => {
-        const response = await axios.post(`http://localhost:8000/post/saveunsave`, { postId }, { withCredentials: true });
+        const response = await AxiosWithBaseURLandCredentials.post(`/post/saveunsave`, { postId });
         if (response.data.saved === true) {
             setSaved(true)
             toast.success(response.data.message)
@@ -53,20 +53,20 @@ export default function Post({ post, userId }) {
         navigate(`/profile/${ post.user.username }`);
     }
     const addComment = async (postId) => {
-        const response = await axios.post(`http://localhost:8000/post/addcomment`, { postId, comment: writeComment }, { withCredentials: true });
+        const response = await AxiosWithBaseURLandCredentials.post(`/post/addcomment`, { postId, comment: writeComment });
         if (response.status === 200) {
             toast.success("Comment Posted")
             setWriteComment('')
             setCommentCount(prevCount => prevCount + 1);
 
-            const newComment = await axios.post(`http://localhost:8000/post/get-comment-fromPostId`, { postId }, { withCredentials: true });
+            const newComment = await AxiosWithBaseURLandCredentials.post(`/post/get-comment-fromPostId`, { postId });
             console.log("newComment", newComment)
             setComments(newComment.data)
         }
     }
     const handleLike = async (postId) => {
         try {
-            const response = await axios.post(`http://localhost:8000/post/likeunlike`, { postId }, { withCredentials: true });
+            const response = await AxiosWithBaseURLandCredentials.post(`/post/likeunlike`, { postId });
             if (response.data.message === "Post liked") {
                 setLiked(true)
                 toast.success(response.data.message)
@@ -86,7 +86,7 @@ export default function Post({ post, userId }) {
             <Card className="max-w-[400px] ">
                 <CardHeader className="flex justify-between">
                     <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
-                        <Image alt="nextui logo" height={40} radius="lg" src={avatar} width={40} />
+                        <Image alt="nextui logo" height={40} radius="lg" src={post.user.picture} width={40} />
                         <div className="flex flex-col text-left">
                             <p className="text-md" >{post.user.username}</p>
                             <p className="text-small text-default-500">{post.user.name}</p>

@@ -1,8 +1,8 @@
 // OtpInput.js
 import { Input, Button } from "@nextui-org/react";
 import { useEffect, useMemo, useState } from "react";
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 export default function OtpInputForgetPassword({ step, setStep,email,otp,setOtp }) {
     const [seconds, setSeconds] = useState(300);
@@ -34,7 +34,7 @@ export default function OtpInputForgetPassword({ step, setStep,email,otp,setOtp 
     const handleOtpVerify = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.post('http://localhost:8000/user/forget-password-otp-verify', {
+            const response = await AxiosWithBaseURLandCredentials.post('/user/forget-password-otp-verify', {
                 otp,
                 email
             }, {
