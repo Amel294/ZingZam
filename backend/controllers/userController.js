@@ -6,7 +6,7 @@ const TempUserModel = require('../models/TempUserModel');
 const ForgetPasswordModel = require('../models/ForgetPasswordModel');
 const { generateOtpForUser, sendOtpEmail } = require('../helpers/mail');
 const { generateAccessToken, generateRefreshToken, generateTempToken } = require('../helpers/tokens');
-const { getDataFromJWTCookie_temporaryToken, getDataFromJWTCookie_id } = require('../helpers/dataFromJwtCookies');
+const { getDataFromJWTCookie_temporaryToken } = require('../helpers/dataFromJwtCookies');
 exports.register = async (req, res) => {
     try {
         let { email, name, gender, password, birthday } = req.body;
@@ -226,4 +226,3 @@ exports.forgetPasswordChange = async (req, res) => {
 
     }
 }
-
