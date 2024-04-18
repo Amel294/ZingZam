@@ -17,15 +17,16 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginUser(state, action) {
-      state.id = action.payload.id;
-      state.username = action.payload.username;
-      state.name = action.payload.username;
-      state.email = action.payload.email;
-      state.picture = action.payload.picture;
-      state.gender = action.payload.gender;
-      state.birthday = action.payload.birthday;
-      state.isLoggedIn = action.payload.isLoggedIn;
-      state.bio = action.payload.bio;
+      const { id, username, name, email, picture, gender, birthday, bio } = action.payload;
+      state.id = id;
+      state.username = username;
+      state.name = name;
+      state.email = email;
+      state.picture = picture;
+      state.gender = gender;
+      state.birthday = birthday;
+      state.isLoggedIn = true;
+      state.bio = bio;
     },
     logoutUser(state) {
       state.id = null;
@@ -39,16 +40,22 @@ const authSlice = createSlice({
       state.bio = null;
     },
     updateUser(state, action) {
-      if (action.payload.field === 'name') {
-        state.name = action.payload.value;
-      } else if (action.payload.field === 'username') {
-        state.username = action.payload.value;
-      } else if (action.payload.field === 'picture') {
-        state.picture = action.payload.value;
+      const { field, value } = action.payload;
+      if (field === 'name') {
+        state.name = value;
+      } else if (field === 'username') {
+        state.username = value;
+      } else if (field === 'picture') {
+        state.picture = value;
       }
+    },
+    resetAuth(state) {
+      Object.keys(state).forEach(key => {
+        state[key] = initialState[key];
+      });
     }
   }
 });
 
-export const { loginUser, logoutUser } = authSlice.actions;
+export const { loginUser, logoutUser, updateUser, resetAuth } = authSlice.actions;
 export default authSlice.reducer;

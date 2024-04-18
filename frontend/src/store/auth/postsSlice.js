@@ -39,7 +39,12 @@ const postsSlice = createSlice({
             state.posts = [];
             state.isLoading = false;
             state.error = null;
-        }
+        },
+        resetPost(state) {
+            Object.keys(state).forEach(key => {
+              state[key] = initialState[key];
+            });
+          }
     },
 });
 
@@ -50,7 +55,8 @@ export const {
     addPost,
     updatePost,
     deletePost,
-    clearPosts
+    clearPosts,
+    resetPost
 } = postsSlice.actions;
 
 export default postsSlice.reducer;

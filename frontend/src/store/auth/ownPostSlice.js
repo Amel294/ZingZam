@@ -18,7 +18,7 @@ const postsSlice = createSlice({
             state.posts = [...state.posts, ...action.payload];
             state.isLoading = false;
             state.error = null;
-        },        
+        },
         fetchPostsFailure(state, action) {
             state.isLoading = false;
             state.error = action.payload;
@@ -35,6 +35,11 @@ const postsSlice = createSlice({
         deletePost(state, action) {
             state.posts = state.posts.filter(post => post.id !== action.payload);
         },
+        resetOwnPost(state) {
+            Object.keys(state).forEach(key => {
+                state[key] = initialState[key];
+            });
+        }
     },
 });
 
@@ -44,7 +49,8 @@ export const {
     fetchPostsFailure,
     addPost,
     updatePost,
-    deletePost
+    deletePost,
+    resetOwnPost
 } = postsSlice.actions;
 
 export default postsSlice.reducer;

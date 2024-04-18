@@ -2,9 +2,8 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authReducer from './auth/authSlice';
-import otpReducers from './auth/OtpSlice';
 import postsReducers from './auth/postsSlice';
-
+import tempTokenReducer from './auth/tempTokenSlice'
 // Define persist configuration
 const persistConfig = {
     key: 'root', // key for storage
@@ -15,7 +14,7 @@ const persistConfig = {
 // Combine reducers
 const rootReducer = combineReducers({
     auth: authReducer,
-    otp: otpReducers,
+    tempToken: tempTokenReducer,
     posts: postsReducers,
 });
 
