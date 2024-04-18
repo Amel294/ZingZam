@@ -1,5 +1,3 @@
-const { getDataFromJWTCookie_id } = require("../helpers/dataFromJwtCookies");
-const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const UserModel = require("../models/UserModel");
 const ConnectionsModel = require("../models/ConnectionsModel");
@@ -7,7 +5,6 @@ exports.getSuggestions = async (req, res) => {
     try {
         const id = req?.userData?.id;
         const userId = new mongoose.Types.ObjectId(id);
-        console.log(userId)
         const connections = await ConnectionsModel.findOne({ user: userId }, { requestsSend: 1, requestsReceived: 1, friends: 1, _id: 0 });
         let cantSuggest = [];
         if (connections) {
@@ -21,19 +18,15 @@ exports.getSuggestions = async (req, res) => {
         ]);
         res.status(200).json({ suggestions });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Internal server error' });
     }
 }
 
 exports.sendRequest = async (req, res) => {
     try {
-        const id = req?.userData?.id;
         const senderId = req?.userData?.id;
         const { receiverId } = req.body;
-        if (!mongoose.Types.ObjectId.isValid(receiverId)) {
-            return res.status(400).json({ error: 'Invalid receiver ID' });
-        }
+        if (!mongoose.Types.ObjectId.isValid(receiverId)) return res.status(400).json({ error: 'Invalid receiver ID' })
         let senderConnections = await ConnectionsModel.findOne({ user: senderId });
         if (!senderConnections) {
             senderConnections = new ConnectionsModel({
@@ -62,7 +55,6 @@ exports.sendRequest = async (req, res) => {
         }
         return res.status(200).json({ message: 'Friend request sent successfully' });
     } catch (error) {
-        console.error('Error handling friend request:', error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
@@ -74,39 +66,29 @@ exports.getRequestSend = async (req, res) => {
             { user: userId },
             { requestsSend: 1, _id: 0 }
         ).populate('requestsSend', '_id name picture');
-        if (!requestSend) {
-            return res.status(404).json({ message: "No requests found for this user" });
-        }
+        if (!requestSend) return res.status(404).json({ message: "No requests found for this user" });
         res.status(200).json(requestSend);
     } catch (error) {
-        console.error('Error fetching requests:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 exports.deleteRequest = async (req, res) => {
     try {
-        const jwtToken = req?.cookies?.accessToken;
-        const senderId = getDataFromJWTCookie_id(res, jwtToken);
+        const senderId = req?.userData?.id
         const receiverId = req.params.receiverId;
-        if (!mongoose.Types.ObjectId.isValid(senderId) || !mongoose.Types.ObjectId.isValid(receiverId)) {
-            return res.status(400).json({ message: 'Invalid senderId or receiverId' });
-        }
+        if (!mongoose.Types.ObjectId.isValid(senderId) || !mongoose.Types.ObjectId.isValid(receiverId)) return res.status(400).json({ message: 'Invalid senderId or receiverId' })
         const receiverObjectId = new mongoose.Types.ObjectId(receiverId);
         const senderObjectId = new mongoose.Types.ObjectId(senderId);
         const senderExists = await ConnectionsModel.exists({
             user: senderObjectId,
             requestsSend: receiverObjectId
         });
-        if (!senderExists) {
-            return res.status(400).json({ message: 'Friend request not found for sender' });
-        }
+        if (!senderExists) return res.status(400).json({ message: 'Friend request not found for sender' })
         const receiverExists = await ConnectionsModel.exists({
             user: receiverObjectId,
             requestsReceived: senderObjectId
         });
-        if (!receiverExists) {
-            return res.status(400).json({ message: 'Friend request not found for receiver' });
-        }
+        if (!receiverExists) return res.status(400).json({ message: 'Friend request not found for receiver' })
         await ConnectionsModel.findOneAndUpdate(
             { user: senderObjectId },
             { $pull: { requestsSend: receiverObjectId } }
@@ -117,7 +99,6 @@ exports.deleteRequest = async (req, res) => {
         );
         res.status(200).json({ message: 'Friend request deleted successfully' });
     } catch (error) {
-        console.error('Error deleting friend request:', error);
         if (!res.headersSent) {
             res.status(500).json({ error: 'Internal Server Error' });
         }
@@ -126,23 +107,11 @@ exports.deleteRequest = async (req, res) => {
 
 exports.getRequestsReceived = async (req, res) => {
     try {
-        console.log("In get request received");
         const userId = req?.userData?.id;
-
-        // Find requests for the user
         const requests = await ConnectionsModel.findOne({ user: userId }, { requestsReceived: 1, _id: 0 }).populate('requestsReceived', 'name username picture');
-
-        // If no requests or ConnectionsModel found for the user
-        if (!requests || !requests.requestsReceived || requests.requestsReceived.length === 0) {
-            console.log("No requests found for the user.");
-            return res.status(404).json({ error: "No requests found for the user." });
-        }
-
-        // Return the requests if found
+        if (!requests || !requests.requestsReceived || requests.requestsReceived.length === 0) return res.status(404).json({ error: "No requests found for the user." });
         return res.status(200).json({ requestsReceived: requests.requestsReceived });
     } catch (error) {
-        // Handle any other errors
-        console.error("Error in getRequestsReceived:", error);
         return res.status(500).json({ error: "Internal server error." });
     }
 };
@@ -150,12 +119,9 @@ exports.getRequestsReceived = async (req, res) => {
 exports.requestResponse = async (req, res) => {
     try {
         const { request, isAccept } = req.body;
-        const jwtToken = req?.cookies?.accessToken;
-        const userId = getDataFromJWTCookie_id(res, jwtToken);
+        const userId = req?.userData?.id;
         const connection = await ConnectionsModel.findOne({ user: userId, requestsReceived: request });
-        if (!connection) {
-            return res.status(404).json({ error: 'Request not found' });
-        }
+        if (!connection) return res.status(404).json({ error: 'Request not found' })
         if (isAccept) {
             await ConnectionsModel.findOneAndUpdate(
                 { user: userId },
@@ -176,7 +142,6 @@ exports.requestResponse = async (req, res) => {
         );
         return res.status(200).json({ message: isAccept ? 'Friend request accepted!' : 'Friend request declined' });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

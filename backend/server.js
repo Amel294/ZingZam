@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require('cookie-parser')
-const multer = require('multer');
+// const multer = require('multer');
 const morgan = require('morgan')
 
 require('dotenv').config();
@@ -21,15 +21,15 @@ app.use(morgan('dev'));
 // app.use(cors(options));
 app.use(cookieParser())
 // Multer configuration
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-      cb(null, 'uploads/'); // Set the destination folder for uploaded files
-  },
-  filename: function (req, file, cb) {
-      cb(null, Date.now() + '-' + file.originalname); // Set the filename to be unique
-  }
-});
-const upload = multer({ storage: storage });
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//       cb(null, 'uploads/'); // Set the destination folder for uploaded files
+//   },
+//   filename: function (req, file, cb) {
+//       cb(null, Date.now() + '-' + file.originalname); // Set the filename to be unique
+//   }
+// });
+// const upload = multer({ storage: storage });
 
 //routes
 const UserRoute = require('./routes/user');
@@ -40,7 +40,7 @@ const connectionsRoute = require('./routes/connections');
 const {accessTokenValidation,} = require('./helpers/accessTokenValidation')
 app.use('/user', UserRoute)
 app.use('/post',accessTokenValidation,PostRoute )
-// app.use('/admin',accessTokenValidation, adminRoutes)
+app.use('/admin',accessTokenValidation, adminRoutes)
 app.use('/profile',accessTokenValidation, profileRoute)
 app.use('/connections',accessTokenValidation,connectionsRoute)
 

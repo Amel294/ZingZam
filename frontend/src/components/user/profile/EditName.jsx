@@ -7,7 +7,7 @@ import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 export default function EditName({ isOpen, onOpen, onClose }) {
     const { name } = useSelector(state => state.auth);
     const handleChangeName = async (e) => {
-        const response = await AxiosWithBaseURLandCredentials.post(`/user/update-name`, { name: formData.name });
+        const response = await AxiosWithBaseURLandCredentials.post(`/profile/update-name`, { name: formData.name });
         if (response.status === 200) {
             toast.success("Name Updated")
         }
