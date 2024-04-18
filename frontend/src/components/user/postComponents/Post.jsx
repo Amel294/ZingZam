@@ -12,6 +12,7 @@ import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 export default function Post({ post, userId }) {
     const [liked, setLiked] = useState(post.liked)
+    const [likeCount, setLikeCount] = useState(post.liked)
     const [saved, setSaved] = useState(post.saved)
     const [commentCount,setCommentCount] = useState(post.commentCount)
     const [comments, setComments] = useState(post.comments)
@@ -69,9 +70,11 @@ export default function Post({ post, userId }) {
             const response = await AxiosWithBaseURLandCredentials.post(`/post/likeunlike`, { postId });
             if (response.data.message === "Post liked") {
                 setLiked(true)
+                setLikeCount(prevCount => prevCount + 1)
                 toast.success(response.data.message)
             }
             else if (response.data.message === "Post unliked") {
+                setLikeCount(prevCount => prevCount - 1)
                 setLiked(false)
                 toast.success(response.data.message)
             } else {
@@ -117,7 +120,7 @@ export default function Post({ post, userId }) {
                 <CardFooter className="flex flex-row justify-between">
                     <div className="flex items-center gap-1">
                         <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={liked ? "#661FCC" : "none"} stroke={liked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
-                        <p><span>{post?.likeCount} Likes</span><span> |  </span><span>{commentCount ? commentCount : 0} Comments</span> </p>
+                        <p><span>{likeCount} Likes</span><span> |  </span><span>{commentCount ? commentCount : 0} Comments</span> </p>
                     </div>
                     <div className="flex flex-row gap-10">
                         <Share height="25px" fill="#661FCC" />
