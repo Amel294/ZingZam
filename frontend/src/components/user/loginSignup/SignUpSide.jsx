@@ -10,7 +10,7 @@ import GenderRadio from "./GenderRadio";
 import NameInput from "./NameInput";
 import OtpInput from "./OtpInput";
 import { useSelector, useDispatch } from "react-redux";
-import { addTempToken } from "../../../store/auth/OtpSlice";
+import { addTempToken } from "../../../store/auth/tempTokenSlice";
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 export default function SignUpSide() {
     const dispatcher = useDispatch()
