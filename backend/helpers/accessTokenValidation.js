@@ -10,7 +10,7 @@ exports.accessTokenValidation = async (req, res, next) => {
             const newAccessToken = await refreshAccessToken(req, res, refreshToken);
             req.accessToken = newAccessToken;
             const accessTokenMaxAge = 15 * 60 * 1000; 
-
+            
             res.cookie('accessToken', newAccessToken, {
                 maxAge: accessTokenMaxAge,
                 // httpOnly: true, 
