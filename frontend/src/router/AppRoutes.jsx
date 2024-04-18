@@ -1,6 +1,6 @@
-import {  useState } from 'react';
+import {  useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Loading from '../components/Loading';
 import MainNavLayout from './layouts/MainNavLayout';
@@ -13,11 +13,29 @@ import UserManagement from '../components/admin/userManagement/UserManagement';
 import AdminHome from '../pages/admin/AdminHome';
 import ForgotPassword from '../pages/user/ForgotPassword';
 import Profile from '../pages/user/Profile';
+import { resetAuth } from '../store/auth/authSlice';
+import { resetPost } from '../store/auth/postsSlice';
+import { resetOwnPost } from '../store/auth/ownPostSlice';
+import { resetTempToken } from '../store/auth/tempTokenSlice';
 
 const AppRoutes = () => {
+    const dispatch = useDispatch()
     const [isLoading, setIsLoading] = useState(false);
     const storedAuthStatus = useSelector(state => state.auth.isLoggedIn);
     console.log("storedAuthStatus",storedAuthStatus);
+    useEffect(() => {
+        const checkRefreshToken = () => {
+            const cookies = document.cookie.split(';');
+            const refreshTokenCookie = cookies.find(cookie => cookie.trim().startsWith('refreshToken='));
+            if (!refreshTokenCookie) {
+                dispatch(resetAuth());
+                dispatch(resetPost())
+                dispatch(resetOwnPost())
+                dispatch(resetTempToken())
+            }
+        };
+        checkRefreshToken();
+    }, []);
     if (isLoading) {
         return <Loading />;
     }

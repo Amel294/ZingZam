@@ -3,17 +3,19 @@ import MainLogo from '/icons/ZingZamLogo.svg';
 import GameSide from '/icons/MainGame.svg';
 import SocialSide from '/icons/MainSocial.svg';
 import { useDispatch } from 'react-redux';
-import { logoutUser } from '../../../store/auth/authSlice';
+import { logoutUser, resetAuth } from '../../../store/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
-import { clearPosts } from '../../../store/auth/postsSlice';
-import toast from "react-hot-toast";
-import AxiosWithBaseURLandCredentials from '../../../axiosInterceptor';
+import {  resetPost } from '../../../store/auth/postsSlice';
+import { resetOwnPost } from '../../../store/auth/ownPostSlice';
 
 export default  function MainNavbar() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleRedirectToLogin = () => {
-        dispatch(clearPosts())
+        dispatch(resetPost())
+        dispatch(resetAuth())
+        dispatch(resetOwnPost())
+        dispatch(resetPost())
         navigate("/login");
     };
     const handleLogOut = async () => {
