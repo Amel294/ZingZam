@@ -5,6 +5,7 @@ const PostModel = require('../models/PostModel')
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
 const fs = require('fs');
+const likesModel = require("../models/likesModel");
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -345,20 +346,26 @@ exports.likeUnlikePost = async (req, res) => {
     try {
         const userId = req?.userData?.id;
         const { postId } = req.body;
-        const post = await PostModel.findById(postId);
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
+        
+        // Find existing like document or create a new one if it doesn't exist
+        let like = await likesModel.findOne({ postId });
+        if (!like) {
+            like = new likesModel({ postId, likedUsers: [] });
         }
+
         const userIdString = userId.toString();
-        const isPostLiked = post.likes.some(like => like._id.toString() === userIdString);
-        if (isPostLiked) {
-            post.likes = post.likes.filter(like => like._id.toString() !== userIdString);
+        const isUserLiked = like.likedUsers.some(user => user.toString() === userIdString);
+
+        if (isUserLiked) {
+            like.likedUsers = like.likedUsers.filter(user => user.toString() !== userIdString);
         } else {
-            post.likes.push({ _id: userId });
+            like.likedUsers.push(userId);
         }
-        await post.save();
-        res.status(201).json({ message: !isPostLiked ? 'Post liked' : 'Post unliked' });
+
+        await like.save();
+        res.status(201).json({ message: isUserLiked ? 'Post unliked' : 'Post liked' });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
