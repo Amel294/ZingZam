@@ -53,7 +53,7 @@ exports.getPosts = async (req, res) => {
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
-        console.log(friends)
+
         let posts = await PostModel.aggregate([
             {
                 $match: {
@@ -65,15 +65,22 @@ exports.getPosts = async (req, res) => {
                     from: 'users',
                     let: { userId: '$userId' },
                     pipeline: [
-                        { $match: { $expr: { $eq: ['$_id', '$userId'] } } },
-                        { $project: { _id: 1, name: 1, username: 1, picture: 1 } }
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { _id: 1, picture: 1, username: 1 } }
                     ],
-                    as: 'user'
+                    as: 'postedBy'
                 }
             },
             {
                 $addFields: {
-                    user: { $arrayElemAt: ['$user', 0] }
+                    postedBy: { $arrayElemAt: ['$postedBy', 0] },
+                    type: {
+                        $cond: {
+                            if: { $eq: ['$userId', userId] },
+                            then: 'own',
+                            else: 'friends'
+                        }
+                    }
                 }
             },
             {
@@ -135,7 +142,7 @@ exports.getPosts = async (req, res) => {
                     caption: 1,
                     isPrivate: 1,
                     createdAt: 1,
-                    user: 1,
+                    postedBy: 1,
                     likes: {
                         likedUsers: '$likes.likedUsers'
                     },
@@ -149,13 +156,15 @@ exports.getPosts = async (req, res) => {
                         }
                     },
                     userLiked: 1,
-                    userSaved: 1
+                    userSaved: 1,
+                    type: 1
                 }
             },
             { $sort: { createdAt: -1 } },
             { $skip: skip },
             { $limit: limit }
         ]);
+
         if (posts.length === 0) {
             posts = await PostModel.aggregate([
                 {
@@ -169,15 +178,16 @@ exports.getPosts = async (req, res) => {
                         from: 'users',
                         let: { userId: '$userId' },
                         pipeline: [
-                            { $match: { $expr: { $eq: ['$_id', '$userId'] } } },
-                            { $project: { _id: 1, name: 1, username: 1, picture: 1 } }
+                            { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                            { $project: { _id: 1, picture: 1, username: 1 } }
                         ],
-                        as: 'user'
+                        as: 'postedBy'
                     }
                 },
                 {
                     $addFields: {
-                        user: { $arrayElemAt: ['$user', 0] }
+                        postedBy: { $arrayElemAt: ['$postedBy', 0] },
+                        type: 'public'
                     }
                 },
                 {
@@ -239,7 +249,7 @@ exports.getPosts = async (req, res) => {
                         caption: 1,
                         isPrivate: 1,
                         createdAt: 1,
-                        user: 1,
+                        postedBy: 1,
                         likes: {
                             likedUsers: '$likes.likedUsers'
                         },
@@ -253,7 +263,8 @@ exports.getPosts = async (req, res) => {
                             }
                         },
                         userLiked: 1,
-                        userSaved: 1
+                        userSaved: 1,
+                        type: 1
                     }
                 },
                 { $sort: { createdAt: -1 } },
