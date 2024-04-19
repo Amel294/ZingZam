@@ -5,12 +5,14 @@ const likesSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Post',
         required: [true, "Post ID is required"],
-        index: true
+        index: true,
+        unique:true
     },
     likedUsers: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: [true, "User ID is required"]
+        required: [true, "User ID is required"],
+        unique:true
     }],
     likeCount:{
         type:Number,
