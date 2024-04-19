@@ -15,47 +15,12 @@ const postsSchema = mongoose.Schema({
         type:String,
         required:true
     },
-    comments: [{
-        text: {
-            type: String,
-            required: [true, "Comment text is required"],
-            trim: true
-        },
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        createdAt: {
-            type: Date,
-            default: Date.now
-        }
-    }],
-    likes: [{
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        }
-    }],
-    likeCount:{
-        type:Number,
-        default:0
-    },
-    commentCount :{
-        type:Number,
-        default:0
-    },
     isPrivate: { 
         type: Boolean,
         default: false 
     }
 }, {
     timestamps: true,
-});
-
-postsSchema.pre('save', async function(next) {
-    this.likeCount = this.likes.length;
-    this.commentCount = this.comments.length;
-    next();
 });
 
 module.exports = mongoose.model('Post', postsSchema);

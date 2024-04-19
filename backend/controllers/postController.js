@@ -44,67 +44,6 @@ exports.postPhoto = async (req, res) => {
     }
 };
 
-exports.getOwnPosts = async (req, res) => {
-    try {
-        const usersId = req?.userData?.id;
-        const username = req.params.username;
-        const page = parseInt(req.params.page) || 1;
-        const limit = 2;
-        const skip = (page - 1) * limit;
-        const posts = await PostModel.aggregate([
-            {
-                $match: { userId: usersId }
-            },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'userId',
-                    foreignField: '_id',
-                    as: 'user'
-                }
-            },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'comments.userId',
-                    foreignField: '_id',
-                    as: 'commentUsers'
-                }
-            },
-            {
-                $addFields: {
-                    'comments.username': { $arrayElemAt: ['$commentUsers.username', 0] },
-                    'comments.picture': { $arrayElemAt: ['$commentUsers.picture', 0] },
-                    'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] },
-                    'user': { $arrayElemAt: ['$user', 0] }
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    caption: 1,
-                    imageUrl: 1,
-                    createdAt: 1,
-                    comments: 1,
-                    likes: 1,
-                    likeCount: 1,
-                    commentCount: 1,
-                    'user._id': 1,
-                    'user.username': 1,
-                    'user.picture': 1,
-                    'user.name': 1
-                }
-            },
-            { $skip: skip },
-            { $limit: limit }
-        ]);
-        res.status(200).json(posts);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ error: 'Failed to fetch posts' });
-    }
-};
-
 exports.getPosts = async (req, res) => {
     try {
         const id = req?.userData?.id;
@@ -114,182 +53,215 @@ exports.getPosts = async (req, res) => {
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
-        // Query 1: Fetch posts from friends (if any)
+        console.log(friends)
         let posts = await PostModel.aggregate([
-            { $match: { userId: { $in: friends } } },
             {
-                $lookup: {
-                    from: 'users',
-                    localField: 'userId',
-                    foreignField: '_id',
-                    as: 'user'
+                $match: {
+                    userId: { $in: [...friends, userId] },
                 }
             },
             {
                 $lookup: {
                     from: 'users',
-                    localField: 'comments.userId',
-                    foreignField: '_id',
-                    as: 'commentUsers'
-                }
-            },
-            {
-                $addFields: {
-                    'comments.username': { $arrayElemAt: ['$commentUsers.username', 0] },
-                    'comments.picture': { $arrayElemAt: ['$commentUsers.picture', 0] },
-                    'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] },
-                    'user': { $arrayElemAt: ['$user', 0] }
-                }
-            },
-            {
-                $addFields: {
-                    'liked': {
-                        $in: [userId, { $map: { input: '$likes', as: 'like', in: '$$like._id' } }] 
-                    }
-                }
-            },
-            {
-                $lookup: { 
-                    from: 'savedposts',
-                    let: { postId: '$_id' },
+                    let: { userId: '$userId' },
                     pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ['$user', userId] },
-                                        { $in: ['$$postId', '$savedPost'] }
-                                    ]
-                                }
-                            }
-                        }
+                        { $match: { $expr: { $eq: ['$_id', '$userId'] } } },
+                        { $project: { _id: 1, name: 1, username: 1, picture: 1 } }
                     ],
-                    as: 'saved'
-                }
-            },
-            { $addFields: { saved: { $cond: { if: { $gt: [{ $size: '$saved' }, 0] }, then: true, else: false } } } }, 
-            { $sort: { createdAt: -1 } },
-            { $skip: skip },
-            { $limit: limit }
-        ]);
-        // Query 2: If no friend posts found, fetch public posts
-        if (posts.length === 0) {
-            posts = await PostModel.aggregate([
-                { $match: { isPrivate: false } },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'userId',
-                        foreignField: '_id',
-                        as: 'user'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        localField: 'comments.userId',
-                        foreignField: '_id',
-                        as: 'commentUsers'
-                    }
-                },
-                {
-                    $addFields: {
-                        'comments.username': { $arrayElemAt: ['$commentUsers.username', 0] },
-                        'comments.picture': { $arrayElemAt: ['$commentUsers.picture', 0] },
-                        'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] },
-                        'user': { $arrayElemAt: ['$user', 0] }
-                    }
-                },
-                {
-                    $addFields: {
-                        'liked': {
-                            $in: [userId, { $map: { input: '$likes', as: 'like', in: '$$like._id' } }] 
-                        }
-                    }
-                },
-                {
-                    $lookup: { 
-                        from: 'savedposts',
-                        let: { postId: '$_id' },
-                        pipeline: [
-                            {
-                                $match: {
-                                    $expr: {
-                                        $and: [
-                                            { $eq: ['$user', userId] },
-                                            { $in: ['$$postId', '$savedPost'] }
-                                        ]
-                                    }
-                                }
-                            }
-                        ],
-                        as: 'saved'
-                    }
-                },
-                { $addFields: { saved: { $cond: { if: { $gt: [{ $size: '$saved' }, 0] }, then: true, else: false } } } }, 
-                { $sort: { createdAt: -1 } },
-                { $skip: skip },
-                { $limit: limit }
-            ]);
-        }
-        res.status(200).json(posts);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch posts' });
-    }
-};
-
-exports.getPostsProfile = async (req, res) => {
-    try {
-        const userId = req?.userData?.id;
-        const page = parseInt(req.params.page) || 1;
-        const limit = 2;
-        const skip = (page - 1) * limit;
-        const posts = await PostModel.aggregate([
-            { $match: { userId: userId } },
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'userId',
-                    foreignField: '_id',
                     as: 'user'
                 }
             },
             {
+                $addFields: {
+                    user: { $arrayElemAt: ['$user', 0] }
+                }
+            },
+            {
                 $lookup: {
-                    from: 'users',
-                    localField: 'comments.userId',
-                    foreignField: '_id',
-                    as: 'commentUsers'
+                    from: 'likes',
+                    localField: '_id',
+                    foreignField: 'postId',
+                    as: 'likes'
                 }
             },
             {
                 $addFields: {
-                    'comments.username': { $arrayElemAt: ['$commentUsers.username', 0] },
-                    'comments.picture': { $arrayElemAt: ['$commentUsers.picture', 0] },
-                    'comments.userId': { $arrayElemAt: ['$commentUsers._id', 0] },
-                    'user': { $arrayElemAt: ['$user', 0] }
+                    likes: { $arrayElemAt: ['$likes', 0] }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'postId',
+                    as: 'comments'
+                }
+            },
+            {
+                $addFields: {
+                    comments: { $arrayElemAt: ['$comments', 0] },
+                    commentCount: { $arrayElemAt: ['$comments.commentCount', 0] },
+                    userLiked: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ifNull: ['$likes', false] },
+                                    { $not: { $eq: ['$likes', []] } }
+                                ]
+                            },
+                            then: { $in: [userId, '$likes.likedUsers'] },
+                            else: false
+                        }
+                    },
+                    userSaved: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ifNull: ['$savedPost', false] },
+                                    { $not: { $eq: ['$savedPost', []] } }
+                                ]
+                            },
+                            then: { $in: [userId, '$savedPost.savedPost'] },
+                            else: false
+                        }
+                    }
                 }
             },
             {
                 $project: {
                     _id: 1,
-                    caption: 1,
+                    userId: 1,
                     imageUrl: 1,
+                    caption: 1,
+                    isPrivate: 1,
                     createdAt: 1,
-                    comments: 1,
-                    likes: 1,
-                    likeCount: 1,
+                    user: 1,
+                    likes: {
+                        likedUsers: '$likes.likedUsers'
+                    },
+                    latestComments: '$comments.latestComments',
                     commentCount: 1,
-                    'user._id': 1,
-                    'user.username': 1,
-                    'user.picture': 1,
-                    'user.name': 1
+                    likeCount: {
+                        $cond: {
+                            if: { $isArray: '$likes.likedUsers' },
+                            then: { $size: '$likes.likedUsers' },
+                            else: 0
+                        }
+                    },
+                    userLiked: 1,
+                    userSaved: 1
                 }
             },
+            { $sort: { createdAt: -1 } },
             { $skip: skip },
             { $limit: limit }
         ]);
-        console.log(posts)
+        if (posts.length === 0) {
+            posts = await PostModel.aggregate([
+                {
+                    $match: {
+                        userId: { $nin: [...friends, userId] },
+                        isPrivate: false
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'users',
+                        let: { userId: '$userId' },
+                        pipeline: [
+                            { $match: { $expr: { $eq: ['$_id', '$userId'] } } },
+                            { $project: { _id: 1, name: 1, username: 1, picture: 1 } }
+                        ],
+                        as: 'user'
+                    }
+                },
+                {
+                    $addFields: {
+                        user: { $arrayElemAt: ['$user', 0] }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'likes',
+                        localField: '_id',
+                        foreignField: 'postId',
+                        as: 'likes'
+                    }
+                },
+                {
+                    $addFields: {
+                        likes: { $arrayElemAt: ['$likes', 0] }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'comments',
+                        localField: '_id',
+                        foreignField: 'postId',
+                        as: 'comments'
+                    }
+                },
+                {
+                    $addFields: {
+                        comments: { $arrayElemAt: ['$comments', 0] },
+                        commentCount: { $arrayElemAt: ['$comments.commentCount', 0] },
+                        userLiked: {
+                            $cond: {
+                                if: {
+                                    $and: [
+                                        { $ifNull: ['$likes', false] },
+                                        { $not: { $eq: ['$likes', []] } }
+                                    ]
+                                },
+                                then: { $in: [userId, '$likes.likedUsers'] },
+                                else: false
+                            }
+                        },
+                        userSaved: {
+                            $cond: {
+                                if: {
+                                    $and: [
+                                        { $ifNull: ['$savedPost', false] },
+                                        { $not: { $eq: ['$savedPost', []] } }
+                                    ]
+                                },
+                                then: { $in: [userId, '$savedPost.savedPost'] },
+                                else: false
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 1,
+                        userId: 1,
+                        imageUrl: 1,
+                        caption: 1,
+                        isPrivate: 1,
+                        createdAt: 1,
+                        user: 1,
+                        likes: {
+                            likedUsers: '$likes.likedUsers'
+                        },
+                        latestComments: '$comments.latestComments',
+                        commentCount: 1,
+                        likeCount: {
+                            $cond: {
+                                if: { $isArray: '$likes.likedUsers' },
+                                then: { $size: '$likes.likedUsers' },
+                                else: 0
+                            }
+                        },
+                        userLiked: 1,
+                        userSaved: 1
+                    }
+                },
+                { $sort: { createdAt: -1 } },
+                { $skip: skip },
+                { $limit: limit }
+            ]);
+        }
+
         res.status(200).json(posts);
     } catch (error) {
         console.log(error);
@@ -300,9 +272,9 @@ exports.getPostsProfile = async (req, res) => {
 exports.addComment = async (req, res) => {
     try {
         const userId = req?.userData?.id;
-        const { postId, comment, parentCommentId } = req.body; 
+        const { postId, comment, parentCommentId } = req.body;
         let post = await CommentModel.findOne({ postId });
-        if (!post) post = new CommentModel({ postId, comments: [] })        
+        if (!post) post = new CommentModel({ postId, comments: [] })
         if (parentCommentId) {
             const parentComment = post.comments.find(comment => comment._id.toString() === parentCommentId);
             if (!parentComment) {
@@ -357,7 +329,7 @@ exports.likeUnlikePost = async (req, res) => {
     try {
         const userId = req?.userData?.id;
         const { postId } = req.body;
-        
+
         // Find existing like document or create a new one if it doesn't exist
         let like = await likesModel.findOne({ postId });
         if (!like) {
@@ -412,15 +384,15 @@ exports.postComments = async (req, res) => {
                 path: 'comments.userId',
                 select: 'picture',
             })
-            .lean(); 
+            .lean();
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
         const comments = post.comments.map(comment => {
             return {
                 ...comment,
-                userId: comment.userId._id, 
-                picture: comment.userId.picture, 
+                userId: comment.userId._id,
+                picture: comment.userId.picture,
             };
         });
         res.status(200).json(comments);
