@@ -341,28 +341,32 @@ exports.likeUnlikePost = async (req, res) => {
         const userId = req?.userData?.id;
         const { postId } = req.body;
 
-        // Find existing like document or create a new one if it doesn't exist
         let like = await likesModel.findOne({ postId });
+
         if (!like) {
             like = new likesModel({ postId, likedUsers: [] });
+        }else{
         }
-
+        let userLiked = false;
         const userIdString = userId.toString();
         const isUserLiked = like.likedUsers.some(user => user.toString() === userIdString);
-
         if (isUserLiked) {
             like.likedUsers = like.likedUsers.filter(user => user.toString() !== userIdString);
         } else {
             like.likedUsers.push(userId);
+            userLiked = true;
         }
-
         await like.save();
-        res.status(201).json({ message: isUserLiked ? 'Post unliked' : 'Post liked' });
+        res.status(201).json({ 
+            userLiked ,
+            newLikeCount: like.likeCount
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
 exports.deleteComment = async (req, res) => {
     try {
         const userId = req?.userData?.id;
