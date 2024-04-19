@@ -18,7 +18,7 @@ const postsSlice = createSlice({
             state.posts = [...state.posts, ...action.payload];
             state.isLoading = false;
             state.error = null;
-        },        
+        },
         fetchPostsFailure(state, action) {
             state.isLoading = false;
             state.error = action.payload;
@@ -42,9 +42,17 @@ const postsSlice = createSlice({
         },
         resetPost(state) {
             Object.keys(state).forEach(key => {
-              state[key] = initialState[key];
+                state[key] = initialState[key];
             });
-          }
+        },
+        updateLikeCountAndUserLiked(state, action) {
+            const { postId, likeCount,userLiked } = action.payload;
+            const postIndex = state.posts.findIndex(post => post._id === postId);
+            if (postIndex !== -1) {
+                state.posts[postIndex].likeCount = likeCount;
+                state.posts[postIndex].userLiked = userLiked;
+            }
+        },
     },
 });
 
@@ -56,7 +64,8 @@ export const {
     updatePost,
     deletePost,
     clearPosts,
-    resetPost
+    resetPost,
+    updateLikeCountAndUserLiked
 } = postsSlice.actions;
 
 export default postsSlice.reducer;
