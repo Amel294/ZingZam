@@ -8,21 +8,21 @@ import { fetchPostsFailure, fetchPostsStart, fetchPostsSuccess } from "../../../
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 function HomeCenter() {
-  const [page, setPage] = useState(1); // Start with page 1
+  const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const posts = useSelector((state) => state.posts.posts); // Accessing posts array from Redux state
+  const posts = useSelector((state) => state.posts.posts);
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.auth.id)
-  useEffect(()=>{
+  useEffect(() => {
     fetchPosts()
-  },[])
+  }, [])
   const fetchPosts = async () => {
     try {
       dispatch(fetchPostsStart());
       const response = await AxiosWithBaseURLandCredentials.get(`/post/get-posts/${ page }`);
       if (response.data.error) {
         toast.error(`${ response.data.error }`);
-        dispatch(fetchPostsFailure(response.data.error)); // Pass error message to failure action
+        dispatch(fetchPostsFailure(response.data.error));
       } else {
         console.log(response.data)
         const newPosts = response.data || [];
@@ -33,9 +33,9 @@ function HomeCenter() {
     } catch (error) {
       console.error(error);
       toast.error("This didn't work. Check the console for more details.");
-      dispatch(fetchPostsFailure("Failed to fetch posts")); // Generic error message
+      dispatch(fetchPostsFailure("Failed to fetch posts"));
     }
-    
+
   };
   return (
     <div className="flex  flex-col items-center gap-4 pt-4 min-h-screen">

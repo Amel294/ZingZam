@@ -9,18 +9,15 @@ import CommentModal from "../comment/CommentModal";
 import dummyPost from '/Post/rain.jpg'
 import { useNavigate } from 'react-router-dom';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
+import { useDispatch } from 'react-redux';
+import {  updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
 
 export default function Post({ post, userId }) {
-    const [liked, setLiked] = useState(post.liked)
-    const [likeCount, setLikeCount] = useState(post.liked)
-    const [saved, setSaved] = useState(post.saved)
-    const [commentCount,setCommentCount] = useState(post.commentCount)
-    const [comments, setComments] = useState(post.comments)
-    const [writeComment, setWriteComment] = useState("")
-    useEffect(() => {
+    const dispatch = useDispatch();
 
-        console.log("comments", comments)
-    })
+    const [isOpen, setIsOpen] = useState(false);
+    const [writeComment,setWriteComment] = useState("");
+
     const handleDeleteComment = async (postId, commentId) => {
         const response = await AxiosWithBaseURLandCredentials.delete(`/post/comment/${ postId }/${ commentId }`, {
             withCredentials: true
@@ -49,7 +46,6 @@ export default function Post({ post, userId }) {
     const navigate = useNavigate()
     console.log("Post in innermost is")
     console.log(post)
-    const [isOpen, setIsOpen] = useState(false);
     const handleGoToProfile = () => {
         navigate(`/profile/${ post.user.username }`);
     }
@@ -68,20 +64,16 @@ export default function Post({ post, userId }) {
     const handleLike = async (postId) => {
         try {
             const response = await AxiosWithBaseURLandCredentials.post(`/post/likeunlike`, { postId });
-            if (response.data.message === "Post liked") {
-                setLiked(true)
-                setLikeCount(prevCount => prevCount + 1)
-                toast.success(response.data.message)
-            }
-            else if (response.data.message === "Post unliked") {
-                setLikeCount(prevCount => prevCount - 1)
-                setLiked(false)
-                toast.success(response.data.message)
-            } else {
-                toast.error("Something went wrong")
-            }
+            console.log(postId)
+            if (response.data.userLiked) {
+                toast.success("Post Liked");
+                dispatch(updateLikeCountAndUserLiked({ postId, likeCount: response.data.newLikeCount, userLiked: response.data.userLiked }));
+            } else if (!response.data.userLiked) {
+                toast.success("Post Unliked");
+                dispatch(updateLikeCountAndUserLiked({ postId, likeCount: response.data.newLikeCount, userLiked: response.data.userLiked }));
+            } 
         } catch (err) {
-            console.log(err)
+            toast.error("Something went wrong");
         }
     };
     return (
@@ -89,16 +81,15 @@ export default function Post({ post, userId }) {
             <Card className="max-w-[400px] ">
                 <CardHeader className="flex justify-between">
                     <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
-                        <Image alt="nextui logo" height={40} radius="lg" src={post.user.picture} width={40} />
+                        <Image alt="nextui logo" height={40} radius="lg" src={post.postedBy.picture} width={40} />
                         <div className="flex flex-col text-left">
-                            <p className="text-md" >{post.user.username}</p>
-                            <p className="text-small text-default-500">{post.user.name}</p>
+                            <p className="text-md" >{post.postedBy.username}</p>
                         </div>
                     </div>
-                    {post.user._id !== userId ?
+                    {post.type !== "own" ?
                         <>
                             <Button color="secondary" variant="bordered" size="sm">
-                                Follow
+                                + Add
                             </Button>
                         </> : null
                     }
@@ -119,15 +110,15 @@ export default function Post({ post, userId }) {
                 <Divider />
                 <CardFooter className="flex flex-row justify-between">
                     <div className="flex items-center gap-1">
-                        <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={liked ? "#661FCC" : "none"} stroke={liked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
-                        <p><span>{likeCount} Likes</span><span> |  </span><span>{commentCount ? commentCount : 0} Comments</span> </p>
+                        <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={post.userLiked ? "#661FCC" : "none"} stroke={post.userLiked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
+                        <p><span>{post?.likeCount} Likes</span><span> |  </span><span>{post.commentCount ? post.commentCount : 0} Comments</span> </p>
                     </div>
                     <div className="flex flex-row gap-10">
                         <Share height="25px" fill="#661FCC" />
-                        <BookMark height="25px" fill={saved ? "#661FCC" : "none"} stroke={saved ? "none" : "#661FCC"} onClick={() => handlesavePost(post?._id)} />
+                        <BookMark height="25px" fill={post.userSaved ? "#661FCC" : "none"} stroke={post.userSaved ? "none" : "#661FCC"} onClick={() => handlesavePost(post?._id)} />
                     </div>
                 </CardFooter>
-                {comments && comments.length > 0 ? (
+                {post.comments && post.comments.length > 0 ? (
                     <CardFooter className="flex flex-col gap-2 items-start pb-0 w-full">
                         {comments.map(comment => (
                             <div key={comment._id} className="flex justify-between w-full">
@@ -140,7 +131,7 @@ export default function Post({ post, userId }) {
                                         <span>{comment.text}</span>
                                     </div>
                                 </div>
-                                <Button size="sm"  onClick={()=>handleDeleteComment(post._id,comment._id)}>Delete</Button>
+                                <Button size="sm" onClick={() => handleDeleteComment(post._id, comment._id)}>Delete</Button>
                                 {/* del action for authenticated user only */}
                             </div>
                         ))}
