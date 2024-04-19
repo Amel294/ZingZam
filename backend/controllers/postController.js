@@ -6,6 +6,7 @@ const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
 const fs = require('fs');
 const likesModel = require("../models/likesModel");
+const CommentModel = require("../models/CommentModel");
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -299,18 +300,28 @@ exports.getPostsProfile = async (req, res) => {
 exports.addComment = async (req, res) => {
     try {
         const userId = req?.userData?.id;
-        const { postId, comment } = req.body;
-        const post = await PostModel.findById(postId);
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
+        const { postId, comment, parentCommentId } = req.body; 
+        let post = await CommentModel.findOne({ postId });
+        if (!post) post = new CommentModel({ postId, comments: [] })        
+        if (parentCommentId) {
+            const parentComment = post.comments.find(comment => comment._id.toString() === parentCommentId);
+            if (!parentComment) {
+                return res.status(404).json({ error: 'Parent comment not found' });
+            }
+            parentComment.replies.push({
+                text: comment,
+                userId: userId
+            });
+        } else {
+            post.comments.push({
+                text: comment,
+                userId: userId
+            });
         }
-        post.comments.push({
-            text: comment,
-            userId: userId
-        });
         await post.save();
         return res.status(200).json({ message: 'Comment added successfully' });
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
