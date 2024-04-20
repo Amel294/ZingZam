@@ -1,7 +1,6 @@
-import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input } from "@nextui-org/react";
-import avatar from '/public/Avatar/amel.jpg'
+import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input,useDisclosure } from "@nextui-org/react";
 import Heart from "/public/icons/Heart";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Share from "/public/icons/Share";
 import BookMark from "/public/icons/BookMark";
 import toast, { Toaster } from "react-hot-toast";
@@ -10,13 +9,15 @@ import dummyPost from '/Post/rain.jpg'
 import { useNavigate } from 'react-router-dom';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 import { useDispatch } from 'react-redux';
-import {  updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
+import { updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
+import LikeModel from "../like/LikeModel";
 
-export default function Post({ post, userId }) {
+export default function Post({ post, user }) {
     const dispatch = useDispatch();
 
+    const [isLikeOpen, setIsLikeOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [writeComment,setWriteComment] = useState("");
+    const [writeComment, setWriteComment] = useState("");
 
     const handleDeleteComment = async (postId, commentId) => {
         const response = await AxiosWithBaseURLandCredentials.delete(`/post/comment/${ postId }/${ commentId }`, {
@@ -32,16 +33,16 @@ export default function Post({ post, userId }) {
         console.log(response)
     }
     const handlesavePost = async (postId) => {
-        const response = await AxiosWithBaseURLandCredentials.post(`/post/saveunsave`, { postId });
-        if (response.data.saved === true) {
-            setSaved(true)
-            toast.success(response.data.message)
-        }
-        else if (response.data.saved === false) {
-            setSaved(false)
+        // const response = await AxiosWithBaseURLandCredentials.post(`/post/saveunsave`, { postId });
+        // if (response.data.saved === true) {
+        //     setSaved(true)
+        //     toast.success(response.data.message)
+        // }
+        // else if (response.data.saved === false) {
+        //     setSaved(false)
 
-            toast.success(response.data.message)
-        } else toast.error("Removed from Saved")
+        //     toast.success(response.data.message)
+        // } else toast.error("Removed from Saved")
     }
     const navigate = useNavigate()
     console.log("Post in innermost is")
@@ -71,7 +72,7 @@ export default function Post({ post, userId }) {
             } else if (!response.data.userLiked) {
                 toast.success("Post Unliked");
                 dispatch(updateLikeCountAndUserLiked({ postId, likeCount: response.data.newLikeCount, userLiked: response.data.userLiked }));
-            } 
+            }
         } catch (err) {
             toast.error("Something went wrong");
         }
@@ -111,7 +112,7 @@ export default function Post({ post, userId }) {
                 <CardFooter className="flex flex-row justify-between">
                     <div className="flex items-center gap-1">
                         <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={post.userLiked ? "#661FCC" : "none"} stroke={post.userLiked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
-                        <p><span>{post?.likeCount} Likes</span><span> |  </span><span>{post.commentCount ? post.commentCount : 0} Comments</span> </p>
+                        <p><span className="hover:cursor-pointer" onClick={() => setIsLikeOpen(true)}>{post?.likeCount} Likes</span><span> |  </span><span>{post.commentCount ? post.commentCount : 0} Comments</span> </p>
                     </div>
                     <div className="flex flex-row gap-10">
                         <Share height="25px" fill="#661FCC" />
@@ -148,6 +149,7 @@ export default function Post({ post, userId }) {
                 </CardFooter>
             </Card>
             <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
+            <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId= {post._id} likedUsers= {post.likedUsers} likeCount={post.likeCount}  />
             <Toaster
                 position="top-center"
                 reverseOrder={false}
