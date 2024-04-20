@@ -15,7 +15,10 @@ const postsSlice = createSlice({
             state.error = null;
         },
         fetchPostsSuccess(state, action) {
-            state.posts = [...state.posts, ...action.payload];
+            const uniquePosts = action.payload.filter(newPost => 
+                !state.posts.some(existingPost => existingPost._id === newPost._id)
+            );
+            state.posts = [...state.posts, ...uniquePosts];
             state.isLoading = false;
             state.error = null;
         },
