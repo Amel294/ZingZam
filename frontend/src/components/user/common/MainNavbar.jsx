@@ -7,7 +7,8 @@ import { logoutUser, resetAuth } from '../../../store/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import {  resetPost } from '../../../store/auth/postsSlice';
 import { resetOwnPost } from '../../../store/auth/ownPostSlice';
-
+import { useState } from 'react';
+import Search from '../search/Search'
 export default  function MainNavbar() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -32,8 +33,13 @@ export default  function MainNavbar() {
             handleRedirectToLogin()
         },2000)
     }
-    
+    const [isSearchOpen, setIsSearchOpen] = useState(false)
+    const handleSearchOpen = () =>{
+        console.log('search open')
+        setIsSearchOpen(true)
+    } 
     return (
+        <>
         <Navbar isBordered isBlurred={false}>
             <NavbarBrand>
                 <Link href="/" aria-current="page">
@@ -56,11 +62,16 @@ export default  function MainNavbar() {
             </NavbarContent>
             <NavbarContent justify="end">
                 <NavbarItem>
+                    <Button as={Link} color="secondary" href="#" variant="flat" onClick={handleSearchOpen} className="bg-secondary-400">
+                        <span className="text-white">Search</span>
+                    </Button>
                     <Button as={Link} color="secondary" href="#" variant="flat" onClick={handleLogOut} className="bg-secondary-400">
                         <span className="text-white">Log Out</span>
                     </Button>
                 </NavbarItem>
             </NavbarContent>
         </Navbar>
+        <Search isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen} />>
+        </>
     );
 }
