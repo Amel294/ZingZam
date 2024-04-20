@@ -145,3 +145,22 @@ exports.requestResponse = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+exports.searchUser =  async (req, res) => {
+    try {
+        const { query } = req.query; 
+        if (!query) {
+            return res.status(400).json({ error: 'Search query is required' });
+        }
+        const users = await UserModel.find({
+            $or: [
+                { username: { $regex: query, $options: 'i' } },
+                { name: { $regex: query, $options: 'i' } }
+            ]
+        }).select('username name picture'); 
+        res.status(200).json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
