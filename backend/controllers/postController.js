@@ -2,6 +2,7 @@ const { textToxicity } = require("../helpers/textToxicity");
 const ConnectionsModel = require("../models/ConnectionsModel");
 const SavedPostModel = require("../models/SavedPostModel");
 const PostModel = require('../models/PostModel')
+const UserModel = require('../models/UserModel')
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
 const fs = require('fs');
@@ -404,20 +405,19 @@ exports.postComments = async (req, res) => {
 exports.LikedUsers = async (req, res) => {
     try {
         const postId = req.params.postId;
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10; // Default limit is 10
+        const page = parseInt(req.params.page) || 1;
+        const limit = parseInt(req.params.limit) || 1; 
         const skip = (page - 1) * limit;
-
         const like = await likesModel.findOne({ postId });
-
         if (!like) {
             return res.status(200).json({ likedUsers: [], totalLikes: 0 });
         }
-
-        const totalLikes = like.likeCount;
-        const likedUsers = like.likedUsers.slice(skip, skip + limit);
-
-        res.status(200).json({ likedUsers, totalLikes });
+        const likedUsersIds = like.likedUsers.slice(skip, skip + limit);
+        if(likedUsersIds.length < 1 ) {
+            return res.status(200).json({ isEnd : true , likedUsers: [], totalLikes: like.likedUsers.length });
+        }
+        const likedUsers = await UserModel.find({ _id: { $in: likedUsersIds } }, 'name username _id picture');
+        res.status(200).json({isEnd : false, likedUsers });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
