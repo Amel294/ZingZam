@@ -93,7 +93,7 @@ exports.getPosts = async (req, res) => {
             },
             {
                 $addFields: {
-                    likes: { $arrayElemAt: ['$likes', 0] }
+                    likeCount: { $arrayElemAt: ['$likes.likeCount', 0] } 
                 }
             },
             {
@@ -143,18 +143,9 @@ exports.getPosts = async (req, res) => {
                     isPrivate: 1,
                     createdAt: 1,
                     postedBy: 1,
-                    likes: {
-                        likedUsers: '$likes.likedUsers'
-                    },
                     latestComments: '$comments.latestComments',
                     commentCount: 1,
-                    likeCount: {
-                        $cond: {
-                            if: { $isArray: '$likes.likedUsers' },
-                            then: { $size: '$likes.likedUsers' },
-                            else: 0
-                        }
-                    },
+                    likeCount: 1,
                     userLiked: 1,
                     userSaved: 1,
                     type: 1
@@ -200,7 +191,7 @@ exports.getPosts = async (req, res) => {
                 },
                 {
                     $addFields: {
-                        likes: { $arrayElemAt: ['$likes', 0] }
+                        likeCount: { $arrayElemAt: ['$likes.likeCount', 0] } 
                     }
                 },
                 {
@@ -250,18 +241,9 @@ exports.getPosts = async (req, res) => {
                         isPrivate: 1,
                         createdAt: 1,
                         postedBy: 1,
-                        likes: {
-                            likedUsers: '$likes.likedUsers'
-                        },
                         latestComments: '$comments.latestComments',
                         commentCount: 1,
-                        likeCount: {
-                            $cond: {
-                                if: { $isArray: '$likes.likedUsers' },
-                                then: { $size: '$likes.likedUsers' },
-                                else: 0
-                            }
-                        },
+                        likeCount: 1,
                         userLiked: 1,
                         userSaved: 1,
                         type: 1
@@ -412,6 +394,29 @@ exports.postComments = async (req, res) => {
         });
         res.status(200).json(comments);
     } catch (err) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.LikedUsers = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10; // Default limit is 10
+        const skip = (page - 1) * limit;
+
+        const like = await likesModel.findOne({ postId });
+
+        if (!like) {
+            return res.status(200).json({ likedUsers: [], totalLikes: 0 });
+        }
+
+        const totalLikes = like.likeCount;
+        const likedUsers = like.likedUsers.slice(skip, skip + limit);
+
+        res.status(200).json({ likedUsers, totalLikes });
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
