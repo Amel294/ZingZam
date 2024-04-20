@@ -93,6 +93,7 @@ exports.getPosts = async (req, res) => {
             },
             {
                 $addFields: {
+                    likes: { $arrayElemAt: ['$likes', 0] },
                     likeCount: { $arrayElemAt: ['$likes.likeCount', 0] } 
                 }
             },
@@ -191,7 +192,9 @@ exports.getPosts = async (req, res) => {
                 },
                 {
                     $addFields: {
+                        likes: { $arrayElemAt: ['$likes', 0] },
                         likeCount: { $arrayElemAt: ['$likes.likeCount', 0] } 
+
                     }
                 },
                 {
