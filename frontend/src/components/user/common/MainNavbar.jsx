@@ -71,7 +71,7 @@ export default  function MainNavbar() {
                 </NavbarItem>
             </NavbarContent>
         </Navbar>
-        <Search isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen} />>
+        <Search isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen} />
         </>
     );
 }
