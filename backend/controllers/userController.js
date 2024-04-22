@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const TempUserModel = require('../models/TempUserModel');
 const ForgetPasswordModel = require('../models/ForgetPasswordModel');
 const { generateOtpForUser, sendOtpEmail } = require('../helpers/mail');
-const { generateAccessToken, generateRefreshToken, generateTempToken } = require('../helpers/tokens');
+const { generateAccessToken, generateRefreshToken, generateTempToken, generateAdminToken } = require('../helpers/tokens');
 const { getDataFromJWTCookie_temporaryToken } = require('../helpers/dataFromJwtCookies');
 exports.register = async (req, res) => {
     try {
@@ -146,6 +146,26 @@ exports.login = async (req, res) => {
         if (user.isBlocked) return res.status(403).json({ error: 'This Account is Blocked. Please contact the Admin', isBlocked: true });
         const checkPassword = await bcrypt.compare(password, user.password);
         if (!checkPassword) return res.status(400).json({ error: 'Invalid Credentials. Please try again.' });
+        if (user.role === "admin") {
+            const adminTokenMaxAge = 24 * 60 * 60 * 1000;
+            const adminToken = generateAdminToken({ id: user._id, username: user.username, name: user.name, role: user.role })
+            res.cookie('adminToken', adminToken, {
+                // httpOnly: true,
+                // secure: true,
+                // sameSite: 'strict',
+                maxAge: adminTokenMaxAge,
+            });
+            return res.status(200).json({
+                message: "Admin Login Success",
+                id: user.id,
+                username: user.username,
+                name: user.name,
+                email: user.email,
+                picture: user.picture || null,
+                isLoggedIn: true,
+                role: user.role,
+            });
+        }
         const accessToken = generateAccessToken({ id: user._id, username: user.username, name: user.name, role: user.role })
         const accessTokenMaxAge = 15 * 60 * 1000;
         const refreshTokenMaxAge = 24 * 60 * 60 * 1000;
@@ -170,6 +190,7 @@ exports.login = async (req, res) => {
             birthday: user.birthday,
             isLoggedIn: true,
             bio: user.bio,
+            role: user.role,
         });
     } catch (error) {
         return res.status(500).json({ error });
