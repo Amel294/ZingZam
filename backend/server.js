@@ -40,9 +40,9 @@ const connectionsRoute = require('./routes/connections');
 const {accessTokenValidation,} = require('./helpers/accessTokenValidation')
 const {isBlocked} = require("./helpers/blockedCheck")
 const {isUserCheck} = require("./helpers/isUserCheck")
+app.use('/admin', adminRoutes)
 app.use('/user', UserRoute)
 app.use('/post',accessTokenValidation,isUserCheck,isBlocked,PostRoute )
-app.use('/admin',accessTokenValidation,isUserCheck,isBlocked, adminRoutes)
 app.use('/profile',accessTokenValidation,isUserCheck,isBlocked, profileRoute)
 app.use('/connections',accessTokenValidation,isUserCheck,isBlocked,connectionsRoute)
 
