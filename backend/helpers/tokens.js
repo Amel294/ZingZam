@@ -11,3 +11,7 @@ exports.generateRefreshToken = (payload) => {
 exports.generateTempToken = (payload) => {
     return jwt.sign(payload, process.env.TEMP_TOKEN_SECRET, { expiresIn: '5m' });
 };
+
+exports.generateAdminToken = (payload) => {
+    return jwt.sign(payload, process.env.ADMIN_TOKEN_SECRET, { expiresIn: '1d' });
+};
