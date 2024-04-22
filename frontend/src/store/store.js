@@ -9,7 +9,7 @@ import tempTokenReducer from './auth/tempTokenSlice'
 const persistConfig = {
     key: 'root', // key for storage
     storage, // define storage engine
-    whitelist: ['auth'], // reducers to persist
+    whitelist: ['auth','adminAuth'], // reducers to persist
 };
 
 // Combine reducers
