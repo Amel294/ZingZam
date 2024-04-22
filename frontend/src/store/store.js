@@ -3,6 +3,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authReducer from './auth/authSlice';
 import postsReducers from './auth/postsSlice';
+import adminAuthReducer from './auth/adminAuthSlice';
 import tempTokenReducer from './auth/tempTokenSlice'
 // Define persist configuration
 const persistConfig = {
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
     auth: authReducer,
     tempToken: tempTokenReducer,
     posts: postsReducers,
+    adminAuth : adminAuthReducer,
 });
 
 // Apply persist configuration to root reducer

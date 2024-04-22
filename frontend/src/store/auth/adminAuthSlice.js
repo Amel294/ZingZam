@@ -7,30 +7,24 @@ const initialState = {
   name: null,
   email: null,
   picture: null,
-  gender: null,
-  birthday: null,
-  bio: null,
-  role :null
+  role: null
 };
 
-const authSlice = createSlice({
-  name: 'auth',
+const adminAuthSlice = createSlice({
+  name: 'adminAuth',
   initialState,
   reducers: {
-    loginUser(state, action) {
-      const { id, username, name, email, picture, gender, birthday, bio,role } = action.payload;
+    loginAdmin(state, action) {
+      const { id, username, name, email, picture, role } = action.payload;
       state.id = id;
       state.username = username;
       state.name = name;
       state.email = email;
       state.picture = picture;
-      state.gender = gender;
-      state.birthday = birthday;
       state.isLoggedIn = true;
-      state.bio = bio;
       state.role = role;
     },
-    logoutUser(state) {
+    logoutAdmin(state) {
       state.id = null;
       state.username = null;
       state.name = null;
@@ -42,17 +36,7 @@ const authSlice = createSlice({
       state.bio = null;
       state.role = null;
     },
-    updateUser(state, action) {
-      const { field, value } = action.payload;
-      if (field === 'name') {
-        state.name = value;
-      } else if (field === 'username') {
-        state.username = value;
-      } else if (field === 'picture') {
-        state.picture = value;
-      }
-    },
-    resetAuth(state) {
+    resetAdminAuth(state) {
       Object.keys(state).forEach(key => {
         state[key] = initialState[key];
       });
@@ -60,5 +44,5 @@ const authSlice = createSlice({
   }
 });
 
-export const { loginUser, logoutUser, updateUser, resetAuth } = authSlice.actions;
-export default authSlice.reducer;
+export const { loginAdmin, logoutAdmin,  resetAdminAuth } = adminAuthSlice.actions;
+export default adminAuthSlice.reducer;
