@@ -1,11 +1,13 @@
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button } from "@nextui-org/react";
 import MainLogo from "../../../../public/icons/MainLogo";
 import { useDispatch, useSelector } from "react-redux";
-import { logoutAdmin } from "../../../store/auth/adminAuthSlice";
+import {  resetAdminAuth } from "../../../store/auth/adminAuthSlice";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminNavbar() {
-    const isAdminLoggedIn = useSelector(state => state.auth.isLoggedIn)
+    const isAdminLoggedIn = useSelector(state => state.adminAuth.isLoggedIn)
+    console.log("isAdminLoggedIn")
+    console.log(isAdminLoggedIn)
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
@@ -17,7 +19,7 @@ export default function AdminNavbar() {
             const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
             document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
         }
-        await dispatch(logoutAdmin());
+        await dispatch(resetAdminAuth());
         setTimeout(()=>{
             navigate("/login");
         },2000)
@@ -32,7 +34,7 @@ export default function AdminNavbar() {
                 </div>
             </NavbarBrand>
             <NavbarContent justify="end">
-                {isAdminLoggedIn ? (
+                {!isAdminLoggedIn ? (
                     <>
                 <NavbarItem className="hidden lg:flex">
                     <Link href="#">Login</Link>
