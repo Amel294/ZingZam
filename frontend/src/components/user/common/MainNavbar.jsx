@@ -16,7 +16,6 @@ export default  function MainNavbar() {
         dispatch(resetPost())
         dispatch(resetAuth())
         dispatch(resetOwnPost())
-        dispatch(resetPost())
         navigate("/login");
     };
     const handleLogOut = async () => {
