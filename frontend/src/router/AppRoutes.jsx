@@ -9,7 +9,6 @@ import Login from '../pages/user/Login';
 import Signup from '../pages/user/Signup';
 import FooterLayout from './layouts/FooterLayout';
 import NotFound from '../pages/user/NotFound';
-import UserManagement from '../components/admin/userManagement/UserManagement';
 import AdminHome from '../pages/admin/AdminHome';
 import ForgotPassword from '../pages/user/ForgotPassword';
 import Profile from '../pages/user/Profile';
@@ -45,7 +44,23 @@ const AppRoutes = () => {
     console.log('AppRoutes rendered:', { storedAuthStatus });
 
     return (
+
         <Routes>
+            {storedAdminAuthStatus && (
+                <>
+                    {console.log("Admin  is  authenticated", storedAdminAuthStatus)}
+                    <Route element={<AdminNavLayout />}>
+                        <Route path="/admin" index element={<AdminHome />} />
+                        <Route path="/usermanagement" element={<AdminHome />} />
+                    </Route>
+                </>
+            )}
+            {!storedAdminAuthStatus && (
+                <>
+                    {console.log("Admin  is  not authenticated")}
+                    <Route path="/admin" element={<Navigate to="/login" replace />} />
+                </>
+            )}
             {storedAuthStatus && (
                 <>
                     {console.log("User is  authenticated")}
@@ -64,12 +79,7 @@ const AppRoutes = () => {
                     <Route path="/profile/:username" element={<Navigate to="/login" replace />} />
                 </>
             )}
-            {storedAdminAuthStatus && (
-                <>
-                    {console.log("Admin  is  authenticated")}
-                    <Route path="/admin" element={<Navigate to="/admin" replace />} />
-                </>
-            )}
+
             <Route element={<MainNavLayout />}>
                 <Route index element={<Home />} />
                 <Route path="/home" element={<Home />} />
@@ -82,10 +92,6 @@ const AppRoutes = () => {
                 <Route path="/forgotpassword" element={<ForgotPassword />} />
             </Route>
 
-            <Route element={<AdminNavLayout />}>
-                <Route path="/admin" index element={<AdminHome />} />
-                <Route path="/usermanagement" element={<UserManagement />} />
-            </Route>
             <Route path="*" element={<NotFound />} />
 
         </Routes>
