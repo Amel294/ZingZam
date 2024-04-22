@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 
 export default function UserManagement() {
-    const [selectedKeys, setSelectedKeys] = React.useState(new Set(["2"]));
     const [isLoading, setIsLoading] = useState(false);
     const [users, setUsers] = useState([]);
     const [page, setPage] = React.useState(1);
@@ -18,46 +17,66 @@ export default function UserManagement() {
 
         return users.slice(start, end);
     }, [page, users]);
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
+    const fetchData = async () => {
+        setIsLoading(true);
 
-            try {
-                const response = await AxiosWithBaseURLandCredentials.get('/admin/usermanagement', {
-                    withCredentials: true
-                });
+        try {
+            const response = await AxiosWithBaseURLandCredentials.get('/admin/usermanagement', {
+                withCredentials: true
+            });
 
-                if (response.data.error) {
-                    toast.error(`${ response.data.error }`);
-                } else {
-                    setUsers(response.data);
-                }
-            } catch (error) {
-                console.error(error);
-                toast.error("This didn't work.");
-            } finally {
-                setIsLoading(false);
+            if (response.data.error) {
+                toast.error(`${ response.data.error }`);
+            } else {
+                setUsers(response.data);
             }
-        };
+        } catch (error) {
+            console.error(error);
+            toast.error("This didn't work.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchData();
     }, []);
-
+    const handleBlockUnblock = async (userID) => {
+        setIsLoading(true);
+    
+        try {
+            const response = await AxiosWithBaseURLandCredentials.post(`/admin/blockunblock/${userID}`, {
+                withCredentials: true
+            });
+    
+            if (response.data.error) {
+                toast.error(`${ response.data.error }`);
+            } else {
+                if(page !== 1) {
+                    setPage(page - 1);
+                }
+                fetchData(); // Refetch data after modifying the user's block status
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("This didn't work.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
     const columns = [
         { name: "USER", uid: "name" },
         { name: "EMAIL", uid: "email" },
-        { name: "VERIFIED", uid: "verified" },
         { name: "BLOCK", uid: "blocked" },
         { name: "DELETE", uid: "delete" },
     ];
 
     const renderCell = React.useCallback((user, columnKey) => {
-        console.log('User:', user, 'isBlocked:', user.isBlocked);
         switch (columnKey) {
             case "name":
                 return (
                     <User
-                        avatarProps={{ radius: "lg", src: user.avatar || 'https://i.pravatar.cc/150' }}
+                        avatarProps={{ radius: "lg", src: user.picture }}
                         description={user.email}
                         name={user.name}
                     >
@@ -66,14 +85,10 @@ export default function UserManagement() {
                 );
             case "email":
                 return <>{user.email}</>
-            case "status":
-                return <>{user.isBlocked === true ? 'Blocked' : 'Active'}</>
-            case "verified":
-                return <>{user.verified === true ? 'Verified' : 'Unverified'}</>
             case "blocked":
                 return (
                     <div className="relative flex items-center justify-between" >
-                        <Button size="sm" className="min-w-20" color={user.isBlocked ? "warning" : "success"}>
+                        <Button size="sm" className="min-w-20" color={user.isBlocked ? "warning" : "success"} onClick={() => handleBlockUnblock(user._id)}>
                             {user.isBlocked ? "Unblock" : "Block"}
                         </Button>
                     </div>

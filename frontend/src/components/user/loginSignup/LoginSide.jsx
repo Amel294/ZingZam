@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../../../store/auth/authSlice";
 import { validateEmail, validatePassword } from "../../../utils/validation/formValidation";
 import axios from "axios";
+import { loginAdmin } from "../../../store/auth/adminAuthSlice";
 export default function LoginSide() {
     const dispatch = useDispatch()
     const isAuthenticated = useSelector(state => state.auth.isLoggedIn)
@@ -28,25 +29,42 @@ export default function LoginSide() {
             const response = await axios.post('http://localhost:8000/user/login', {
                 email,
                 password,
-            },{withCredentials:true});
+            }, { withCredentials: true });
             console.log(response);
             if (response.data.error) {
                 toast.error(`${ response.data.error }`)
             } else {
-                await dispatch(loginUser({
-                    id: response.data.id,
-                    username: response.data.username,
-                    name: response.data.name,
-                    email: response.data.email,
-                    picture: response.data.picture || null,
-                    gender: response.data.gender,
-                    birthday: response.data.birthday,
-                    isLoggedIn: true,
-                    bio: response.data.bio,
-                }));
-                setTimeout(() => {
-                    navigate("/home");
-                }, 2000)
+                if (response.data.role === "user") {
+
+                    await dispatch(loginUser({
+                        id: response.data.id,
+                        username: response.data.username,
+                        name: response.data.name,
+                        email: response.data.email,
+                        picture: response.data.picture || null,
+                        gender: response.data.gender,
+                        birthday: response.data.birthday,
+                        isLoggedIn: true,
+                        bio: response.data.bio,
+                        role: response.data.role,
+                    }));
+                    setTimeout(() => {
+                        navigate("/home");
+                    }, 2000)
+                } else {
+                    await dispatch(loginAdmin({
+                        id: response.data.id,
+                        username: response.data.username,
+                        name: response.data.name,
+                        email: response.data.email,
+                        picture: response.data.picture || null,
+                        isLoggedIn: true,
+                        role: response.data.role,
+                    }));
+                    setTimeout(() => {
+                        navigate("/admin");
+                    }, 2000)
+                }
             }
         } catch (error) {
             console.log(error)

@@ -11,8 +11,9 @@ AxiosWithBaseURLandCredentials.interceptors.request.use(
     function (config) {
         const accessToken = document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1];
         const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1];
+        const adminToken = document.cookie.split('; ').find(row => row.startsWith('adminToken='))?.split('=')[1];
         console.log(refreshToken)
-        if(!refreshToken){
+        if(!refreshToken && !adminToken){
             console.log("no refresh token")
             window.location.href = '/login'
         }
@@ -42,7 +43,6 @@ AxiosWithBaseURLandCredentials.interceptors.response.use(
             console.log("user is blocked")
             window.location.href = '/login'
         }
-       
     }
 );
 

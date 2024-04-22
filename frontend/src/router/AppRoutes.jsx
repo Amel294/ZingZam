@@ -1,4 +1,4 @@
-import {  useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -17,12 +17,14 @@ import { resetAuth } from '../store/auth/authSlice';
 import { resetPost } from '../store/auth/postsSlice';
 import { resetOwnPost } from '../store/auth/ownPostSlice';
 import { resetTempToken } from '../store/auth/tempTokenSlice';
+import AdminNavLayout from './layouts/AdminNavLayout';
 
 const AppRoutes = () => {
     const dispatch = useDispatch()
     const [isLoading, setIsLoading] = useState(false);
     const storedAuthStatus = useSelector(state => state.auth.isLoggedIn);
-    console.log("storedAuthStatus",storedAuthStatus);
+    const storedAdminAuthStatus = useSelector(state => state.adminAuth.isLoggedIn);
+    console.log("storedAuthStatus", storedAuthStatus);
     useEffect(() => {
         const checkRefreshToken = () => {
             const cookies = document.cookie.split(';');
@@ -40,11 +42,11 @@ const AppRoutes = () => {
         return <Loading />;
     }
 
-    console.log('AppRoutes rendered:', {  storedAuthStatus });
+    console.log('AppRoutes rendered:', { storedAuthStatus });
 
     return (
         <Routes>
-            { storedAuthStatus && (
+            {storedAuthStatus && (
                 <>
                     {console.log("User is  authenticated")}
                     <Route path="/" element={<Navigate to="/home" replace />} />
@@ -53,7 +55,7 @@ const AppRoutes = () => {
                     <Route path="/forgotpassword" element={<Navigate to="/home" replace />} />
                 </>
             )}
-            {!storedAuthStatus &&  (
+            {!storedAuthStatus && (
                 <>
                     {console.log("User is not authenticated")}
                     <Route index element={<Login />} />
@@ -62,7 +64,12 @@ const AppRoutes = () => {
                     <Route path="/profile/:username" element={<Navigate to="/login" replace />} />
                 </>
             )}
-
+            {storedAdminAuthStatus && (
+                <>
+                    {console.log("Admin  is  authenticated")}
+                    <Route path="/admin" element={<Navigate to="/admin" replace />} />
+                </>
+            )}
             <Route element={<MainNavLayout />}>
                 <Route index element={<Home />} />
                 <Route path="/home" element={<Home />} />
@@ -74,11 +81,11 @@ const AppRoutes = () => {
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgotpassword" element={<ForgotPassword />} />
             </Route>
-            <Route >
+
+            <Route element={<AdminNavLayout />}>
                 <Route path="/admin" index element={<AdminHome />} />
                 <Route path="/usermanagement" element={<UserManagement />} />
             </Route>
-
             <Route path="*" element={<NotFound />} />
 
         </Routes>
