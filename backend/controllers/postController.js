@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const likesModel = require("../models/likesModel");
 const CommentModel = require("../models/CommentModel");
+const { checkIfFriend } = require("../helpers/checkIfFriend");
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -453,3 +454,105 @@ exports.changeCaption = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+exports.getProfilePosts = async (req, res) => {
+    try {
+        const id = req?.userData?.id;
+        const userId = new mongoose.Types.ObjectId(id);
+        const username = req.params.username
+        console.log("username",username)
+        const fetch = await UserModel.findOne({ username });
+        console.log("fetch",fetch)
+        const profileUserId = fetch._id
+        const page = parseInt(req.params.page) || 1;
+        const limit = 2;
+        const skip = (page - 1) * limit;
+
+        let matchStage;
+        if (profileUserId.toString() === userId.toString()) {
+            matchStage = {
+                userId: userId,
+            };
+        } else {
+            const isFriend = await checkIfFriend(userId, profileUserId); 
+            if (isFriend) {
+                matchStage = {
+                    userId: profileUserId,
+                    isPrivate: false 
+                };
+            } else {
+                matchStage = {
+                    userId: profileUserId,
+                    isPrivate: false 
+                };
+            }
+        }
+        const posts = await PostModel.aggregate([
+            {
+                $match: matchStage
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$userId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { _id: 1, picture: 1, username: 1 } }
+                    ],
+                    as: 'postedBy'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'likes',
+                    localField: '_id',
+                    foreignField: 'postId',
+                    as: 'likes'
+                }
+            },
+            {
+                $addFields: {
+                    likes: { $arrayElemAt: ['$likes', 0] },
+                    likeCount: { $arrayElemAt: ['$likes.likeCount', 0] }
+                }
+            },
+            {
+                $addFields: {
+                    userSaved: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ifNull: ['$savedPost', false] },
+                                    { $not: { $eq: ['$savedPost', []] } }
+                                ]
+                            },
+                            then: { $in: [userId, '$savedPost.savedPost'] },
+                            else: false
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    userId: 1,
+                    imageUrl: 1,
+                    caption: 1,
+                    isPrivate: 1,
+                    createdAt: 1,
+                    postedBy: 1,
+                    likeCount: 1,
+                    userLiked: 1,
+                    userSaved: 1,
+                }
+            },
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit }
+        ]);
+
+        res.status(200).json(posts);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to fetch posts' });
+    }
+};
