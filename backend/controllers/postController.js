@@ -278,9 +278,7 @@ exports.likeUnlikePost = async (req, res) => {
     try {
         const userId = req?.userData?.id;
         const { postId } = req.body;
-
         let like = await likesModel.findOne({ postId });
-
         if (!like) {
             like = new likesModel({ postId, likedUsers: [] });
         } else {
@@ -312,8 +310,7 @@ exports.deleteComment = async (req, res) => {
         console.log(req.params)
         const post = await CommentModel.findOne({postId:postId});
         if (!post) {
-            console.error('Post not found:', postId); // Add detailed logging
-
+            console.error('Post not found:', postId); 
             return res.status(404).json({ error: 'Post not found' });
         }
         const commentIndex = post.comments.findIndex(comment => String(comment._id) === commentId);
@@ -337,24 +334,19 @@ exports.commentsFromPostId = async (req, res) => {
         const { postId } = req.body;
         const comments = await CommentModel.findOne({ postId })
             .select('latestComments commentCount')
-            .populate('latestComments.userId', '_id username name picture') // Populate user data
+            .populate('latestComments.userId', '_id username name picture') 
             .lean();
-
         if (!comments || comments.latestComments.length === 0) {
             return res.status(404).json({ error: 'Latest comments not found' });
         }
-
-        // Note: No need for the users query and subsequent mapping
-
         const formattedComments = comments.latestComments.map(comment => ({
             text: comment.text,
-            userId: comment.userId._id, // User data is now populated
+            userId: comment.userId._id, 
             createdAt: comment.createdAt,
             username: comment.userId.username,
             name: comment.userId.name,
             picture: comment.userId.picture || ''
         }));
-
         const commentCount = comments.commentCount;
         res.status(200).json({ latestComments: formattedComments, commentCount });
     } catch (err) {

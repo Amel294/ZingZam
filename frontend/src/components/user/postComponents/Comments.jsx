@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Avatar, Button, CardFooter } from "@nextui-org/react";
+import { Avatar, Button, CardFooter, Input } from "@nextui-org/react";
 import toast from "react-hot-toast";
 import DeleteIcon from "../../../../public/icons/DeleteIcon";
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
@@ -7,6 +7,9 @@ import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 function Comments({ postId, postType, userId }) {
     const [comments, setComments] = useState([]);
     const [commentCount, setCommentCount] = useState(0);
+    const [writeComment, setWriteComment] = useState("");
+    const [reply, setReply] = useState("")
+    const [parentCommentId, setParentCommentId] = useState("")
 
     const getComments = async (postId) => {
         console.log("Req for get comments")
@@ -23,11 +26,63 @@ function Comments({ postId, postType, userId }) {
             console.error("Failed to fetch comments:", error);
             toast.error("Failed to fetch comments");
         }
-    };
+    }
+    const handleGetReplies = async (commentId) => {
+        try {
+            const response = await AxiosWithBaseURLandCredentials.get(`/post/replies/${ commentId }`, {
+                withCredentials: true
+            });
+            if (response.status === 200) {
+                const fetchedReplies = response.data;
+                const updatedComments = comments.map(comment => {
+                    if (comment.commentId === commentId) {
+                        return {
+                            ...comment,
+                            replies: fetchedReplies
+                        };
+                    }
+                    return comment;
+                });
+                setComments(updatedComments);
+            }
+        } catch (error) {
+            console.error("Failed to fetch replies:", error);
+            toast.error("Failed to fetch replies");
+        }
+    }
+    const addComment = async () => {
+        const response = await AxiosWithBaseURLandCredentials.post(`/post/addcomment`, { postId, comment: writeComment });
+        if (response.status === 200) {
+            toast.success("Comment Posted")
+            setWriteComment('')
+            getComments(postId)
+
+        }
+    }
+    const addCommentReply = async (username, CommentId) => {
+        setReply(`@${ username }:`)
+        setParentCommentId(CommentId)
+    }
+
+    const handlePostComment = async () => {
+        if (reply.length <= 0) {
+            addComment()
+        } else {
+            const response = await AxiosWithBaseURLandCredentials.post(`/post/addcomment`, { postId, comment: writeComment, parentCommentId });
+            if (response.status === 200) {
+                toast.success("Comment Posted")
+                setWriteComment('')
+                setParentCommentId("")
+                setReply("")
+                getComments(postId)
+
+            }
+        }
+    }
 
     useEffect(() => {
         getComments(postId);
-    }, [postId]);
+    }, []);
     const handleDeleteComment = async (postId, commentId) => {
         const response = await AxiosWithBaseURLandCredentials.delete(`/post/comment/${ postId }/${ commentId }`, {
             withCredentials: true
@@ -35,33 +90,64 @@ function Comments({ postId, postType, userId }) {
         if (response.status === 200) {
             toast.success("Comment Deleted")
             setCommentCount(prevCount => prevCount - 1);
-            const newComment = await AxiosWithBaseURLandCredentials.post(`/post/get-comment-fromPostId`, { postId });
-            console.log("newComment", newComment)
-            setComments(newComment.data)
+            const response = await AxiosWithBaseURLandCredentials.post(`/post/get-comment-fromPostId`, { postId });
+            console.log(response)
+            getComments(postId)
+
         }
         console.log(response)
     }
+
+    const handleClear = () => {
+        console.log("clear")
+        setWriteComment("")
+        setReply("")
+    }
     return (
         <div>
-            <div>
+            <div className="px-4">
+                <div className="pt-0 pb-2 flex items-start text-sm">{commentCount} Comments</div>
                 {comments && comments.length > 0 ? (
                     comments.map((comment) => (
-                        <div key={comment.commentId} className="flex justify-between w-full">
-                            <div className="flex flex-row gap-4">
-                                <div>
-                                    <Avatar src={comment.picture} size="sm" />
+                        <div key={comment.commentId} className="flex flex-col w-full pt-2">
+                            {/* Comment */}
+                            <div className="flex justify-between gap-4">
+                                <div className="flex flex-row gap-4">
+                                    <div>
+                                        <Avatar src={comment.picture} size="sm" />
+                                    </div>
+                                    <div className="flex flex-col text-left">
+                                        <span className="text-xs">{comment.username}</span>
+                                        <span>{comment.text}</span>
+                                        <div className="flex gap-2">
+                                            <span className="text-xs opacity-50 hover:cursor-pointer" onClick={() => addCommentReply(comment.username, comment.commentId)}>Reply</span>
+                                            {comment.hasReplies && (
+                                                <span className="text-xs opacity-50 hover:cursor-pointer" onClick={() => handleGetReplies(comment.commentId)}>Show Replies</span>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col text-left">
-                                    <span className="text-xs">{comment.username}&nbsp;&nbsp;</span>
-                                    <span>{comment.text}</span>
-                                    <span className="text-xs opacity-50">Reply</span>
-                                </div>
+                                {(postType === "own" || comment.userId === userId) && (
+                                    <Button isIconOnly size="sm" onClick={() => handleDeleteComment(postId, comment.commentId)}>
+                                        <DeleteIcon />
+                                    </Button>
+                                )}
                             </div>
-                            {    console.log('user comment inner post', userId)}
-                            {(postType === "own" || comment.userId === userId) && (
-                                <Button isIconOnly size="sm" onClick={() => handleDeleteComment(postId, comment.commentId)}>
-                                    <DeleteIcon />
-                                </Button>
+                            {comment.replies && comment.replies.length > 0 && (
+                                <div className="ml-10 mt-2">
+                                    {comment.replies.map((reply) => (
+                                        <div key={reply._id} className="flex gap-2 mt-2">
+                                            <div>
+                                                <Avatar src={reply.userId.picture} size="sm" />
+                                            </div>
+                                            <div className="flex flex-col text-left">
+                                                <span className="text-xs">{reply.userId.username}</span>
+                                                <span>{reply.userId.text}</span>
+                                                <span>{reply.text}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </div>
                     ))
@@ -70,9 +156,22 @@ function Comments({ postId, postType, userId }) {
                 )}
             </div>
 
-            <CardFooter className="flex flex-col gap-2 items-start pb-0 w-full">
-                {/* ... (Your Comment Input and Posting Logic Here) */}
+            {commentCount > 0 && (
+                <div className="flex justify-center">
+                    <div className="w-full items-start flex ps-4 text-sm opacity-50 pt-2 hover:opacity-100 hover:cursor-pointer">See All Comments</div>
+                </div>
+            )}
+            <CardFooter className="pt-0">
+                <div className="flex flex-row items-end w-full gap-2">
+                    <Input startContent={
+                        <div className="pointer-events-none flex items-center">
+                            <span className="text-default-400 text-xs">{reply}</span>
+                        </div>
+                    } isClearable type="email" variant="underlined" label="Add a comment" value={writeComment} onChange={(event) => setWriteComment(event.target.value)} onClear={handleClear} />
+                    <Button size="sm" onClick={() => handlePostComment()}> Post </Button>
+                </div>
             </CardFooter>
+
         </div>
     );
 }

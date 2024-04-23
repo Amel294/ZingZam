@@ -20,7 +20,6 @@ export default function Post({ post }) {
     console.log('user inner post', userId)
     const [isLikeOpen, setIsLikeOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [writeComment, setWriteComment] = useState("");
     
     const handlesavePost = async (postId) => {
         // const response = await AxiosWithBaseURLandCredentials.post(`/post/saveunsave`, { postId });
@@ -40,16 +39,7 @@ export default function Post({ post }) {
     const handleGoToProfile = () => {
         navigate(`/profile/${ post.user.username }`);
     }
-    const addComment = async (postId) => {
-        const response = await AxiosWithBaseURLandCredentials.post(`/post/addcomment`, { postId, comment: writeComment });
-        if (response.status === 200) {
-            toast.success("Comment Posted")
-            setWriteComment('')
-            dispatch(updateLatestComments({ postId, latestComments: response.data.latestComments, commentCount: response.data.commentCount }));
-            const newComment = await AxiosWithBaseURLandCredentials.post(`/post/get-comment-fromPostId`, { postId });
-            console.log("newComment", newComment)
-        }
-    }
+    
     const handleLike = async (postId) => {
         try {
             const response = await AxiosWithBaseURLandCredentials.post(`/post/likeunlike`, { postId });
@@ -100,7 +90,7 @@ export default function Post({ post }) {
                 <CardFooter className="flex flex-row justify-between">
                     <div className="flex items-center gap-1">
                         <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={post.userLiked ? "#661FCC" : "none"} stroke={post.userLiked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
-                        <p><span className="hover:cursor-pointer" onClick={() => setIsLikeOpen(true)}>{post?.likeCount} Likes</span><span> |  </span><span>{post.commentCount ? post.commentCount : 0} Comments</span> </p>
+                        <p><span className="hover:cursor-pointer text-sm" onClick={() => setIsLikeOpen(true)}>{post?.likeCount} Likes</span></p>
                     </div>
                     <div className="flex flex-row gap-10">
                         <Share height="25px" fill="#661FCC" />
@@ -108,12 +98,7 @@ export default function Post({ post }) {
                     </div>
                 </CardFooter>
                 <Comments postId={post._id} postType={post.type} userId={userId}/>
-                <CardFooter className="pt-0">
-                    <div className="flex flex-row items-end w-full gap-2">
-                        <Input type="email" variant="underlined" label="Add a comment" value={writeComment} onChange={(event) => setWriteComment(event.target.value)} />
-                        <Button size="sm" onClick={() => addComment(post._id)}> Post </Button>
-                    </div>
-                </CardFooter>
+                
             </Card >
             <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
             <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId={post._id} likedUsers={post.likedUsers} likeCount={post.likeCount} />
