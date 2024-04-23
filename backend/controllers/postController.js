@@ -308,9 +308,9 @@ exports.deleteComment = async (req, res) => {
         const userId = req?.userData?.id;
         const { postId, commentId } = req.params;
         console.log(req.params)
-        const post = await CommentModel.findOne({postId:postId});
+        const post = await CommentModel.findOne({ postId: postId });
         if (!post) {
-            console.error('Post not found:', postId); 
+            console.error('Post not found:', postId);
             return res.status(404).json({ error: 'Post not found' });
         }
         const commentIndex = post.comments.findIndex(comment => String(comment._id) === commentId);
@@ -334,14 +334,14 @@ exports.commentsFromPostId = async (req, res) => {
         const { postId } = req.body;
         const comments = await CommentModel.findOne({ postId })
             .select('latestComments commentCount')
-            .populate('latestComments.userId', '_id username name picture') 
+            .populate('latestComments.userId', '_id username name picture')
             .lean();
         if (!comments || comments.latestComments.length === 0) {
             return res.status(404).json({ error: 'Latest comments not found' });
         }
         const formattedComments = comments.latestComments.map(comment => ({
             text: comment.text,
-            userId: comment.userId._id, 
+            userId: comment.userId._id,
             createdAt: comment.createdAt,
             username: comment.userId.username,
             name: comment.userId.name,
@@ -436,3 +436,20 @@ exports.getReplies = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch replies' });
     }
 };
+
+exports.changeCaption = async (req, res) => {
+    try {
+        console.log("In change caption");
+        const { postId, caption } = req.body;
+        const post = await PostModel.findOne({ _id: postId, userId: req.userData.id });
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found or unauthorized access' });
+        }
+        post.caption = caption;
+        await post.save();
+        res.status(200).json({ success: true, message: 'Caption updated successfully' });
+    } catch (error) {
+        console.error('Error changing caption:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
