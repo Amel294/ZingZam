@@ -34,6 +34,7 @@ export default function LoginSide() {
             if (response.data.error) {
                 toast.error(`${ response.data.error }`)
             } else {
+               
                 if (response.data.role === "user") {
 
                     await dispatch(loginUser({
@@ -67,6 +68,10 @@ export default function LoginSide() {
                 }
             }
         } catch (error) {
+            if(error.response.data.isBlocked === true) {
+                toast.error("You are blocked by admin")
+                return
+            }
             console.log(error)
         } finally {
             setIsLoading(false);
