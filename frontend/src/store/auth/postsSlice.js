@@ -56,6 +56,15 @@ const postsSlice = createSlice({
                 state.posts[postIndex].userLiked = userLiked;
             }
         },
+        updateLatestComments(state, action) {
+            const { postId, latestComments, commentCount } = action.payload;
+            const postIndex = state.posts.findIndex(post => post._id === postId);
+            if (postIndex !== -1) {
+                state.posts[postIndex].latestComments = latestComments;
+                state.posts[postIndex].commentCount = commentCount;
+            }
+        },
+        
     },
 });
 
@@ -68,7 +77,8 @@ export const {
     deletePost,
     clearPosts,
     resetPost,
-    updateLikeCountAndUserLiked
+    updateLikeCountAndUserLiked,
+    updateLatestComments
 } = postsSlice.actions;
 
 export default postsSlice.reducer;
