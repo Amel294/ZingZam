@@ -12,9 +12,9 @@ function HomeCenter() {
   const [hasMore, setHasMore] = useState(true);
   const posts = useSelector((state) => state.posts.posts);
   const dispatch = useDispatch();
-  const userId = useSelector((state) => state.auth.id)
   useEffect(() => {
     fetchPosts()
+    setPage(2)
   }, [])
   const fetchPosts = async () => {
     try {
@@ -56,8 +56,7 @@ function HomeCenter() {
         {posts.length > 0 ? (
           posts.map((post) => (
             <div key={post._id} className="mb-4">
-              <Post post={post} userId={userId} />
-
+              <Post post={post}  />
             </div>
           ))
         ) : null}

@@ -1,6 +1,6 @@
-import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input,useDisclosure } from "@nextui-org/react";
+import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input, useDisclosure, Avatar } from "@nextui-org/react";
 import Heart from "/public/icons/Heart";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Share from "/public/icons/Share";
 import BookMark from "/public/icons/BookMark";
 import toast, { Toaster } from "react-hot-toast";
@@ -8,30 +8,20 @@ import CommentModal from "../comment/CommentModal";
 import dummyPost from '/Post/rain.jpg'
 import { useNavigate } from 'react-router-dom';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
-import { useDispatch } from 'react-redux';
-import { updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
+import { useDispatch, useSelector } from 'react-redux';
+import { updateLatestComments, updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
 import LikeModel from "../like/LikeModel";
+import Comments from "./Comments";
 
-export default function Post({ post, user }) {
+export default function Post({ post }) {
     const dispatch = useDispatch();
+    const userId = useSelector((state) => state.auth.id)
 
+    console.log('user inner post', userId)
     const [isLikeOpen, setIsLikeOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [writeComment, setWriteComment] = useState("");
-
-    const handleDeleteComment = async (postId, commentId) => {
-        const response = await AxiosWithBaseURLandCredentials.delete(`/post/comment/${ postId }/${ commentId }`, {
-            withCredentials: true
-        });
-        if (response.status === 200) {
-            toast.success("Comment Posted")
-            setCommentCount(prevCount => prevCount - 1);
-            const newComment = await AxiosWithBaseURLandCredentials.post(`/post/get-comment-fromPostId`, { postId });
-            console.log("newComment", newComment)
-            setComments(newComment.data)
-        }
-        console.log(response)
-    }
+    
     const handlesavePost = async (postId) => {
         // const response = await AxiosWithBaseURLandCredentials.post(`/post/saveunsave`, { postId });
         // if (response.data.saved === true) {
@@ -55,11 +45,9 @@ export default function Post({ post, user }) {
         if (response.status === 200) {
             toast.success("Comment Posted")
             setWriteComment('')
-            setCommentCount(prevCount => prevCount + 1);
-
+            dispatch(updateLatestComments({ postId, latestComments: response.data.latestComments, commentCount: response.data.commentCount }));
             const newComment = await AxiosWithBaseURLandCredentials.post(`/post/get-comment-fromPostId`, { postId });
             console.log("newComment", newComment)
-            setComments(newComment.data)
         }
     }
     const handleLike = async (postId) => {
@@ -119,37 +107,16 @@ export default function Post({ post, user }) {
                         <BookMark height="25px" fill={post.userSaved ? "#661FCC" : "none"} stroke={post.userSaved ? "none" : "#661FCC"} onClick={() => handlesavePost(post?._id)} />
                     </div>
                 </CardFooter>
-                {post.comments && post.comments.length > 0 ? (
-                    <CardFooter className="flex flex-col gap-2 items-start pb-0 w-full">
-                        {comments.map(comment => (
-                            <div key={comment._id} className="flex justify-between w-full">
-                                <div className="flex flex-row gap-4">
-                                    <div>
-                                        <img className="rounded-full w-10" src={comment.picture} alt="avatar" />
-                                    </div>
-                                    <div className="flex flex-col text-left">
-                                        <span className="text-xs">{comment?.username}&nbsp;&nbsp;</span>
-                                        <span>{comment.text}</span>
-                                    </div>
-                                </div>
-                                <Button size="sm" onClick={() => handleDeleteComment(post._id, comment._id)}>Delete</Button>
-                                {/* del action for authenticated user only */}
-                            </div>
-                        ))}
-                        <div className="underline cursor-pointer" onClick={() => setIsOpen(true)}>Show more comments</div>
-                    </CardFooter>
-                ) : (
-                    <div>No comments</div>
-                )}
+                <Comments postId={post._id} postType={post.type} userId={userId}/>
                 <CardFooter className="pt-0">
                     <div className="flex flex-row items-end w-full gap-2">
                         <Input type="email" variant="underlined" label="Add a comment" value={writeComment} onChange={(event) => setWriteComment(event.target.value)} />
                         <Button size="sm" onClick={() => addComment(post._id)}> Post </Button>
                     </div>
                 </CardFooter>
-            </Card>
+            </Card >
             <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
-            <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId= {post._id} likedUsers= {post.likedUsers} likeCount={post.likeCount}  />
+            <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId={post._id} likedUsers={post.likedUsers} likeCount={post.likeCount} />
             <Toaster
                 position="top-center"
                 reverseOrder={false}
