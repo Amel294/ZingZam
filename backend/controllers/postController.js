@@ -95,33 +95,11 @@ exports.getPosts = async (req, res) => {
             {
                 $addFields: {
                     likes: { $arrayElemAt: ['$likes', 0] },
-                    likeCount: { $arrayElemAt: ['$likes.likeCount', 0] } 
-                }
-            },
-            {
-                $lookup: {
-                    from: 'comments',
-                    localField: '_id',
-                    foreignField: 'postId',
-                    as: 'comments'
+                    likeCount: { $arrayElemAt: ['$likes.likeCount', 0] }
                 }
             },
             {
                 $addFields: {
-                    comments: { $arrayElemAt: ['$comments', 0] },
-                    commentCount: { $arrayElemAt: ['$comments.commentCount', 0] },
-                    userLiked: {
-                        $cond: {
-                            if: {
-                                $and: [
-                                    { $ifNull: ['$likes', false] },
-                                    { $not: { $eq: ['$likes', []] } }
-                                ]
-                            },
-                            then: { $in: [userId, '$likes.likedUsers'] },
-                            else: false
-                        }
-                    },
                     userSaved: {
                         $cond: {
                             if: {
@@ -145,8 +123,6 @@ exports.getPosts = async (req, res) => {
                     isPrivate: 1,
                     createdAt: 1,
                     postedBy: 1,
-                    latestComments: '$comments.latestComments',
-                    commentCount: 1,
                     likeCount: 1,
                     userLiked: 1,
                     userSaved: 1,
@@ -194,34 +170,12 @@ exports.getPosts = async (req, res) => {
                 {
                     $addFields: {
                         likes: { $arrayElemAt: ['$likes', 0] },
-                        likeCount: { $arrayElemAt: ['$likes.likeCount', 0] } 
+                        likeCount: { $arrayElemAt: ['$likes.likeCount', 0] }
 
                     }
                 },
                 {
-                    $lookup: {
-                        from: 'comments',
-                        localField: '_id',
-                        foreignField: 'postId',
-                        as: 'comments'
-                    }
-                },
-                {
                     $addFields: {
-                        comments: { $arrayElemAt: ['$comments', 0] },
-                        commentCount: { $arrayElemAt: ['$comments.commentCount', 0] },
-                        userLiked: {
-                            $cond: {
-                                if: {
-                                    $and: [
-                                        { $ifNull: ['$likes', false] },
-                                        { $not: { $eq: ['$likes', []] } }
-                                    ]
-                                },
-                                then: { $in: [userId, '$likes.likedUsers'] },
-                                else: false
-                            }
-                        },
                         userSaved: {
                             $cond: {
                                 if: {
@@ -245,8 +199,6 @@ exports.getPosts = async (req, res) => {
                         isPrivate: 1,
                         createdAt: 1,
                         postedBy: 1,
-                        latestComments: '$comments.latestComments',
-                        commentCount: 1,
                         likeCount: 1,
                         userLiked: 1,
                         userSaved: 1,
@@ -331,7 +283,7 @@ exports.likeUnlikePost = async (req, res) => {
 
         if (!like) {
             like = new likesModel({ postId, likedUsers: [] });
-        }else{
+        } else {
         }
         let userLiked = false;
         const userIdString = userId.toString();
@@ -343,8 +295,8 @@ exports.likeUnlikePost = async (req, res) => {
             userLiked = true;
         }
         await like.save();
-        res.status(201).json({ 
-            userLiked ,
+        res.status(201).json({
+            userLiked,
             newLikeCount: like.likeCount
         });
     } catch (err) {
@@ -357,8 +309,11 @@ exports.deleteComment = async (req, res) => {
     try {
         const userId = req?.userData?.id;
         const { postId, commentId } = req.params;
-        const post = await PostModel.findById(postId);
+        console.log(req.params)
+        const post = await CommentModel.findOne({postId:postId});
         if (!post) {
+            console.error('Post not found:', postId); // Add detailed logging
+
             return res.status(404).json({ error: 'Post not found' });
         }
         const commentIndex = post.comments.findIndex(comment => String(comment._id) === commentId);
@@ -372,32 +327,38 @@ exports.deleteComment = async (req, res) => {
         await post.save();
         res.status(200).json({ message: 'Comment deleted successfully' });
     } catch (err) {
+        console.log(err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
-exports.postComments = async (req, res) => {
+exports.commentsFromPostId = async (req, res) => {
     try {
-        const userId = req?.userData?.id;
         const { postId } = req.body;
-        const post = await PostModel.findById(postId)
-            .populate({
-                path: 'comments.userId',
-                select: 'picture',
-            })
+        const comments = await CommentModel.findOne({ postId })
+            .select('latestComments commentCount')
+            .populate('latestComments.userId', '_id username name picture') // Populate user data
             .lean();
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
+
+        if (!comments || comments.latestComments.length === 0) {
+            return res.status(404).json({ error: 'Latest comments not found' });
         }
-        const comments = post.comments.map(comment => {
-            return {
-                ...comment,
-                userId: comment.userId._id,
-                picture: comment.userId.picture,
-            };
-        });
-        res.status(200).json(comments);
+
+        // Note: No need for the users query and subsequent mapping
+
+        const formattedComments = comments.latestComments.map(comment => ({
+            text: comment.text,
+            userId: comment.userId._id, // User data is now populated
+            createdAt: comment.createdAt,
+            username: comment.userId.username,
+            name: comment.userId.name,
+            picture: comment.userId.picture || ''
+        }));
+
+        const commentCount = comments.commentCount;
+        res.status(200).json({ latestComments: formattedComments, commentCount });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
@@ -406,20 +367,80 @@ exports.LikedUsers = async (req, res) => {
     try {
         const postId = req.params.postId;
         const page = parseInt(req.params.page) || 1;
-        const limit = parseInt(req.params.limit) || 1; 
+        const limit = parseInt(req.params.limit) || 1;
         const skip = (page - 1) * limit;
         const like = await likesModel.findOne({ postId });
         if (!like) {
             return res.status(200).json({ likedUsers: [], totalLikes: 0 });
         }
         const likedUsersIds = like.likedUsers.slice(skip, skip + limit);
-        if(likedUsersIds.length < 1 ) {
-            return res.status(200).json({ isEnd : true , likedUsers: [], totalLikes: like.likedUsers.length });
+        if (likedUsersIds.length < 1) {
+            return res.status(200).json({ isEnd: true, likedUsers: [], totalLikes: like.likedUsers.length });
         }
         const likedUsers = await UserModel.find({ _id: { $in: likedUsersIds } }, 'name username _id picture');
-        res.status(200).json({isEnd : false, likedUsers });
+        res.status(200).json({ isEnd: false, likedUsers });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.getComments = async (req, res) => {
+    try {
+        const { postId, page = 1, limit = 2 } = req.params;
+        const skip = (page - 1) * limit;
+        const commentsData = await CommentModel.findOne({ postId })
+            .select('comments commentCount')
+            .lean()
+            .populate({
+                path: 'comments.userId',
+                select: 'username name picture _id'
+            })
+            .sort({ 'comments.createdAt': -1 });
+
+        if (!commentsData || !commentsData.comments || commentsData.comments.length === 0) {
+            return res.status(200).json({ comments: [], totalComments: 0 });
+        }
+
+        const totalComments = commentsData.commentCount;
+
+        const allFormattedComments = commentsData.comments.map(comment => ({
+            ...comment._doc,
+            text: comment.text,
+            userId: comment.userId._id,
+            username: comment.userId.username,
+            name: comment.userId.name,
+            picture: comment.userId.picture || '',
+            createdAt: comment.createdAt,
+            commentId: comment._id,
+            hasReplies: commentsData.comments.some(c => c._id.equals(comment._id) && c.replies.length > 0)
+        }));
+
+        const formattedComments = allFormattedComments.slice(skip, skip + limit);
+
+        return res.status(200).json({ comments: formattedComments, totalComments });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Failed to fetch comments' });
+    }
+};
+
+exports.getReplies = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const comment = await CommentModel.findOne({ 'comments._id': commentId })
+            .select('comments.$')
+            .populate({
+                path: 'comments.replies.userId',
+                select: 'username name picture _id'
+            });
+        if (!comment) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+        const replies = comment.comments[0].replies;
+        res.status(200).json(replies);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch replies' });
     }
 };

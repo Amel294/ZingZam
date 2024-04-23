@@ -43,19 +43,6 @@ const commentSchema  = mongoose.Schema({
         default: 0
     },
 
-    latestComments: [{
-        text: {
-            type: String,
-            trim: true
-        },
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        createdAt: {
-            type: Date
-        }
-    }]
 }, {
     timestamps: true,
 });
