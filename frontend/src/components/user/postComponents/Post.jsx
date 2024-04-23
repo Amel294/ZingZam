@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input, useDisclosure, Avatar } from "@nextui-org/react";
+import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input, useDisclosure, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import Heart from "/public/icons/Heart";
 import { useEffect, useState } from "react";
 import Share from "/public/icons/Share";
@@ -12,6 +12,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateLatestComments, updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
 import LikeModel from "../like/LikeModel";
 import Comments from "./Comments";
+import MenuDots from "../../../../public/icons/MenuDots";
+import CaptionModal from "./CaptionModal";
 
 export default function Post({ post }) {
     const dispatch = useDispatch();
@@ -20,7 +22,7 @@ export default function Post({ post }) {
     console.log('user inner post', userId)
     const [isLikeOpen, setIsLikeOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    
+    const [isCaptionOpen, setIsCaptionOpen] = useState(false);
     const handlesavePost = async (postId) => {
         // const response = await AxiosWithBaseURLandCredentials.post(`/post/saveunsave`, { postId });
         // if (response.data.saved === true) {
@@ -39,7 +41,7 @@ export default function Post({ post }) {
     const handleGoToProfile = () => {
         navigate(`/profile/${ post.user.username }`);
     }
-    
+
     const handleLike = async (postId) => {
         try {
             const response = await AxiosWithBaseURLandCredentials.post(`/post/likeunlike`, { postId });
@@ -55,16 +57,45 @@ export default function Post({ post }) {
             toast.error("Something went wrong");
         }
     };
+    const handleClose = () => {
+        setIsCaptionOpen(false);
+        
+    };
     return (
         <>
             <Card className="max-w-[400px] ">
                 <CardHeader className="flex justify-between">
                     <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
                         <Image alt="nextui logo" height={40} radius="lg" src={post.postedBy.picture} width={40} />
-                        <div className="flex flex-col text-left">
+                        <div className="flex flex-col text-left justify-between">
                             <p className="text-md" >{post.postedBy.username}</p>
                         </div>
                     </div>
+                    <Dropdown className="dark text-white">
+                        <DropdownTrigger>
+                            <Button
+                                variant="bordered" size="sm" isIconOnly className="fill-white shadow-none border-none "
+                            >
+                                <MenuDots />
+                            </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                            <DropdownItem
+                                onClick={() => setIsCaptionOpen(true)}
+                                key="edit-post"
+                            >
+                                Change Caption
+                            </DropdownItem>
+
+                            <DropdownItem
+                                className="bg-red-800"
+                                key="delete-post"
+                            >
+                                Delete Post
+                            </DropdownItem>
+
+                        </DropdownMenu>
+                    </Dropdown>
                     {post.type !== "own" ?
                         <>
                             <Button color="secondary" variant="bordered" size="sm">
@@ -97,11 +128,12 @@ export default function Post({ post }) {
                         <BookMark height="25px" fill={post.userSaved ? "#661FCC" : "none"} stroke={post.userSaved ? "none" : "#661FCC"} onClick={() => handlesavePost(post?._id)} />
                     </div>
                 </CardFooter>
-                <Comments postId={post._id} postType={post.type} userId={userId}/>
-                
+                <Comments postId={post._id} postType={post.type} userId={userId} />
+
             </Card >
             <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
             <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId={post._id} likedUsers={post.likedUsers} likeCount={post.likeCount} />
+            <CaptionModal handleClose={handleClose} postId={post._id} captionText={post.caption} setIsCaptionOpen={setIsCaptionOpen} isCaptionOpen={isCaptionOpen} />
             <Toaster
                 position="top-center"
                 reverseOrder={false}
