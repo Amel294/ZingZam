@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router()
-const { postPhoto,getPosts,addComment,saveUnsavePost,likeUnlikePost,commentsFromPostId,deleteComment, LikedUsers, getComments, getReplies,changeCaption  } = require('../controllers/postController');
+const { postPhoto,getPosts,addComment,saveUnsavePost,likeUnlikePost,commentsFromPostId,deleteComment, LikedUsers, getComments, getReplies,changeCaption, getProfilePosts  } = require('../controllers/postController');
 const multer = require('multer');
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -14,6 +14,7 @@ const upload = multer({ storage: storage });
 
 router.post('/uploadPhoto', upload.single('image') ,postPhoto);
 router.get('/get-posts/:page',getPosts);
+router.get('/get-profile-posts/:username/:page',getProfilePosts);
 router.post('/addcomment',addComment);
 router.post('/saveunsave',saveUnsavePost);
 router.post('/likeunlike',likeUnlikePost);
