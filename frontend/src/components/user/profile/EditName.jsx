@@ -31,13 +31,8 @@ export default function EditName({ isOpen, onOpen, onClose }) {
         });
     };
 
-    const handleOpen = () => {
-        onOpen();
-    };
-
     return (
         <>
-            <Button onClick={handleOpen}>Change Name</Button> 
             <Modal backdrop="blur" isOpen={isOpen} onClose={onClose} className="dark text-white">
                 <ModalContent>
                     <ModalHeader>Change Your Name</ModalHeader>  
