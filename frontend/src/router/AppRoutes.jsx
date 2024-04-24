@@ -14,9 +14,9 @@ import ForgotPassword from '../pages/user/ForgotPassword';
 import Profile from '../pages/user/Profile';
 import { resetAuth } from '../store/auth/authSlice';
 import { resetPost } from '../store/auth/postsSlice';
-import { resetOwnPost } from '../store/auth/ownPostSlice';
 import { resetTempToken } from '../store/auth/tempTokenSlice';
 import AdminNavLayout from './layouts/AdminNavLayout';
+import { resetUserPosts } from '../store/auth/userPostsSlice';
 
 const AppRoutes = () => {
     const dispatch = useDispatch()
@@ -31,7 +31,7 @@ const AppRoutes = () => {
             if (!refreshTokenCookie) {
                 dispatch(resetAuth());
                 dispatch(resetPost())
-                dispatch(resetOwnPost())
+                dispatch(resetUserPosts())
                 dispatch(resetTempToken())
             }
         };
