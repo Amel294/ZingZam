@@ -5,6 +5,8 @@ import authReducer from './auth/authSlice';
 import postsReducers from './auth/postsSlice';
 import adminAuthReducer from './auth/adminAuthSlice';
 import tempTokenReducer from './auth/tempTokenSlice'
+import userPostsReducer from './auth/userPostsSlice'
+import loadingReducer from './auth/loadingSlice'
 // Define persist configuration
 const persistConfig = {
     key: 'root', // key for storage
@@ -18,6 +20,8 @@ const rootReducer = combineReducers({
     tempToken: tempTokenReducer,
     posts: postsReducers,
     adminAuth : adminAuthReducer,
+    userPosts: userPostsReducer,
+    loading : loadingReducer
 });
 
 // Apply persist configuration to root reducer
