@@ -6,16 +6,16 @@ import { useDispatch } from 'react-redux';
 import { logoutUser, resetAuth } from '../../../store/auth/authSlice';
 import { useNavigate } from 'react-router-dom';
 import {  resetPost } from '../../../store/auth/postsSlice';
-import { resetOwnPost } from '../../../store/auth/ownPostSlice';
 import { useState } from 'react';
 import Search from '../search/Search'
+import { resetUserPosts } from '../../../store/auth/userPostsSlice';
 export default  function MainNavbar() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleRedirectToLogin = () => {
         dispatch(resetPost())
         dispatch(resetAuth())
-        dispatch(resetOwnPost())
+        dispatch(resetUserPosts())
         navigate("/login");
     };
     const handleLogOut = async () => {
