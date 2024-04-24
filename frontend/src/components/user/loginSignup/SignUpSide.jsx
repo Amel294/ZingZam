@@ -12,6 +12,7 @@ import OtpInput from "./OtpInput";
 import { useSelector, useDispatch } from "react-redux";
 import { addTempToken } from "../../../store/auth/tempTokenSlice";
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
+import axiosInterceptorSignInSignUp from "../../../axiosInterceptorSignInSignUp";
 export default function SignUpSide() {
     const dispatcher = useDispatch()
     const navigate = useNavigate();
@@ -29,14 +30,13 @@ export default function SignUpSide() {
     const [otpPage, setOtpPage] = useState(true)
     const [otp, setOtp] = useState('')
     const [otpVerify, setOtpVerify] = useState(true)
-    const tempToken = useSelector(state => state.otp.tempToken);
+    const tempToken = useSelector(state => state.tempToken.tempToken);
 
     const handleSignUp = async () => {
         if (emailValid && passwordValid && bdayValid && nameValid) {
-            console.log('validated');
             setIsLoading(true);
             try {
-                const response = await AxiosWithBaseURLandCredentials.post('/user/register', {
+                const response = await axiosInterceptorSignInSignUp.post('/user/register', {
                     email: email,
                     password: password,
                     name: name,
@@ -45,8 +45,6 @@ export default function SignUpSide() {
                 }, {
                     withCredentials: true
                 });
-                console.log(response);
-                console.log("testing toast success")
                 if (response.data.error) {
                     toast.error(`${ response.data.error }`)
                 } else {
@@ -71,7 +69,7 @@ export default function SignUpSide() {
         if (tempToken !== null) {
             setIsLoading(true);
             try {
-                const response = await AxiosWithBaseURLandCredentials.post('/user/verify', {
+                const response = await axiosInterceptorSignInSignUp.post('/user/verify', {
                     otp: otp,
                 }, {
                     withCredentials: true
@@ -141,14 +139,11 @@ export default function SignUpSide() {
                                         Verify Otp
                                     </Button>
                                 </div>
-
                             </form>
                         </CardBody>
                     </Card>
                 </div>
-
             )}
-
             <Toaster
                 position="top-left"
                 reverseOrder={false}
