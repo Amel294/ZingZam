@@ -1,6 +1,8 @@
 import { Card, Button, User, Link, CardHeader, Divider } from "@nextui-org/react";
+import { useNavigate } from "react-router-dom";
 
 function Friends({ friends }) {
+    const navigate = useNavigate();
     return (
         <div className='flex flex-col items-center w-full gap-4 pt-4 justify-center'>
             <Card className="w-[400px]">
@@ -16,8 +18,8 @@ function Friends({ friends }) {
                             <User
                                 name={friend.name}
                                 description={(
-                                    <Link href="https://twitter.com/jrgarciadev" size="sm" isExternal>
-                                        @{friend.username}
+                                    <Link navigate={`http://localhost:5173/profile/${friend.username}`} size="sm" isExternal>
+                                        {friend.username}
                                     </Link>
                                 )}
                                 avatarProps={{

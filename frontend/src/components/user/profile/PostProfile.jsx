@@ -1,48 +1,50 @@
-import { fetchPostsFailure, fetchPostsStart, fetchPostsSuccess } from "../../../store/auth/postsSlice";
 import { useSelector, useDispatch } from 'react-redux';
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import InfiniteScroll from 'react-infinite-scroll-component';
-import Post from "../postComponents/Post";
 import { useParams } from 'react-router-dom';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
+import GridPost from "./GridPost";
+import { fetchUserPostsFailure, fetchUserPostsStart, fetchUserPostsSuccess } from "../../../store/auth/userPostsSlice";
 
 function PostProfile() {
     const dispatch = useDispatch();
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
-    const posts = useSelector((state) => state.posts.posts);
+    const userPosts = useSelector((state) => state.userPosts.userPosts);
     const userId = useSelector((state) => state.auth.id).toString()
     const { username } = useParams();
-    console.log(username);
+
     const fetchPosts = async () => {
         try {
-            dispatch(fetchPostsStart());
+            dispatch(fetchUserPostsStart());
             const response = await AxiosWithBaseURLandCredentials.get(`post/get-profile-posts/${ username }/${ page }`);
             if (response.data.error) {
                 toast.error(`${ response.data.error }`);
-                dispatch(fetchPostsFailure(response.data.error)); // Pass error message to failure action
+                dispatch(fetchUserPostsFailure(response.data.error));
             } else {
-                const newPosts = response.data.posts || [];
-                dispatch(fetchPostsSuccess(newPosts));
+                const newPosts = response.data || [];
+                dispatch(fetchUserPostsSuccess(newPosts));
                 setPage(page + 1);
                 setHasMore(newPosts.length > 0);
             }
         } catch (error) {
             console.error(error);
             toast.error("This didn't work. Check the console for more details.");
-            dispatch(fetchPostsFailure("Failed to fetch posts")); // Generic error message
+            dispatch(fetchUserPostsFailure("Failed to fetch posts"));
         }
     };
+
     useEffect(() => {
         fetchPosts()
-    }, [])
+    }, []);
+
     return (
         <>
-            {posts.length === 0  && <div>No posts here</div>}
-            <div className="flex justify-center flex-col items-center   min-h-screen">
+            {userPosts.length === 0 && <div>No posts here</div>}
+            <div className="flex justify-center flex-col items-center">
                 <InfiniteScroll
-                    dataLength={posts.length}
+                    dataLength={userPosts.length}
                     next={fetchPosts}
                     hasMore={hasMore}
                     loader={<h4>Loading...</h4>}
@@ -52,13 +54,10 @@ function PostProfile() {
                         </p>
                     }
                 >
+                    {userPosts.length > 0 ? (
 
-                    {posts.length > 0 ? (
-                        posts.map((post) => (
-                            <div key={post._id} className="mb-4">
-                                <Post post={post} userId={userId} />
-                            </div>
-                        ))
+                        <GridPost userPosts={userPosts} />
+
                     ) : null}
                 </InfiniteScroll>
             </div>
@@ -66,4 +65,4 @@ function PostProfile() {
     )
 }
 
-export default PostProfile
+export default PostProfile;
