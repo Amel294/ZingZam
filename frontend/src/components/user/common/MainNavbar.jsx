@@ -9,29 +9,10 @@ import {  resetPost } from '../../../store/auth/postsSlice';
 import { useState } from 'react';
 import Search from '../search/Search'
 import { resetUserPosts } from '../../../store/auth/userPostsSlice';
+import { SearchIcon } from '../../../../public/icons/SearchIcon';
+import DropDownAvatar from './DropDownAvatar';
 export default  function MainNavbar() {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const handleRedirectToLogin = () => {
-        dispatch(resetPost())
-        dispatch(resetAuth())
-        dispatch(resetUserPosts())
-        navigate("/login");
-    };
-    const handleLogOut = async () => {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i];
-            const eqPos = cookie.indexOf('=');
-            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-            document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        }
-        
-        await dispatch(logoutUser());
-        setTimeout(()=>{
-            handleRedirectToLogin()
-        },2000)
-    }
+    
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const handleSearchOpen = () =>{
         console.log('search open')
@@ -60,13 +41,14 @@ export default  function MainNavbar() {
                 </NavbarItem>
             </NavbarContent>
             <NavbarContent justify="end">
-                <NavbarItem>
-                    <Button as={Link} color="secondary" href="#" variant="flat" onClick={handleSearchOpen} className="bg-secondary-400">
+                <NavbarItem className='flex items-center gap-2'>
+                    <Button as={Link} color="secondary"  variant="light" onClick={handleSearchOpen}  startContent={<SearchIcon/>}>
                         <span className="text-white">Search</span>
                     </Button>
-                    <Button as={Link} color="secondary" href="#" variant="flat" onClick={handleLogOut} className="bg-secondary-400">
+                    <DropDownAvatar/>
+                    {/* <Button as={Link} color="secondary" href="#" variant="flat" onClick={handleLogOut} className="bg-secondary-400">
                         <span className="text-white">Log Out</span>
-                    </Button>
+                    </Button> */}
                 </NavbarItem>
             </NavbarContent>
         </Navbar>
