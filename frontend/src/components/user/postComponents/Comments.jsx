@@ -65,6 +65,11 @@ function Comments({ postId, postType, userId }) {
     }
 
     const handlePostComment = async () => {
+        const trimmedComment = writeComment.trim();
+        if (trimmedComment === "") {
+            toast.error("Comment cannot be empty");
+            return;
+        }
         if (reply.length <= 0) {
             addComment()
         } else {

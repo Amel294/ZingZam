@@ -247,8 +247,15 @@ exports.addComment = async (req, res) => {
     try {
         const userId = req?.userData?.id;
         const { postId, comment, parentCommentId } = req.body;
+
+        // Check if the comment text is empty
+        if (!comment.trim()) {
+            return res.status(400).json({ error: 'Comment text cannot be empty' });
+        }
+
         let post = await CommentModel.findOne({ postId });
         if (!post) post = new CommentModel({ postId, comments: [] })
+
         if (parentCommentId) {
             const parentComment = post.comments.find(comment => comment._id.toString() === parentCommentId);
             if (!parentComment) {
@@ -271,7 +278,7 @@ exports.addComment = async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-
+ 
 exports.saveUnsavePost = async (req, res) => {
     try {
         const userId = req?.userData?.id;
