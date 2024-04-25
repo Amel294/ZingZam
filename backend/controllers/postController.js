@@ -101,6 +101,18 @@ exports.getPosts = async (req, res) => {
             },
             {
                 $addFields: {
+                    userLiked: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ifNull: ['$likes', false] },
+                                    { $not: { $eq: ['$likes', []] } }
+                                ]
+                            },
+                            then: { $in: [userId, '$likes.likedUsers'] },
+                            else: false
+                        }
+                    },
                     userSaved: {
                         $cond: {
                             if: {
@@ -177,6 +189,18 @@ exports.getPosts = async (req, res) => {
                 },
                 {
                     $addFields: {
+                        userLiked: {
+                            $cond: {
+                                if: {
+                                    $and: [
+                                        { $ifNull: ['$likes', false] },
+                                        { $not: { $eq: ['$likes', []] } }
+                                    ]
+                                },
+                                then: { $in: [userId, '$likes.likedUsers'] },
+                                else: false
+                            }
+                        },
                         userSaved: {
                             $cond: {
                                 if: {
