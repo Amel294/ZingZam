@@ -66,9 +66,10 @@ export default function Post({ post }) {
             <Card className="max-w-[400px] ">
                 <CardHeader className="flex justify-between">
                     <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
-                        <Image alt="nextui logo" height={40} radius="lg" src={post.postedBy.picture} width={40} />
+                        <Image alt="nextui logo" height={40} radius="full" src={post.postedBy.picture} width={40} />
                         <div className="flex flex-col text-left justify-between">
-                            <p className="text-md" >{post.postedBy.username}</p>
+                            <p className="text-md" >{post.postedBy.name}</p>
+                            <p className="text-sm" >@{post.postedBy.username}</p>
                         </div>
                     </div>
                     <Dropdown className="dark text-white">
