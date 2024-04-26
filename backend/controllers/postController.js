@@ -68,7 +68,7 @@ exports.getPosts = async (req, res) => {
                     let: { userId: '$userId' },
                     pipeline: [
                         { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-                        { $project: { _id: 1, picture: 1, username: 1 } }
+                        { $project: { _id: 1, picture: 1, username: 1,name:1 } }
                     ],
                     as: 'postedBy'
                 }
@@ -161,7 +161,7 @@ exports.getPosts = async (req, res) => {
                         let: { userId: '$userId' },
                         pipeline: [
                             { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-                            { $project: { _id: 1, picture: 1, username: 1 } }
+                            { $project: { _id: 1, picture: 1, username: 1,name:1 } }
                         ],
                         as: 'postedBy'
                     }
