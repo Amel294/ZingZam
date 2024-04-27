@@ -59,7 +59,7 @@ export default function Post({ post }) {
     };
     const handleClose = () => {
         setIsCaptionOpen(false);
-        
+
     };
     return (
         <>
@@ -81,20 +81,26 @@ export default function Post({ post }) {
                             </Button>
                         </DropdownTrigger>
                         <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                        {post.type === "own" &&
                             <DropdownItem
                                 onClick={() => setIsCaptionOpen(true)}
                                 key="edit-post"
                             >
                                 Change Caption
-                            </DropdownItem>
-
+                            </DropdownItem>}
+                            {post.type !== "own" &&
+                            <DropdownItem
+                            key="report-post"
+                        >
+                            Report
+                        </DropdownItem>}
+                        {post.type === "own" &&
                             <DropdownItem
                                 className="bg-red-800"
                                 key="delete-post"
                             >
                                 Delete Post
-                            </DropdownItem>
-
+                            </DropdownItem>}
                         </DropdownMenu>
                     </Dropdown>
                     {post.type !== "own" ?
