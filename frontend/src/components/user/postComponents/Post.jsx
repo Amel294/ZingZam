@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input, useDisclosure, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import Heart from "/public/icons/Heart";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import Share from "/public/icons/Share";
 import BookMark from "/public/icons/BookMark";
 import toast, { Toaster } from "react-hot-toast";
@@ -9,7 +9,7 @@ import dummyPost from '/Post/rain.jpg'
 import { useNavigate } from 'react-router-dom';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 import { useDispatch, useSelector } from 'react-redux';
-import { updateLatestComments, updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
+import {  updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
 import LikeModel from "../like/LikeModel";
 import Comments from "./Comments";
 import MenuDots from "../../../../public/icons/MenuDots";
@@ -36,8 +36,7 @@ export default function Post({ post }) {
         // } else toast.error("Removed from Saved")
     }
     const navigate = useNavigate()
-    console.log("Post in innermost is")
-    console.log(post)
+
     const handleGoToProfile = () => {
         navigate(`/profile/${ post.user.username }`);
     }
@@ -59,7 +58,6 @@ export default function Post({ post }) {
     };
     const handleClose = () => {
         setIsCaptionOpen(false);
-
     };
     return (
         <>
@@ -81,26 +79,26 @@ export default function Post({ post }) {
                             </Button>
                         </DropdownTrigger>
                         <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                        {post.type === "own" &&
-                            <DropdownItem
-                                onClick={() => setIsCaptionOpen(true)}
-                                key="edit-post"
-                            >
-                                Change Caption
-                            </DropdownItem>}
+                            {post.type === "own" &&
+                                <DropdownItem
+                                    onClick={() => setIsCaptionOpen(true)}
+                                    key="edit-post"
+                                >
+                                    Change Caption
+                                </DropdownItem>}
                             {post.type !== "own" &&
-                            <DropdownItem
-                            key="report-post"
-                        >
-                            Report
-                        </DropdownItem>}
-                        {post.type === "own" &&
-                            <DropdownItem
-                                className="bg-red-800"
-                                key="delete-post"
-                            >
-                                Delete Post
-                            </DropdownItem>}
+                                <DropdownItem
+                                    key="report-post"
+                                >
+                                    Report
+                                </DropdownItem>}
+                            {post.type === "own" &&
+                                <DropdownItem
+                                    className="bg-red-800"
+                                    key="delete-post"
+                                >
+                                    Delete Post
+                                </DropdownItem>}
                         </DropdownMenu>
                     </Dropdown>
                     {post.type !== "own" ?
