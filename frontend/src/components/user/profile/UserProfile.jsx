@@ -3,7 +3,7 @@ import EditIcon from "../../../../public/icons/EditIcon";
 import EditName from "./EditName";
 
 export function UserProfile({ userData, picture, defaultAvatar }) {
-    
+
     const handleNameOpen = () => {
         onOpen();
     };
@@ -32,9 +32,7 @@ export function UserProfile({ userData, picture, defaultAvatar }) {
                                 </div>
                             </div>
                             <div className="flex justify-between items-start row-span-1 overflow-auto text-sm">
-                                {console.log("userData", userData)}
                                 {userData.ownProfile === true && userData.bio === '' ? <Button size="sm">Add Bio</Button> : <div>{userData.bio}</div>}
-
                             </div>
                         </div>
                     </div>
