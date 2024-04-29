@@ -64,7 +64,13 @@ const postsSlice = createSlice({
                 state.posts[postIndex].commentCount = commentCount;
             }
         },
-        
+        updateCaption(state,action){
+            const { postId, caption } = action.payload;
+            const postIndex = state.posts.findIndex(post => post._id === postId);
+            if (postIndex !== -1) {
+                state.posts[postIndex].caption = caption;
+            }
+        }
     },
 });
 
@@ -78,7 +84,8 @@ export const {
     clearPosts,
     resetPost,
     updateLikeCountAndUserLiked,
-    updateLatestComments
+    updateLatestComments,
+    updateCaption
 } = postsSlice.actions;
 
 export default postsSlice.reducer;
