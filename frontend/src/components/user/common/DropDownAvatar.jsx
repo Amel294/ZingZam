@@ -47,6 +47,8 @@ export default function DropDownAvatar() {
                         }}
                         avatarProps={{
                             size: "sm",
+                            showFallback:true,
+                            fallback : `${user.name.slice(0,2)}`,
                             src: `${ user.picture }`,
                         }}
                     />
