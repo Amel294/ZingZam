@@ -1,3 +1,5 @@
+const ConnectionsModel = require("../models/ConnectionsModel");
+
 exports.checkIfFriend = async (userId, profileUserId)=> {
     try {
         const connection = await ConnectionsModel.findOne({ user: userId });
