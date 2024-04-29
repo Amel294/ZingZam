@@ -1,4 +1,4 @@
-import { Card, Button, User, Link, CardHeader, Divider } from "@nextui-org/react";
+import { Card, Button, User, CardHeader, Divider } from "@nextui-org/react";
 import { useNavigate } from "react-router-dom";
 
 function Friends({ friends }) {
@@ -14,18 +14,17 @@ function Friends({ friends }) {
                 {friends.map((friend) => (
                     <>
 
-                        <CardHeader className="flex justify-between">
-                            <User
-                                name={friend.name}
-                                description={(
-                                    <Link navigate={`http://localhost:5173/profile/${friend.username}`} size="sm" isExternal>
-                                        {friend.username}
-                                    </Link>
-                                )}
-                                avatarProps={{
-                                    src: friend.picture === "" ? friend.picture : `${friend.name}`,
-                                }}
-                            />
+                        <CardHeader className="flex justify-between items-center">
+                            <div onClick={() => navigate(`/profile/${ friend.username }`)} className="cursor-pointer">
+                                <User
+                                    name={friend.name}
+                                    description={friend.username}
+                                    avatarProps={{
+                                        src: friend.picture === "" ? friend.picture : `${ friend.name }`,
+                                    }}
+                                    
+                                />
+                            </div>
                             <Button size="sm" >
                                 Unfriend
                             </Button>
