@@ -23,7 +23,6 @@ const AppRoutes = () => {
     const [isLoading, setIsLoading] = useState(false);
     const storedAuthStatus = useSelector(state => state.auth.isLoggedIn);
     const storedAdminAuthStatus = useSelector(state => state.adminAuth.isLoggedIn);
-    console.log("storedAuthStatus", storedAuthStatus);
     useEffect(() => {
         const checkRefreshToken = () => {
             const cookies = document.cookie.split(';');
@@ -41,14 +40,11 @@ const AppRoutes = () => {
         return <Loading />;
     }
 
-    console.log('AppRoutes rendered:', { storedAuthStatus });
-
     return (
 
         <Routes>
             {storedAdminAuthStatus && (
                 <>
-                    {console.log("Admin  is  authenticated", storedAdminAuthStatus)}
                     <Route element={<AdminNavLayout />}>
                         <Route path="/admin" index element={<AdminHome />} />
                         <Route path="/usermanagement" element={<AdminHome />} />
@@ -57,13 +53,11 @@ const AppRoutes = () => {
             )}
             {!storedAdminAuthStatus && (
                 <>
-                    {console.log("Admin  is  not authenticated")}
                     <Route path="/admin" element={<Navigate to="/login" replace />} />
                 </>
             )}
             {storedAuthStatus && (
                 <>
-                    {console.log("User is  authenticated")}
                     <Route path="/" element={<Navigate to="/home" replace />} />
                     <Route path="/login" element={<Navigate to="/home" replace />} />
                     <Route path="/signup" element={<Navigate to="/home" replace />} />
@@ -72,7 +66,6 @@ const AppRoutes = () => {
             )}
             {!storedAuthStatus && (
                 <>
-                    {console.log("User is not authenticated")}
                     <Route index element={<Login />} />
                     <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="/home" element={<Navigate to="/login" replace />} />

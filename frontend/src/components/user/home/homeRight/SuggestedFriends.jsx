@@ -10,7 +10,6 @@ function SuggestedFriends() {
         const fetchSuggestedFriends = async () => {
             try {
                 const response = await AxiosWithBaseURLandCredentials.get(`/connections/suggestions`);
-                console.log("request send");
                 if (response.data.error) {
                     toast.error(`${ response.data.error }`);
                 } else {

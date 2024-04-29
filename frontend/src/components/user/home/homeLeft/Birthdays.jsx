@@ -4,8 +4,6 @@ import SavedIcon from "../../../../../public/icons/SavedIcon";
 import BirthdayLogo from "../../../../../public/icons/BirthdayLogo";
 function Birthdays() {
     const userDetails = useSelector(state => state.auth);
-    console.log("user details are");
-    console.log(userDetails);
     return (
         <>
             <div className="w-[300px]">

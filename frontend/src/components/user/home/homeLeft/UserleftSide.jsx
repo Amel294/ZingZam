@@ -7,8 +7,6 @@ import {  useNavigate } from "react-router-dom";
 function UserleftSide() {
     const navigate = useNavigate()
     const userDetails = useSelector(state => state.auth);
-    console.log("user details are");
-    console.log(userDetails);
     return (
         <>
             <div className="w-[300px]">
