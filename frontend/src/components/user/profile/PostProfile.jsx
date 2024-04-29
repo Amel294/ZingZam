@@ -5,7 +5,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { useParams } from 'react-router-dom';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 import GridPost from "./GridPost";
-import { fetchUserPostsFailure, fetchUserPostsStart, fetchUserPostsSuccess } from "../../../store/auth/userPostsSlice";
+import { fetchUserPostsFailure, fetchUserPostsStart, fetchUserPostsSuccess, resetUserPosts } from "../../../store/auth/userPostsSlice";
 
 function PostProfile() {
     const dispatch = useDispatch();
@@ -14,13 +14,16 @@ function PostProfile() {
     const userPosts = useSelector((state) => state.userPosts.userPosts);
     const userId = useSelector((state) => state.auth.id).toString()
     const { username } = useParams();
-
+    useEffect(()=>{
+        dispatch(resetUserPosts())
+    },[])
     const fetchPosts = async () => {
         try {
             dispatch(fetchUserPostsStart());
             const response = await AxiosWithBaseURLandCredentials.get(`post/get-profile-posts/${ username }/${ page }`);
             if (response.data.error) {
                 toast.error(`${ response.data.error }`);
+                
                 dispatch(fetchUserPostsFailure(response.data.error));
             } else {
                 const newPosts = response.data || [];
