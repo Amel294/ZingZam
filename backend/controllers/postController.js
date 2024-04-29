@@ -55,11 +55,15 @@ exports.getPosts = async (req, res) => {
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
-
+    
         let posts = await PostModel.aggregate([
             {
                 $match: {
-                    userId: { $in: [...friends, userId] },
+                    $or: [
+                        { userId: userId },
+                        { userId: { $in: friends } },
+                        { userId: { $nin: [...friends, userId] }, isPrivate: false } 
+                    ]
                 }
             },
             {
@@ -68,7 +72,7 @@ exports.getPosts = async (req, res) => {
                     let: { userId: '$userId' },
                     pipeline: [
                         { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-                        { $project: { _id: 1, picture: 1, username: 1,name:1 } }
+                        { $project: { _id: 1, picture: 1, username: 1, name: 1 } }
                     ],
                     as: 'postedBy'
                 }
@@ -146,101 +150,13 @@ exports.getPosts = async (req, res) => {
             { $skip: skip },
             { $limit: limit }
         ]);
-
-        if (posts.length === 0) {
-            posts = await PostModel.aggregate([
-                {
-                    $match: {
-                        userId: { $nin: [...friends, userId] },
-                        isPrivate: false
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'users',
-                        let: { userId: '$userId' },
-                        pipeline: [
-                            { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-                            { $project: { _id: 1, picture: 1, username: 1,name:1 } }
-                        ],
-                        as: 'postedBy'
-                    }
-                },
-                {
-                    $addFields: {
-                        postedBy: { $arrayElemAt: ['$postedBy', 0] },
-                        type: 'public'
-                    }
-                },
-                {
-                    $lookup: {
-                        from: 'likes',
-                        localField: '_id',
-                        foreignField: 'postId',
-                        as: 'likes'
-                    }
-                },
-                {
-                    $addFields: {
-                        likes: { $arrayElemAt: ['$likes', 0] },
-                        likeCount: { $arrayElemAt: ['$likes.likeCount', 0] }
-
-                    }
-                },
-                {
-                    $addFields: {
-                        userLiked: {
-                            $cond: {
-                                if: {
-                                    $and: [
-                                        { $ifNull: ['$likes', false] },
-                                        { $not: { $eq: ['$likes', []] } }
-                                    ]
-                                },
-                                then: { $in: [userId, '$likes.likedUsers'] },
-                                else: false
-                            }
-                        },
-                        userSaved: {
-                            $cond: {
-                                if: {
-                                    $and: [
-                                        { $ifNull: ['$savedPost', false] },
-                                        { $not: { $eq: ['$savedPost', []] } }
-                                    ]
-                                },
-                                then: { $in: [userId, '$savedPost.savedPost'] },
-                                else: false
-                            }
-                        }
-                    }
-                },
-                {
-                    $project: {
-                        _id: 1,
-                        userId: 1,
-                        imageUrl: 1,
-                        caption: 1,
-                        isPrivate: 1,
-                        createdAt: 1,
-                        postedBy: 1,
-                        likeCount: 1,
-                        userLiked: 1,
-                        userSaved: 1,
-                        type: 1
-                    }
-                },
-                { $sort: { createdAt: -1 } },
-                { $skip: skip },
-                { $limit: limit }
-            ]);
-        }
-
+    
         res.status(200).json(posts);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Failed to fetch posts' });
     }
+    
 };
 
 exports.addComment = async (req, res) => {
