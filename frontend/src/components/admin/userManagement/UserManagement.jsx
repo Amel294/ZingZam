@@ -43,19 +43,19 @@ export default function UserManagement() {
     }, []);
     const handleBlockUnblock = async (userID) => {
         setIsLoading(true);
-    
+
         try {
-            const response = await AxiosWithBaseURLandCredentials.post(`/admin/blockunblock/${userID}`, {
+            const response = await AxiosWithBaseURLandCredentials.post(`/admin/blockunblock/${ userID }`, {
                 withCredentials: true
             });
-    
+
             if (response.data.error) {
                 toast.error(`${ response.data.error }`);
             } else {
-                if(page !== 1) {
+                if (page !== 1) {
                     setPage(page - 1);
                 }
-                fetchData(); // Refetch data after modifying the user's block status
+                fetchData();
             }
         } catch (error) {
             console.error(error);
@@ -68,7 +68,6 @@ export default function UserManagement() {
         { name: "USER", uid: "name" },
         { name: "EMAIL", uid: "email" },
         { name: "BLOCK", uid: "blocked" },
-        { name: "DELETE", uid: "delete" },
     ];
 
     const renderCell = React.useCallback((user, columnKey) => {
@@ -93,15 +92,6 @@ export default function UserManagement() {
                         </Button>
                     </div>
                 );
-            case "delete":
-                return (
-                    <div className="relative flex items-center justify-between" >
-                        <Button size="sm" className="min-w-20" color= "danger">
-                            Delete User
-                        </Button>
-                    </div>
-                );
-
             default:
                 return <>{user[columnKey]}</>;
         }
