@@ -15,24 +15,23 @@ function Profile() {
     const [liked, setLiked] = useState(false);
     const [picture, setPicture] = useState(defaultAvatar);
     const [toggle, setToggle] = useState("posts")
-    console.log("toggle", toggle)
+    useEffect(() => {
+        setToggle("posts");
+    }, [username]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await AxiosWithBaseURLandCredentials.get(`/profile/${ username }`, {
+                const response = await AxiosWithBaseURLandCredentials.get(`/profile/${username}`, {
                     withCredentials: true
                 });
-
                 setUserData(response.data);
             } catch (error) {
                 console.error('Error:', error);
             }
         };
-
         fetchData();
     }, [username]);
-
     return (
         <div className='flex flex-col items-center w-full gap-4 pt-4 justify-center min-h-screen '>
             {userData && <>
