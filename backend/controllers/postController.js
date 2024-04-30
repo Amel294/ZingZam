@@ -79,12 +79,17 @@ exports.getPosts = async (req, res) => {
             },
             {
                 $addFields: {
-                    postedBy: { $arrayElemAt: ['$postedBy', 0] },
                     type: {
                         $cond: {
                             if: { $eq: ['$userId', userId] },
-                            then: 'own',
-                            else: 'friends'
+                            then: 'A-own',
+                            else: {
+                                $cond: {
+                                    if: { $in: ['$userId', friends] },
+                                    then: 'B-friends',
+                                    else: 'C-public'
+                                }
+                            }
                         }
                     }
                 }
@@ -146,7 +151,7 @@ exports.getPosts = async (req, res) => {
                     type: 1
                 }
             },
-            { $sort: { createdAt: -1 } },
+            { $sort: { type: 1 ,createdAt: -1 } },
             { $skip: skip },
             { $limit: limit }
         ]);
@@ -406,9 +411,7 @@ exports.getProfilePosts = async (req, res) => {
         const id = req?.userData?.id;
         const userId = new mongoose.Types.ObjectId(id);
         const username = req.params.username
-        console.log("username",username)
         const fetch = await UserModel.findOne({ username });
-        console.log("fetch",fetch)
         const profileUserId = fetch._id
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
