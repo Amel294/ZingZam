@@ -506,3 +506,121 @@ exports.getProfilePosts = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch posts' });
     }
 };
+
+exports.getIndividualPost = async (req, res) => {
+    try {
+        const postId = new mongoose.Types.ObjectId(req.params.postId);
+
+        const post = await PostModel.aggregate([
+            {
+                $match: {
+                    _id: postId
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$userId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { _id: 1, picture: 1, username: 1, name: 1 } }
+                    ],
+                    as: 'postedBy'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'likes',
+                    localField: '_id',
+                    foreignField: 'postId',
+                    as: 'likes'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'savedposts',
+                    localField: '_id',
+                    foreignField: 'postId',
+                    as: 'savedPosts'
+                }
+            },
+            {
+                $addFields: {
+                    likes: { $arrayElemAt: ['$likes', 0] },
+                    likeCount: { $ifNull: ['$likes.likeCount', 0] }
+                }
+            },
+            {
+                $addFields: {
+                    userLiked: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ifNull: ['$likes', false] },
+                                    { $not: { $eq: ['$likes', []] } }
+                                ]
+                            },
+                            then: { $in: [req.userData.id, '$likes.likedUsers'] },
+                            else: false
+                        }
+                    },
+                    userSaved: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ifNull: ['$savedPosts', false] },
+                                    { $not: { $eq: ['$savedPosts', []] } }
+                                ]
+                            },
+                            then: { $in: [req.userData.id, '$savedPosts.savedBy'] },
+                            else: false
+                        }
+                    },
+                    type: {
+                        $cond: {
+                            if: {
+                                $eq: ['$userId', new mongoose.Types.ObjectId(req.userData.id)]
+                            },
+                            then: 'A-own',
+                            else: {
+                                $cond: {
+                                    if: {
+                                        $in: ['$userId', req.userData.friends]
+                                    },
+                                    then: 'B-friends',
+                                    else: 'C-public'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    userId: 1,
+                    imageUrl: 1,
+                    caption: 1,
+                    isPrivate: 1,
+                    createdAt: 1,
+                    postedBy: 1,
+                    likeCount: 1,
+                    userLiked: 1,
+                    userSaved: 1,
+                    type: 1,
+                }
+            }
+        ]);
+
+        // Check if the post exists
+        if (!post || post.length === 0) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        // Return the fetched post
+        res.status(200).json(post[0]);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to fetch post details' });
+    }
+};
