@@ -66,7 +66,7 @@ exports.getRequestSend = async (req, res) => {
             { user: userId },
             { requestsSend: 1, _id: 0 }
         ).populate('requestsSend', '_id name picture');
-        if (!requestSend) return res.status(404).json({ message: "No requests found for this user" });
+        if (!requestSend) return res.status(200).json({ message: "No requests found for this user" });
         res.status(200).json(requestSend);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
@@ -109,7 +109,11 @@ exports.getRequestsReceived = async (req, res) => {
     try {
         const userId = req?.userData?.id;
         const requests = await ConnectionsModel.findOne({ user: userId }, { requestsReceived: 1, _id: 0 }).populate('requestsReceived', 'name username picture');
-        if (!requests || !requests.requestsReceived || requests.requestsReceived.length === 0) return res.status(404).json({ error: "No requests found for the user." });
+        
+        if (!requests || !requests.requestsReceived || requests.requestsReceived.length === 0) {
+            return res.status(200).json({ error: "No requests found for the user." });
+        }
+
         return res.status(200).json({ requestsReceived: requests.requestsReceived });
     } catch (error) {
         return res.status(500).json({ error: "Internal server error." });
