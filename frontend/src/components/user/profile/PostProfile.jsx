@@ -58,9 +58,7 @@ function PostProfile() {
                     }
                 >
                     {userPosts.length > 0 ? (
-
                         <GridPost userPosts={userPosts} />
-
                     ) : null}
                 </InfiniteScroll>
             </div>
