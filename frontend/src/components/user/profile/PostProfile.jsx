@@ -58,7 +58,7 @@ function PostProfile() {
                     }
                 >
                     {userPosts.length > 0 ? (
-                        <GridPost userPosts={userPosts} />
+                        <GridPost userPosts={userPosts} key={userPosts._id} />
                     ) : null}
                 </InfiniteScroll>
             </div>
