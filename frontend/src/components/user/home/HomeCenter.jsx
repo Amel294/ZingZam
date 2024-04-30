@@ -76,7 +76,7 @@ function HomeCenter() {
         {posts.length > 0 ? (
           posts.map((post) => (
             <div key={post._id} className="mb-4">
-              <Post post={post} />
+              <Post post={post} postId={post._id} />
             </div>
           ))
         ) : null}

@@ -16,7 +16,7 @@ import MenuDots from "../../../../public/icons/MenuDots";
 import CaptionModal from "./CaptionModal";
 import AddFriend from "../../../../public/icons/AddFriend";
 
-export default function Post({ post }) {
+export default function Post({ post, postId }) {
     const dispatch = useDispatch();
     const userId = useSelector((state) => state.auth.id)
     const [isLikeOpen, setIsLikeOpen] = useState(false);
@@ -40,7 +40,7 @@ export default function Post({ post }) {
         navigate(`/profile/${ post?.postedBy[0]?.username }`);
     }
 
-    const handleLike = async (postId) => {
+    const handleLike = async () => {
         try {
             const response = await AxiosWithBaseURLandCredentials.post(`/post/likeunlike`, { postId });
             console.log(postId)
@@ -60,93 +60,97 @@ export default function Post({ post }) {
     };
     return (
         <>
-            <Card className="max-w-[400px] ">
-                <CardHeader className="flex justify-between">
-                    <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
-                        <Avatar showFallback  name={post?.postedBy[0]?.name} alt="nextui logo" height={40} radius="full" src={post?.postedBy[0]?.picture} width={40} />
-                        <div className="flex flex-col text-left justify-between">
-                            <p className="text-md" >{post?.postedBy[0]?.name}</p>
-                            <p className="text-xs" >@{post?.postedBy[0]?.username}</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-4">
-                        {post.type === "C-public"  &&
-                            <Button
-                                className="border-none transition-transform duration-300 transform-gpu hover:scale-105"
-                                variant="bordered"
-                                size="sm"
-                                endContent={<AddFriend className="fill-white hover:fill-secondary-400  size-5" />}
-                                isIconOnly
+                {post &&
+            <>
+                    <Card className="max-w-[400px] ">
+                        <CardHeader className="flex justify-between">
+                            <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
+                                <Avatar showFallback name={post?.postedBy[0]?.name} alt="nextui logo" height={40} radius="full" src={post?.postedBy[0]?.picture} width={40} />
+                                <div className="flex flex-col text-left justify-between">
+                                    <p className="text-md" >{post?.postedBy[0]?.name}</p>
+                                    <p className="text-xs" >@{post?.postedBy[0]?.username}</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                {post?.type === "C-public" &&
+                                    <Button
+                                        className="border-none transition-transform duration-300 transform-gpu hover:scale-105"
+                                        variant="bordered"
+                                        size="sm"
+                                        endContent={<AddFriend className="fill-white hover:fill-secondary-400  size-5" />}
+                                        isIconOnly
+                                    />
+                                }
+                                <Dropdown className="dark text-whi fill-white hover:fill-secondary-400">
+                                    <DropdownTrigger>
+                                        <Button
+                                            variant="bordered" size="sm" isIconOnly className="fill-white shadow-none border-none "
+                                        >
+                                            <MenuDots />
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                                        {post?.type === "A-own" &&
+                                            <DropdownItem
+                                                onClick={() => setIsCaptionOpen(true)}
+                                                key="edit-post"
+                                            >
+                                                Change Caption
+                                            </DropdownItem>}
+                                        {post?.type !== "A-own" &&
+                                            <DropdownItem
+                                                key="report-post"
+                                            >
+                                                Report
+                                            </DropdownItem>}
+                                        {post?.type === "A-own" &&
+                                            <DropdownItem
+                                                className="bg-red-800"
+                                                key="delete-post"
+                                            >
+                                                Delete Post
+                                            </DropdownItem>}
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </div>
+
+                        </CardHeader>
+                        <Divider />
+                        <CardBody>
+                            <Image
+                                alt="nextui logo"
+                                // height={40}
+                                radius="sm"
+                                src={post?.imageUrl || dummyPost}
+                                width={380}
+                                onError={() => console.error("Error loading image:", img)}
+
                             />
-                        }
-                        <Dropdown className="dark text-white fill-white hover:fill-secondary-400">
-                            <DropdownTrigger>
-                                <Button
-                                    variant="bordered" size="sm" isIconOnly className="fill-white shadow-none border-none "
-                                >
-                                    <MenuDots />
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                                {post.type === "A-own" &&
-                                    <DropdownItem
-                                        onClick={() => setIsCaptionOpen(true)}
-                                        key="edit-post"
-                                    >
-                                        Change Caption
-                                    </DropdownItem>}
-                                {post.type !== "A-own" &&
-                                    <DropdownItem
-                                        key="report-post"
-                                    >
-                                        Report
-                                    </DropdownItem>}
-                                {post.type === "A-own" &&
-                                    <DropdownItem
-                                        className="bg-red-800"
-                                        key="delete-post"
-                                    >
-                                        Delete Post
-                                    </DropdownItem>}
-                            </DropdownMenu>
-                        </Dropdown>
-                    </div>
+                            <p className="pt-2">{post?.caption} </p>
+                        </CardBody>
+                        <Divider />
+                        <CardFooter className="flex flex-row justify-between">
+                            <div className="flex items-center gap-1">
+                                <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={post?.userLiked ? "#661FCC" : "none"} stroke={post?.userLiked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
+                                <p><span className="hover:cursor-pointer text-sm" onClick={() => setIsLikeOpen(true)}>{post?.likeCount} Likes</span></p>
+                            </div>
+                            <div className="flex flex-row gap-10">
+                                <Share height="25px" fill="#661FCC" />
+                                <BookMark height="25px" fill={post?.userSaved ? "#661FCC" : "none"} stroke={post?.userSaved ? "none" : "#661FCC"} onClick={() => handlesavePost(post?._id)} />
+                            </div>
+                        </CardFooter>
+                        <Comments postId={postId} postType={post?.type} userId={userId} />
 
-                </CardHeader>
-                <Divider />
-                <CardBody>
-                    <Image
-                        alt="nextui logo"
-                        // height={40}
-                        radius="sm"
-                        src={post.imageUrl || dummyPost}
-                        width={380}
-                        onError={() => console.error("Error loading image:", img)}
-
-                    />
-                    <p className="pt-2">{post.caption} </p>
-                </CardBody>
-                <Divider />
-                <CardFooter className="flex flex-row justify-between">
-                    <div className="flex items-center gap-1">
-                        <Heart className="rounded-none m-1 hover:cursor-pointer" height="25px" fill={post.userLiked ? "#661FCC" : "none"} stroke={post.userLiked ? "none" : "#661FCC"} strokeWidth="2px" onClick={() => handleLike(post._id)} />
-                        <p><span className="hover:cursor-pointer text-sm" onClick={() => setIsLikeOpen(true)}>{post?.likeCount} Likes</span></p>
-                    </div>
-                    <div className="flex flex-row gap-10">
-                        <Share height="25px" fill="#661FCC" />
-                        <BookMark height="25px" fill={post.userSaved ? "#661FCC" : "none"} stroke={post.userSaved ? "none" : "#661FCC"} onClick={() => handlesavePost(post?._id)} />
-                    </div>
-                </CardFooter>
-                <Comments postId={post._id} postType={post.type} userId={userId} />
-
-            </Card >
-            <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
-            <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId={post._id} likedUsers={post.likedUsers} likeCount={post.likeCount} />
-            <CaptionModal handleClose={handleClose} postId={post._id} captionText={post.caption} setIsCaptionOpen={setIsCaptionOpen} isCaptionOpen={isCaptionOpen} />
-            <Toaster
+                    </Card >
+                <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
+                <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId={post?._id} likedUsers={post?.likedUsers} likeCount={post?.likeCount} />
+                <CaptionModal handleClose={handleClose} postId={post?._id} captionText={post?.caption} setIsCaptionOpen={setIsCaptionOpen} isCaptionOpen={isCaptionOpen} />
+                <Toaster
                 position="top-center"
                 reverseOrder={false}
-            />
+                />
+            </>
+            }
         </>
     );
 }
