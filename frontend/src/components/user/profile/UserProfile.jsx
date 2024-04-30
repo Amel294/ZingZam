@@ -1,6 +1,7 @@
 import { Card, CardBody, Image, Button, useDisclosure } from "@nextui-org/react";
 import EditIcon from "../../../../public/icons/EditIcon";
 import EditName from "./EditName";
+import { useSelector } from "react-redux";
 
 export function UserProfile({ userData, picture, defaultAvatar }) {
 
@@ -8,6 +9,7 @@ export function UserProfile({ userData, picture, defaultAvatar }) {
         onOpen();
     };
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const ownUser = useSelector(state => state.auth);
 
     return (
         <>
@@ -22,8 +24,14 @@ export function UserProfile({ userData, picture, defaultAvatar }) {
                             <div className="flex justify-between items-start row-span-1">
                                 <div className="flex flex-col gap-0 w-full">
                                     <div className='flex items-center w-full '>
-                                        <h3 className="font-semibold ">{userData.name}</h3>
-                                        {userData.ownProfile === true && <EditIcon className="ml-2 fill-secondary-400 size-4" onClick={handleNameOpen} />}
+                                        {userData.ownProfile === true ?
+                                            <>
+                                                <h3 className="font-semibold ">{ownUser.name}</h3>
+                                                <EditIcon className="ml-2 fill-secondary-400 size-4" onClick={handleNameOpen} />
+                                            </>
+                                            :
+                                            <h3 className="font-semibold ">{userData.name}</h3>
+                                        }
                                     </div>
                                     <div className='flex items-center w-full '>
                                         <p className="text-small text-foreground/80">{userData.username}</p>

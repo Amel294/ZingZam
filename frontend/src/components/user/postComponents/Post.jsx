@@ -18,7 +18,7 @@ import AddFriend from "../../../../public/icons/AddFriend";
 
 export default function Post({ post, postId }) {
     const dispatch = useDispatch();
-    const userId = useSelector((state) => state.auth.id)
+    const user = useSelector((state) => state.auth)
     const [isLikeOpen, setIsLikeOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [isCaptionOpen, setIsCaptionOpen] = useState(false);
@@ -60,15 +60,24 @@ export default function Post({ post, postId }) {
     };
     return (
         <>
-                {post &&
-            <>
+            {post &&
+                <>
                     <Card className="max-w-[400px] ">
                         <CardHeader className="flex justify-between">
                             <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
                                 <Avatar showFallback name={post?.postedBy[0]?.name} alt="nextui logo" height={40} radius="full" src={post?.postedBy[0]?.picture} width={40} />
                                 <div className="flex flex-col text-left justify-between">
-                                    <p className="text-md" >{post?.postedBy[0]?.name}</p>
-                                    <p className="text-xs" >@{post?.postedBy[0]?.username}</p>
+                                    {post?.type === "A-own" ?
+                                        <>
+                                            <p className="text-md" >{user?.name}</p>
+                                            <p className="text-xs" >@{user?.username}</p>
+                                        </>
+                                        :
+                                        <>
+                                            <p className="text-md" >{post?.postedBy[0]?.name}</p>
+                                            <p className="text-xs" >@{post?.postedBy[0]?.username}</p>
+                                        </>
+                                    }
                                 </div>
                             </div>
                             <div className="flex gap-4">
@@ -139,17 +148,17 @@ export default function Post({ post, postId }) {
                                 <BookMark height="25px" fill={post?.userSaved ? "#661FCC" : "none"} stroke={post?.userSaved ? "none" : "#661FCC"} onClick={() => handlesavePost(post?._id)} />
                             </div>
                         </CardFooter>
-                        <Comments postId={postId} postType={post?.type} userId={userId} />
+                        <Comments postId={postId} postType={post?.type} userId={user.id} />
 
                     </Card >
-                <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
-                <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId={post?._id} likedUsers={post?.likedUsers} likeCount={post?.likeCount} />
-                <CaptionModal handleClose={handleClose} postId={post?._id} captionText={post?.caption} setIsCaptionOpen={setIsCaptionOpen} isCaptionOpen={isCaptionOpen} />
-                <Toaster
-                position="top-center"
-                reverseOrder={false}
-                />
-            </>
+                    <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
+                    <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId={post?._id} likedUsers={post?.likedUsers} likeCount={post?.likeCount} />
+                    <CaptionModal handleClose={handleClose} postId={post?._id} captionText={post?.caption} setIsCaptionOpen={setIsCaptionOpen} isCaptionOpen={isCaptionOpen} />
+                    <Toaster
+                        position="top-center"
+                        reverseOrder={false}
+                    />
+                </>
             }
         </>
     );
