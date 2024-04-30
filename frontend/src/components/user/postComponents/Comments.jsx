@@ -12,7 +12,6 @@ function Comments({ postId, postType, userId }) {
     const [parentCommentId, setParentCommentId] = useState("")
 
     const getComments = async (postId) => {
-        console.log("Req for get comments")
         try {
             const response = await AxiosWithBaseURLandCredentials.get(`/post/get-comments/${ postId }/1/2`, {
                 withCredentials: true
