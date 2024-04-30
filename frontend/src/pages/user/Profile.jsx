@@ -33,7 +33,7 @@ function Profile() {
         fetchData();
     }, [username]);
     return (
-        <div className='flex flex-col items-center w-full gap-4 pt-4 justify-center min-h-screen '>
+        <div className='flex flex-col items-center w-full gap-4 pt-4 justify-top min-h-screen '>
             {userData && <>
                 <UserProfile userData={userData} picture={picture} defaultAvatar={defaultAvatar} />
                 <div className='sticky top-16 z-20  pt-2 rounded-b-lg w-[400px] flex gap-2 justify-center '>
