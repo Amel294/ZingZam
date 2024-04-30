@@ -12,7 +12,8 @@ import { resetUserPosts } from '../../../store/auth/userPostsSlice';
 import { SearchIcon } from '../../../../public/icons/SearchIcon';
 import DropDownAvatar from './DropDownAvatar';
 export default  function MainNavbar() {
-    
+    const navigate = useNavigate();
+
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const handleSearchOpen = () =>{
         console.log('search open')
@@ -22,7 +23,7 @@ export default  function MainNavbar() {
         <>
         <Navbar isBordered isBlurred={false}>
             <NavbarBrand>
-                <Link href="/" aria-current="page">
+                <Link onClick={() => navigate(`/`)} className="cursor-pointer" aria-current="page">
                     <Image radius="none" isBlurred width={35} alt="ZingZam logo" src={MainLogo} />
                     <p className="ps-4 font-bold text-secondary-500">Zing Zam</p>
                 </Link>
