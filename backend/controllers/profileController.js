@@ -15,7 +15,7 @@ exports.getProfile = async (req, res) => {
         birthday: userData.birthday,
         ownProfile,
         bio: userData.bio,
-        friends: connection.friends || [],
+        friends: connection?.friends || [],
         ownProfile
     }
     res.status(200).json(resData);
