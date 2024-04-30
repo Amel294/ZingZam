@@ -90,7 +90,7 @@ export default function Post({ post, postId }) {
                                         isIconOnly
                                     />
                                 }
-                                <Dropdown className="dark text-whi fill-white hover:fill-secondary-400">
+                                <Dropdown className="dark text-white fill-white hover:fill-secondary-400">
                                     <DropdownTrigger>
                                         <Button
                                             variant="bordered" size="sm" isIconOnly className="fill-white shadow-none border-none "
