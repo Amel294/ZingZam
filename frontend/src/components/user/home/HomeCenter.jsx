@@ -24,6 +24,7 @@ function HomeCenter() {
         toast.error(`${ response.data.error }`);
         dispatch(fetchPostsFailure(response.data.error));
       } else {
+        console.log(response.data)
         const newPosts = response.data || [];
         dispatch(fetchPostsSuccess(newPosts));
         setPage(page + 1);
@@ -51,6 +52,7 @@ function HomeCenter() {
           </p>
         }
       >
+        {console.log(posts.length)}
         {posts.length > 0 ? (
           posts.map((post) => (
             <div key={post._id} className="mb-4">

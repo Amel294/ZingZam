@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardBody, CardFooter, Divider, Image, Button, Input, useDisclosure, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
 import Heart from "/public/icons/Heart";
-import {  useState } from "react";
+import { useState } from "react";
 import Share from "/public/icons/Share";
 import BookMark from "/public/icons/BookMark";
 import toast, { Toaster } from "react-hot-toast";
@@ -9,17 +9,16 @@ import dummyPost from '/Post/rain.jpg'
 import { useNavigate } from 'react-router-dom';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 import { useDispatch, useSelector } from 'react-redux';
-import {  updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
+import { updateLikeCountAndUserLiked } from "../../../store/auth/postsSlice";
 import LikeModel from "../like/LikeModel";
 import Comments from "./Comments";
 import MenuDots from "../../../../public/icons/MenuDots";
 import CaptionModal from "./CaptionModal";
+import AddFriend from "../../../../public/icons/AddFriend";
 
 export default function Post({ post }) {
     const dispatch = useDispatch();
     const userId = useSelector((state) => state.auth.id)
-
-    console.log('user inner post', userId)
     const [isLikeOpen, setIsLikeOpen] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [isCaptionOpen, setIsCaptionOpen] = useState(false);
@@ -38,7 +37,7 @@ export default function Post({ post }) {
     const navigate = useNavigate()
 
     const handleGoToProfile = () => {
-        navigate(`/profile/${ post.user.username }`);
+        navigate(`/profile/${ post?.postedBy[0]?.username }`);
     }
 
     const handleLike = async (postId) => {
@@ -64,50 +63,55 @@ export default function Post({ post }) {
             <Card className="max-w-[400px] ">
                 <CardHeader className="flex justify-between">
                     <div className="flex gap-3 cursor-pointer" onClick={handleGoToProfile}>
-                        <Image alt="nextui logo" height={40} radius="full" src={post.postedBy.picture} width={40} />
+                        <Avatar showFallback  name={post?.postedBy[0]?.name} alt="nextui logo" height={40} radius="full" src={post?.postedBy[0]?.picture} width={40} />
                         <div className="flex flex-col text-left justify-between">
-                            <p className="text-md" >{post.postedBy.name}</p>
-                            <p className="text-sm" >@{post.postedBy.username}</p>
+                            <p className="text-md" >{post?.postedBy[0]?.name}</p>
+                            <p className="text-xs" >@{post?.postedBy[0]?.username}</p>
                         </div>
                     </div>
-                    <Dropdown className="dark text-white">
-                        <DropdownTrigger>
+                    <div className="flex gap-4">
+                        {post.type === "C-public"  &&
                             <Button
-                                variant="bordered" size="sm" isIconOnly className="fill-white shadow-none border-none "
-                            >
-                                <MenuDots />
-                            </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
-                            {post.type === "own" &&
-                                <DropdownItem
-                                    onClick={() => setIsCaptionOpen(true)}
-                                    key="edit-post"
+                                className="border-none transition-transform duration-300 transform-gpu hover:scale-105"
+                                variant="bordered"
+                                size="sm"
+                                endContent={<AddFriend className="fill-white hover:fill-secondary-400  size-5" />}
+                                isIconOnly
+                            />
+                        }
+                        <Dropdown className="dark text-white fill-white hover:fill-secondary-400">
+                            <DropdownTrigger>
+                                <Button
+                                    variant="bordered" size="sm" isIconOnly className="fill-white shadow-none border-none "
                                 >
-                                    Change Caption
-                                </DropdownItem>}
-                            {post.type !== "own" &&
-                                <DropdownItem
-                                    key="report-post"
-                                >
-                                    Report
-                                </DropdownItem>}
-                            {post.type === "own" &&
-                                <DropdownItem
-                                    className="bg-red-800"
-                                    key="delete-post"
-                                >
-                                    Delete Post
-                                </DropdownItem>}
-                        </DropdownMenu>
-                    </Dropdown>
-                    {post.type !== "own" ?
-                        <>
-                            <Button color="secondary" variant="bordered" size="sm">
-                                + Add
-                            </Button>
-                        </> : null
-                    }
+                                    <MenuDots />
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu variant="faded" aria-label="Dropdown menu with icons">
+                                {post.type === "A-own" &&
+                                    <DropdownItem
+                                        onClick={() => setIsCaptionOpen(true)}
+                                        key="edit-post"
+                                    >
+                                        Change Caption
+                                    </DropdownItem>}
+                                {post.type !== "A-own" &&
+                                    <DropdownItem
+                                        key="report-post"
+                                    >
+                                        Report
+                                    </DropdownItem>}
+                                {post.type === "A-own" &&
+                                    <DropdownItem
+                                        className="bg-red-800"
+                                        key="delete-post"
+                                    >
+                                        Delete Post
+                                    </DropdownItem>}
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
+
                 </CardHeader>
                 <Divider />
                 <CardBody>
@@ -117,7 +121,7 @@ export default function Post({ post }) {
                         radius="sm"
                         src={post.imageUrl || dummyPost}
                         width={380}
-                        onError={() => console.error("Error loading image:", img)} // Log if there's an error
+                        onError={() => console.error("Error loading image:", img)}
 
                     />
                     <p className="pt-2">{post.caption} </p>
