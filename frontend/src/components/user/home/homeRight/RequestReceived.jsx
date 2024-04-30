@@ -10,14 +10,16 @@ function RequestReceived() {
         const fetchRequests = async () => {
             try {
                 const response = await AxiosWithBaseURLandCredentials.get(`/connections/getrequestsreceived`);
-                console.log("request send");
                 if (response.data.error) {
-                    toast.error(`${ response.data.error }`);
+                    //Do nouthing
+                }
+                else if(!response?.data || response?.data?.length === 0){
+                    console.log("No requests received");
                 } else {
                     setRequests(response.data.requestsReceived);
                 }
             } catch (error) {
-                console.error("Error fetching requests:", error);
+                console.log(error);
             }
         };
 

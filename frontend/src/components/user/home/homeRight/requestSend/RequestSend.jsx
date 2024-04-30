@@ -10,14 +10,18 @@ function RequestSend() {
         const fetchRequests = async () => {
             try {
                 const response = await AxiosWithBaseURLandCredentials.get(`/connections/getrequestsend`);
-                console.log("request send");
                 if (response.data.error) {
                     toast.error(`${ response.data.error }`);
-                } else {
+                
+                } 
+                else if(!response?.data?.requestsSend || response?.data?.requestsSend === undefined || response?.data?.requestsSend?.length === 0){
+                    //no requests
+                }
+                else {
                     setRequestsSend(response.data.requestsSend); 
                 }
             } catch (error) {
-                console.error("Error fetching requests:", error);
+                console.error("Error fetching requests:", error?.response?.data?.message);
             }
         };
 
