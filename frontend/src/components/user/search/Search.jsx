@@ -49,7 +49,7 @@ export default function App({ isSearchOpen, setIsSearchOpen }) {
         navigate(`/profile/${userName}`);
     }
     return (
-        <Modal isOpen={isSearchOpen} onClose={handleClose} className="dark text-white w-full bg-transparent shadow-none" placement="center" size="md" backdrop="opaque" >
+        <Modal isOpen={isSearchOpen} onClose={handleClose} className="dark text-white w-full bg-transparent shadow-none" placement="center" size="md" backdrop="blur" >
             <ModalContent>
                 {(onClose) => (
                     <>
