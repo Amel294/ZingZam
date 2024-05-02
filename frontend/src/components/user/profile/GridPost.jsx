@@ -1,4 +1,3 @@
-import { Card, CardBody, CardFooter, Image } from "@nextui-org/react"
 import PostPopUpModel from "./PostPopUpModel"
 import { useState } from "react";
 
