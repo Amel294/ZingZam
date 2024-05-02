@@ -17,6 +17,7 @@ import { resetPost } from '../store/auth/postsSlice';
 import { resetTempToken } from '../store/auth/tempTokenSlice';
 import AdminNavLayout from './layouts/AdminNavLayout';
 import { resetUserPosts } from '../store/auth/userPostsSlice';
+import Stream from '../pages/user/games/Stream';
 
 const AppRoutes = () => {
     const dispatch = useDispatch()
@@ -77,6 +78,7 @@ const AppRoutes = () => {
                 <Route index element={<Home />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/profile/:username" element={<Profile />} />
+                <Route path="/stream" element={<Stream />} />
             </Route>
             <Route >
                 <Route index element={<Home />} />
@@ -84,7 +86,7 @@ const AppRoutes = () => {
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgotpassword" element={<ForgotPassword />} />
             </Route>
-
+            
             <Route path="*" element={<NotFound />} />
 
         </Routes>
