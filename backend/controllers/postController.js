@@ -55,14 +55,14 @@ exports.getPosts = async (req, res) => {
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
-    
+
         let posts = await PostModel.aggregate([
             {
                 $match: {
                     $or: [
                         { userId: userId },
                         { userId: { $in: friends } },
-                        { userId: { $nin: [...friends, userId] }, isPrivate: false } 
+                        { userId: { $nin: [...friends, userId] }, isPrivate: false }
                     ]
                 }
             },
@@ -96,6 +96,17 @@ exports.getPosts = async (req, res) => {
             },
             {
                 $lookup: {
+                    from: 'savedposts',
+                    let: { postId: '$_id', userId: userId },
+                    pipeline: [
+                        { $match: { $expr: { $and: [{ $eq: ['$user', '$$userId'] }, { $in: ['$$postId', '$savedPost'] }] } } },
+                        { $project: { _id: 1 } }
+                    ],
+                    as: 'savedPost'
+                }
+            },
+            {
+                $lookup: {
                     from: 'likes',
                     localField: '_id',
                     foreignField: 'postId',
@@ -104,36 +115,22 @@ exports.getPosts = async (req, res) => {
             },
             {
                 $addFields: {
-                    likes: { $arrayElemAt: ['$likes', 0] },
-                    likeCount: { $arrayElemAt: ['$likes.likeCount', 0] }
-                }
-            },
-            {
-                $addFields: {
+                    likes: {
+                        $filter: {
+                            input: '$likes',
+                            as: 'like',
+                            cond: { $in: [userId, '$$like.likedUsers'] }  // Filter for relevant like document
+                        }
+                    },
+                    likeCount: { $ifNull: [{ $arrayElemAt: ['$likes.likeCount', 0] }, 0] },  // Access likeCount
                     userLiked: {
                         $cond: {
-                            if: {
-                                $and: [
-                                    { $ifNull: ['$likes', false] },
-                                    { $not: { $eq: ['$likes', []] } }
-                                ]
-                            },
-                            then: { $in: [userId, '$likes.likedUsers'] },
+                            if: { $in: [userId, { $ifNull: [{ $arrayElemAt: ['$likes.likedUsers', 0] }, []] }] },
+                            then: true,
                             else: false
                         }
                     },
-                    userSaved: {
-                        $cond: {
-                            if: {
-                                $and: [
-                                    { $ifNull: ['$savedPost', false] },
-                                    { $not: { $eq: ['$savedPost', []] } }
-                                ]
-                            },
-                            then: { $in: [userId, '$savedPost.savedPost'] },
-                            else: false
-                        }
-                    }
+                    userSaved: { $cond: { if: { $gt: [{ $size: '$savedPost' }, 0] }, then: true, else: false } }
                 }
             },
             {
@@ -148,20 +145,20 @@ exports.getPosts = async (req, res) => {
                     likeCount: 1,
                     userLiked: 1,
                     userSaved: 1,
-                    type: 1
+                    type: 1,
+                    
                 }
             },
-            { $sort: { type: 1 ,createdAt: -1 } },
+            { $sort: { type: 1, createdAt: -1 } },
             { $skip: skip },
             { $limit: limit }
         ]);
-    
+
         res.status(200).json(posts);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: 'Failed to fetch posts' });
     }
-    
 };
 
 exports.addComment = async (req, res) => {
@@ -199,7 +196,7 @@ exports.addComment = async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
- 
+
 exports.saveUnsavePost = async (req, res) => {
     try {
         const userId = req?.userData?.id;
@@ -229,26 +226,23 @@ exports.saveUnsavePost = async (req, res) => {
 
 exports.likeUnlikePost = async (req, res) => {
     try {
-        const userId = req?.userData?.id;
-        const { postId } = req.body;
+        const userId = new mongoose.Types.ObjectId(req?.userData?.id);
+        const postId = new mongoose.Types.ObjectId(req.body.postId);
         let like = await likesModel.findOne({ postId });
         if (!like) {
-            like = new likesModel({ postId, likedUsers: [] });
+            like = new likesModel({ postId, likedUsers: [userId] });
         } else {
-        }
-        let userLiked = false;
-        const userIdString = userId.toString();
-        const isUserLiked = like.likedUsers.some(user => user.toString() === userIdString);
-        if (isUserLiked) {
-            like.likedUsers = like.likedUsers.filter(user => user.toString() !== userIdString);
-        } else {
-            like.likedUsers.push(userId);
-            userLiked = true;
+            const isUserLiked = like.likedUsers.includes(userId);
+            if (isUserLiked) {
+                like.likedUsers = like.likedUsers.filter(user => user.toString() !== userId.toString());
+            } else {
+                like.likedUsers.push(userId);
+            }
         }
         await like.save();
         res.status(201).json({
-            userLiked,
-            newLikeCount: like.likeCount
+            userLiked: like.likedUsers.includes(userId),
+            newLikeCount: like.likedUsers.length
         });
     } catch (err) {
         console.error(err);
@@ -412,7 +406,10 @@ exports.getProfilePosts = async (req, res) => {
         const userId = new mongoose.Types.ObjectId(id);
         const username = req.params.username
         const fetch = await UserModel.findOne({ username });
+        console.log(fetch)
         const profileUserId = fetch._id
+        console.log({profileUserId})
+        console.log({userId})
         const page = parseInt(req.params.page) || 1;
         const limit = 2;
         const skip = (page - 1) * limit;
@@ -423,16 +420,15 @@ exports.getProfilePosts = async (req, res) => {
                 userId: userId,
             };
         } else {
-            const isFriend = await checkIfFriend(userId, profileUserId); 
+            const isFriend = await checkIfFriend(userId, profileUserId);
             if (isFriend) {
                 matchStage = {
                     userId: profileUserId,
-                    isPrivate: false 
                 };
             } else {
                 matchStage = {
                     userId: profileUserId,
-                    isPrivate: false 
+                    isPrivate: false
                 };
             }
         }
@@ -441,58 +437,11 @@ exports.getProfilePosts = async (req, res) => {
                 $match: matchStage
             },
             {
-                $lookup: {
-                    from: 'users',
-                    let: { userId: '$userId' },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-                        { $project: { _id: 1, picture: 1, username: 1 } }
-                    ],
-                    as: 'postedBy'
-                }
-            },
-            {
-                $lookup: {
-                    from: 'likes',
-                    localField: '_id',
-                    foreignField: 'postId',
-                    as: 'likes'
-                }
-            },
-            {
-                $addFields: {
-                    likes: { $arrayElemAt: ['$likes', 0] },
-                    likeCount: { $arrayElemAt: ['$likes.likeCount', 0] }
-                }
-            },
-            {
-                $addFields: {
-                    userSaved: {
-                        $cond: {
-                            if: {
-                                $and: [
-                                    { $ifNull: ['$savedPost', false] },
-                                    { $not: { $eq: ['$savedPost', []] } }
-                                ]
-                            },
-                            then: { $in: [userId, '$savedPost.savedPost'] },
-                            else: false
-                        }
-                    }
-                }
-            },
-            {
                 $project: {
                     _id: 1,
                     userId: 1,
                     imageUrl: 1,
-                    caption: 1,
-                    isPrivate: 1,
                     createdAt: 1,
-                    postedBy: 1,
-                    likeCount: 1,
-                    userLiked: 1,
-                    userSaved: 1,
                 }
             },
             { $sort: { createdAt: -1 } },
@@ -509,8 +458,11 @@ exports.getProfilePosts = async (req, res) => {
 
 exports.getIndividualPost = async (req, res) => {
     try {
+        const id = req?.userData?.id;
+        const userId = new mongoose.Types.ObjectId(id);
+        const connections = await ConnectionsModel.findOne({ user: userId }, { friends: 1, _id: 0 });
+        const friends = connections?.friends || [];
         const postId = new mongoose.Types.ObjectId(req.params.postId);
-
         const post = await PostModel.aggregate([
             {
                 $match: {
@@ -529,6 +481,34 @@ exports.getIndividualPost = async (req, res) => {
                 }
             },
             {
+                $addFields: {
+                    type: {
+                        $cond: {
+                            if: { $eq: ['$userId', userId] },
+                            then: 'A-own',
+                            else: {
+                                $cond: {
+                                    if: { $in: ['$userId', friends] },
+                                    then: 'B-friends',
+                                    else: 'C-public'
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'savedposts',
+                    let: { postId: '$_id', userId: userId },
+                    pipeline: [
+                        { $match: { $expr: { $and: [{ $eq: ['$user', '$$userId'] }, { $in: ['$$postId', '$savedPost'] }] } } },
+                        { $project: { _id: 1 } }
+                    ],
+                    as: 'savedPost'
+                }
+            },
+            {
                 $lookup: {
                     from: 'likes',
                     localField: '_id',
@@ -537,62 +517,23 @@ exports.getIndividualPost = async (req, res) => {
                 }
             },
             {
-                $lookup: {
-                    from: 'savedposts',
-                    localField: '_id',
-                    foreignField: 'postId',
-                    as: 'savedPosts'
-                }
-            },
-            {
                 $addFields: {
-                    likes: { $arrayElemAt: ['$likes', 0] },
-                    likeCount: { $ifNull: ['$likes.likeCount', 0] }
-                }
-            },
-            {
-                $addFields: {
+                    likes: {
+                        $filter: {
+                            input: '$likes',
+                            as: 'like',
+                            cond: { $in: [userId, '$$like.likedUsers'] }  // Filter for relevant like document
+                        }
+                    },
+                    likeCount: { $ifNull: [{ $arrayElemAt: ['$likes.likeCount', 0] }, 0] },  // Access likeCount
                     userLiked: {
                         $cond: {
-                            if: {
-                                $and: [
-                                    { $ifNull: ['$likes', false] },
-                                    { $not: { $eq: ['$likes', []] } }
-                                ]
-                            },
-                            then: { $in: [req.userData.id, '$likes.likedUsers'] },
+                            if: { $in: [userId, { $ifNull: [{ $arrayElemAt: ['$likes.likedUsers', 0] }, []] }] },
+                            then: true,
                             else: false
                         }
                     },
-                    userSaved: {
-                        $cond: {
-                            if: {
-                                $and: [
-                                    { $ifNull: ['$savedPosts', false] },
-                                    { $not: { $eq: ['$savedPosts', []] } }
-                                ]
-                            },
-                            then: { $in: [req.userData.id, '$savedPosts.savedBy'] },
-                            else: false
-                        }
-                    },
-                    type: {
-                        $cond: {
-                            if: {
-                                $eq: ['$userId', new mongoose.Types.ObjectId(req.userData.id)]
-                            },
-                            then: 'A-own',
-                            else: {
-                                $cond: {
-                                    if: {
-                                        $in: ['$userId', req.userData.friends]
-                                    },
-                                    then: 'B-friends',
-                                    else: 'C-public'
-                                }
-                            }
-                        }
-                    }
+                    userSaved: { $cond: { if: { $gt: [{ $size: '$savedPost' }, 0] }, then: true, else: false } }
                 }
             },
             {
@@ -609,9 +550,9 @@ exports.getIndividualPost = async (req, res) => {
                     userSaved: 1,
                     type: 1,
                 }
-            }
-        ]);
+            },
 
+        ])
         // Check if the post exists
         if (!post || post.length === 0) {
             return res.status(404).json({ error: 'Post not found' });
