@@ -37,6 +37,7 @@ const PostRoute = require('./routes/post');
 const adminRoutes = require('./routes/admin/userManagement')
 const profileRoute = require('./routes/profile')
 const connectionsRoute = require('./routes/connections');
+const reportRoute = require('./routes/reports');
 const {accessTokenValidation,} = require('./helpers/accessTokenValidation')
 const {isBlocked} = require("./helpers/blockedCheck")
 const {isUserCheck} = require("./helpers/isUserCheck");
@@ -48,6 +49,7 @@ app.use('/user', UserRoute)
 app.use('/post',accessTokenValidation,isUserCheck,isBlocked,PostRoute )
 app.use('/profile',accessTokenValidation,isUserCheck,isBlocked, profileRoute)
 app.use('/connections',accessTokenValidation,isUserCheck,isBlocked,connectionsRoute)
+app.use('/report',reportRoute)
 
 mongoose.connect(process.env.DATABASE_URL_LOCAL)
   .then(() => console.log("Connected to the database"))
