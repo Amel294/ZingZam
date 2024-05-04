@@ -15,6 +15,7 @@ import Comments from "./Comments";
 import MenuDots from "../../../../public/icons/MenuDots";
 import CaptionModal from "./CaptionModal";
 import AddFriend from "../../../../public/icons/AddFriend";
+import ReportPostPopUpModal from "../report/ReportPostPopUpModel";
 
 export default function Post({ post, postId }) {
     
@@ -25,6 +26,8 @@ export default function Post({ post, postId }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isCaptionOpen, setIsCaptionOpen] = useState(false);
     const [saved,setSaved] = useState(post?.userSaved)
+    const [isReportOpen, setIsReportOpen] = useState(false);
+
     const handlesavePost = async (postId) => {
         const response = await AxiosWithBaseURLandCredentials.post(`/post/saveunsave`, { postId });
         if (response.data.saved === true) {
@@ -60,6 +63,9 @@ export default function Post({ post, postId }) {
     };
     const handleClose = () => {
         setIsCaptionOpen(false);
+    };
+    const handleReportClick = () => { 
+        setIsReportOpen(true);
     };
     return (
         <>
@@ -111,6 +117,7 @@ export default function Post({ post, postId }) {
                                             </DropdownItem>}
                                         {post?.type !== "A-own" &&
                                             <DropdownItem
+                                            onClick={handleReportClick}
                                                 key="report-post"
                                             >
                                                 Report
@@ -157,6 +164,8 @@ export default function Post({ post, postId }) {
                     <CommentModal className="my-0 py-0" isOpen={isOpen} setIsOpen={setIsOpen} />
                     <LikeModel isLikeOpen={isLikeOpen} setIsLikeOpen={setIsLikeOpen} postId={post?._id} likedUsers={post?.likedUsers} likeCount={post?.likeCount} />
                     <CaptionModal handleClose={handleClose} postId={post?._id} captionText={post?.caption} setIsCaptionOpen={setIsCaptionOpen} isCaptionOpen={isCaptionOpen} />
+                    <ReportPostPopUpModal isReportOpen={isReportOpen} setIsReportOpen={setIsReportOpen} postId={post._id} />
+
                     <Toaster
                         position="top-center"
                         reverseOrder={false}
