@@ -18,6 +18,7 @@ import { resetTempToken } from '../store/auth/tempTokenSlice';
 import AdminNavLayout from './layouts/AdminNavLayout';
 import { resetUserPosts } from '../store/auth/userPostsSlice';
 import Stream from '../pages/user/games/Stream';
+import ContentModeration from '../pages/admin/ContentModeration';
 
 const AppRoutes = () => {
     const dispatch = useDispatch()
@@ -48,7 +49,7 @@ const AppRoutes = () => {
                 <>
                     <Route element={<AdminNavLayout />}>
                         <Route path="/admin" index element={<AdminHome />} />
-                        <Route path="/usermanagement" element={<AdminHome />} />
+                        <Route path="/contentmodration" element={<ContentModeration />} />
                     </Route>
                 </>
             )}
