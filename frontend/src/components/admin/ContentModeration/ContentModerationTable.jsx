@@ -1,107 +1,96 @@
-import React, { useEffect, useState } from "react";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, User, Pagination, Tooltip, Switch, Button } from "@nextui-org/react";
-import toast from "react-hot-toast";
+import { Button, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import DetailedView from "./DetailedView";
 
 export default function UserManagement() {
-    const [selectedKeys, setSelectedKeys] = React.useState(new Set(["2"]));
     const [isLoading, setIsLoading] = useState(false);
-    const [users, setUsers] = useState([]);
-    const [page, setPage] = React.useState(1);
+    const [reports, setReports] = useState([]);
+    const [activePage, setActivePage] = useState(1);
     const rowsPerPage = 10;
+    const [totalPages, setTotalPages] = useState()
+    const [isDetailedOpen, setIsDetailedOpen] = useState(false);
+    const [reportId,setReportId] = useState(null)
+    const fetchData = async () => {
+        setIsLoading(true);
 
-    const pages = Math.ceil(users.length / rowsPerPage);
+        try {
+            const response = await AxiosWithBaseURLandCredentials.get(`/report/reports?page=${ activePage }&limit=${ rowsPerPage }`, {
+                withCredentials: true
+            });
 
-    const items = React.useMemo(() => {
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-
-        return users.slice(start, end);
-    }, [page, users]);
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
-
-            try {
-                const response = await AxiosWithBaseURLandCredentials.get('/admin/usermanagement', {
-                    withCredentials: true
-                });
-
-                if (response.data.error) {
-                    toast.error(`${ response.data.error }`);
-                } else {
-                    setUsers(response.data);
-                }
-            } catch (error) {
-                console.error(error);
-                toast.error("This didn't work.");
-            } finally {
-                setIsLoading(false);
+            if (response.data.error) {
+                toast.error(`${ response.data.error }`);
+            } else {
+                setReports(response.data.reports);
+                setTotalPages(response.data.totalPage)
             }
-        };
-
-        fetchData();
-    }, []);
-
-    // const columns = [
-    //     { name: "REPORT ID", uid: "id" },
-    //     { name: "REPORTED USER", uid: "reported_user" },
-    //     { name: "NO OF REPORTS", uid: "total" },
-    //     { name: "LAST REPORT AT", uid: "date" },
-    //     { name: "TYPE", uid: "report_type" },
-    //     { name: "ACTIONS", uid: "see details" },
-    // ];
-    const columns = [
-        { name: "USER", uid: "name" },
-        { name: "EMAIL", uid: "email" },
-        { name: "VERIFIED", uid: "verified" },
-        { name: "BLOCK", uid: "blocked" },
-        { name: "DELETE", uid: "delete" },
-    ];
-    
-    const renderCell = React.useCallback((user, columnKey) => {
-        console.log('User:', user, 'isBlocked:', user.isBlocked);
-        switch (columnKey) {
-            case "name":
-                return (
-                    <User
-                        avatarProps={{ radius: "lg", src: user.avatar || 'https://i.pravatar.cc/150' }}
-                        description={user.email}
-                        name={user.name}
-                    >
-                        {user.email}
-                    </User>
-                );
-            case "email":
-                return <>{user.email}</>
-            case "status":
-                return <>{user.isBlocked === true ? 'Blocked' : 'Active'}</>
-            case "verified":
-                return <>{user.verified === true ? 'Verified' : 'Unverified'}</>
-            case "blocked":
-                return (
-                    <div className="relative flex items-center justify-between" >
-                        <Button size="sm" className="min-w-20" color={user.isBlocked ? "warning" : "success"}>
-                            {user.isBlocked ? "Unblock" : "Block"}
-                        </Button>
-                    </div>
-                );
-            case "delete":
-                return (
-                    <div className="relative flex items-center justify-between" >
-                        <Button size="sm" className="min-w-20" color= "danger">
-                            Delete User
-                        </Button>
-                    </div>
-                );
-
-            default:
-                return <>{user[columnKey]}</>;
+        } catch (error) {
+            console.error(error);
+            toast.error("Something went wrong, please try again.");
+        } finally {
+            setIsLoading(false);
         }
-    }, []);
+    };
+    useEffect(() => {
+        fetchData();
+    }, [activePage]);
+
+    const handleChangePage = (newPage) => {
+        setActivePage(newPage);
+    };
+
+    const handleChangeStatus = async (reportId) => {
+        try {
+                const response = await AxiosWithBaseURLandCredentials.patch(`/report/report-status`, {
+                    reportId,
+                    reportStatus :"in_review"
+            }, { withCredentials: true });
+    
+            if (response.data.message) {  
+                setReportId(reportId)
+                setIsDetailedOpen(true);
+                toast.success('Status changed successfully');
+                fetchData(); 
+            } else {
+                toast.error('Failed to update status. Please try again.');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('An error occurred. Please try again.');
+        }
+    };
+
+    const columns = [
+        { name: "POST ID", uid: "postId" },
+        { name: "REASON", uid: "reason" },
+        { name: "DESCRIPTION", uid: "description" },
+        { name: "REPORTED BY", uid: "reportedBy" },
+        { name: "REPORTED USER", uid: "reportedUser" },
+        { name: "STATUS", uid: "status" },
+        { name: "REPORTED AT", uid: "createdAt" },
+        { name: "ACTION", uid: "action" },
+    ];
+
+    const renderCell = (report, columnKey) => {
+        switch (columnKey) {
+            case "reportedBy":
+            case "reportedUser":
+                return report[columnKey].name;
+            case "status":
+                return report.status.toUpperCase();
+            case "createdAt":
+                return new Date(report[columnKey]).toLocaleString();
+            case "action":
+                return <Button size="sm" onClick={() => handleChangeStatus(report._id)}>View Details</Button>
+                default:
+                return report[columnKey];
+        }
+    };
 
     return (
-        <div className=" text-left p-10 h-screen w-full">
+        <div className="text-left p-10 h-screen w-full">
             <Table
                 aria-label="Example table with client side pagination"
                 bottomContent={
@@ -111,26 +100,39 @@ export default function UserManagement() {
                             showControls
                             showShadow
                             color="secondary"
-                            page={page}
-                            total={pages}
-                            onChange={(page) => setPage(page)}
+                            total={totalPages}
+                            onChange={(newPage) => handleChangePage(newPage)}
+                            defaultValue={1}
                         />
                     </div>
                 }
                 classNames={{
                     wrapper: "min-h-[222px]",
-                }}>
+                }}
+            >
                 <TableHeader columns={columns}>
-                    {(column) => <TableColumn key={column.uid}>{column.name}</TableColumn>}
+                    {(column) => (
+                        <TableColumn key={column.uid} style={{ width: `${ 100 / columns.length }%` }}>
+                            {column.name}
+                        </TableColumn>
+                    )}
                 </TableHeader>
-                <TableBody items={items}>
-                    {(user) => (
-                        <TableRow key={user._id}>
-                            {(columnKey) => <TableCell>{renderCell(user, columnKey)}</TableCell>}
+                <TableBody items={reports}>
+                    {(report) => (
+                        <TableRow key={report._id}>
+                            {columns.map((column) => (
+                                <TableCell
+                                    key={column.uid}
+                                    style={{ width: `${ 100 / columns.length }%` }}
+                                >
+                                    {renderCell(report, column.uid)}
+                                </TableCell>
+                            ))}
                         </TableRow>
                     )}
                 </TableBody>
             </Table>
+                <DetailedView isDetailedOpen = {isDetailedOpen} setIsDetailedOpen={setIsDetailedOpen} reportId={reportId}/>
         </div>
     );
 }
