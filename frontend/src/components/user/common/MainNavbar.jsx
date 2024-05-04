@@ -29,16 +29,16 @@ export default  function MainNavbar() {
                 </Link>
             </NavbarBrand>
             <NavbarContent className="hidden sm:flex gap-4" justify="center">
-                <NavbarItem isActive>
-                    <Link href="#" aria-current="page">
+                <NavbarItem isActive >
+                    <Button aria-current="page" className='bg-transparent p-0' onClick={() => navigate(`/stream`)}>
                         <Image isZoomed radius="none" isBlurred width={35} alt="Game side logo" src={GameSide} className="p-1" />
-                    </Link>
+                    </Button>
                 </NavbarItem>
                 <Divider orientation="vertical" className="h-7" />
                 <NavbarItem isActive>
-                    <Link href="#" aria-current="page">
+                    <Button aria-current="page" className='bg-transparent p-0' onClick={() => navigate(`/home`)}>
                         <Image isZoomed radius="none" isBlurred width={35} alt="Social side side logo" src={SocialSide} className="p-1" />
-                    </Link>
+                    </Button>
                 </NavbarItem>
             </NavbarContent>
             <NavbarContent justify="end">
