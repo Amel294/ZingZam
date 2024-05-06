@@ -168,3 +168,34 @@ exports.searchUser =  async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 }
+
+exports.fetchFriends = async (req, res) => {
+    const page = parseInt(req.params.page) || 1;
+    const limit = 2;
+    const skip = (page - 1) * limit; 
+    try {
+        const username = req.params.username
+        const user = await UserModel.findOne({ username });
+        if(!user){
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const result = await ConnectionsModel.findOne(
+            { user: user._id },
+            { friends: 1, _id: 0 }
+        )
+        .populate({
+            path: 'friends',
+            select: 'name username picture',
+            options: { limit: limit, skip: skip }
+        });
+        if (!result) {
+            return res.status(404).json({ message: 'No friends found' });
+        }
+        const { friends } = result;
+        res.status(200).json(friends); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server error' });
+    }
+};
