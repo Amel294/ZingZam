@@ -40,7 +40,7 @@ function Profile() {
                     <Button size="sm" onClick={() => setToggle("posts")} className='bg-secondary-400'>Post </Button>
                     <Button size="sm" onClick={() => setToggle("friends")} className='bg-secondary-400'>Friends </Button>
                 </div>
-                {toggle === "friends" && <Friends friends={userData.friends} />}
+                {toggle === "friends" && <Friends  />}
                 {toggle === "posts" && <PostProfile />}
             </>}
             <EditUserData />
