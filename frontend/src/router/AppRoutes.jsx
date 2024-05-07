@@ -19,6 +19,7 @@ import AdminNavLayout from './layouts/AdminNavLayout';
 import { resetUserPosts } from '../store/auth/userPostsSlice';
 import Stream from '../pages/user/games/Stream';
 import ContentModeration from '../pages/admin/ContentModeration';
+import StreamGame from '../pages/user/StreamGame';
 
 const AppRoutes = () => {
     const dispatch = useDispatch()
@@ -72,6 +73,8 @@ const AppRoutes = () => {
                     <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="/home" element={<Navigate to="/login" replace />} />
                     <Route path="/profile/:username" element={<Navigate to="/login" replace />} />
+                    <Route path="/streamgame" element={<Navigate to="/login" replace />} />
+
                 </>
             )}
 
@@ -80,6 +83,7 @@ const AppRoutes = () => {
                 <Route path="/home" element={<Home />} />
                 <Route path="/profile/:username" element={<Profile />} />
                 <Route path="/stream" element={<Stream />} />
+                <Route path="/streamgame" element={<StreamGame />} />
             </Route>
             <Route >
                 <Route index element={<Home />} />
@@ -87,7 +91,7 @@ const AppRoutes = () => {
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgotpassword" element={<ForgotPassword />} />
             </Route>
-            
+
             <Route path="*" element={<NotFound />} />
 
         </Routes>
