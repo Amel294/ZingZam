@@ -1,10 +1,10 @@
 import ReactPlayer from 'react-player';
 
-const VideoPlayer = () => {
+const VideoPlayer = ({streamKey}) => {
     return (
       <div className='w-full h-full'>
         <ReactPlayer 
-          url='http://localhost:7000/live/900d56c351b095274746c936360fe143.flv' 
+          url={`http://localhost:7000/live/${streamKey}.flv` }
           playing={true} 
           muted={true} 
           controls
