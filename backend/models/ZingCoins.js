@@ -14,6 +14,7 @@ const ZingCoinsSchema = new mongoose.Schema({
     purchases: [{
         coinPackName: { type: String },
         purchaseAmount: { type: Number },
+        coins: { type: Number },
         razorpayOrderId:{type:String},
         timestamp: { type: Date, default: Date.now }
     }],
