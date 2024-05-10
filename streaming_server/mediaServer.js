@@ -1,11 +1,11 @@
 const NodeMediaServer = require('node-media-server');
-const axios = require('axios'); // Ensure axios is installed or use any other HTTP client
+const axios = require('axios'); 
 
 const config = {
     rtmp: {
         port: 1935,
-        chunk_size: 6000,
-        gop_cache: true,
+        chunk_size: 600, 
+        gop_cache: false,
         ping: 30,
         ping_timeout: 60
     },
