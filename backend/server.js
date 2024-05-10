@@ -1,46 +1,28 @@
 const express = require("express");
+const app = express();
 const http = require("http");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require('cookie-parser')
-// const multer = require('multer');
 const morgan = require('morgan');
 const socketIo = require("socket.io");
-
 require('dotenv').config();
-
-const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.BASE_URL_FRONTEND,
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
     credentials: true
   }
 });
-
 app.use(express.json());
-// CORS configuration
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: process.env.BASE_URL_FRONTEND,
   credentials: true 
 }));
 app.use(morgan('dev'));
-
-// app.use(cors());
-// app.use(cors(options));
 app.use(cookieParser())
-// Multer configuration
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//       cb(null, 'uploads/'); // Set the destination folder for uploaded files
-//   },
-//   filename: function (req, file, cb) {
-//       cb(null, Date.now() + '-' + file.originalname); // Set the filename to be unique
-//   }
-// });
-// const upload = multer({ storage: storage });
 
 //routes
 const UserRoute = require('./routes/user');
@@ -50,6 +32,7 @@ const profileRoute = require('./routes/profile')
 const connectionsRoute = require('./routes/connections');
 const reportRoute = require('./routes/reports');
 const streamRoute = require('./routes/stream/stream')
+const PaymentRoute = require('./routes/payment')
 const {accessTokenValidation,} = require('./helpers/accessTokenValidation')
 const {isBlocked} = require("./helpers/blockedCheck")
 const {isUserCheck} = require("./helpers/isUserCheck");
@@ -63,15 +46,7 @@ app.use('/profile',accessTokenValidation,isUserCheck,isBlocked, profileRoute)
 app.use('/connections',accessTokenValidation,isUserCheck,isBlocked,connectionsRoute)
 app.use('/report',reportRoute)
 app.use('/stream',streamRoute)
-
-// Use routes
-app.use('/admin', adminRoutes);
-app.use('/user', UserRoute);
-app.use('/post', PostRoute);
-app.use('/profile', profileRoute);
-app.use('/connections', connectionsRoute);
-app.use('/report', reportRoute);
-app.use('/stream', streamRoute);
+app.use('/pay',accessTokenValidation,isUserCheck,isBlocked,PaymentRoute)
 
 // Socket.io connection
 io.on("connection", (socket) => {
