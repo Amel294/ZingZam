@@ -4,3 +4,4 @@ streaming_server/node_modules
 V1
 backend/.env
 backend/uploads
+frontend/.env
