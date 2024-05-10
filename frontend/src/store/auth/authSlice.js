@@ -10,7 +10,8 @@ const initialState = {
   gender: null,
   birthday: null,
   bio: null,
-  role :null
+  role :null,
+  coin:0
 };
 
 const authSlice = createSlice({
@@ -56,9 +57,12 @@ const authSlice = createSlice({
       Object.keys(state).forEach(key => {
         state[key] = initialState[key];
       });
+    },
+    updateCoins(state,action){
+      state.coin = action.payload.coin
     }
   }
 });
 
-export const { loginUser, logoutUser, updateUser, resetAuth } = authSlice.actions;
+export const { loginUser, logoutUser, updateUser, resetAuth,updateCoins } = authSlice.actions;
 export default authSlice.reducer;
