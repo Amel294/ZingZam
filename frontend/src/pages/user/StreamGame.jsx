@@ -1,17 +1,23 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux'
 
 import io from 'socket.io-client';
 import VideoPlayer from '../../components/user/gaming/VideoPlayer';
 import ZingCoinsIcon from '../../../public/icons/ZingCoinsIcon';
 import { Button } from '@nextui-org/react';
+import CoinModal from '../../components/user/zincCoins/CoinModal';
 
 const socket = io('http://localhost:8000'); // Adjust URL to match your server
 
 function StreamGame() {
+    const [isCoinModelOpen, setIsCoinModelOpen] = useState(false);
+
+    const handleGiftModelOpen = () => {
+        setIsCoinModelOpen(true);
+    };
     const currentUser = useSelector(state => state.auth.id)
     console.log(currentUser)
-    const streamKey = "5f1f177c0bbbee5e2127ec32ae66a827";
+    const streamKey = "12a56169751532029ec1e20443bd1ac0";
     const [chat, setChat] = useState([]);
     const [message, setMessage] = useState('');
     console.log("Current chat state:", chat);
@@ -46,7 +52,7 @@ function StreamGame() {
                     <span className='flex items-center'>
                         <div className='flex gap-2'>
                             <ZingCoinsIcon />: 0
-                            <Button variant='flat' size='sm' >Buy Coins</Button>
+                            <Button variant='flat' size='sm' auto onClick={handleGiftModelOpen}>Buy Coins</Button>
                         </div>
                     </span>
                 </div>
@@ -61,6 +67,7 @@ function StreamGame() {
                 <input value={message} onChange={e => setMessage(e.target.value)} />
                 <button onClick={sendMessage}>Send</button>
             </div>
+            <CoinModal isCoinModelOpen={isCoinModelOpen} setIsCoinModelOpen={setIsCoinModelOpen} onClick={handleGiftModelOpen} />
         </div>
     );
 }
