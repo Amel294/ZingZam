@@ -35,6 +35,7 @@ exports.verifyPayment = async (req, res) => {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 		const userId = new mongoose.Types.ObjectId(req?.userData?.id);
         const sign = razorpay_order_id + "|" + razorpay_payment_id;
+        let newCoinBalance;
         const expectedSign = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
             .update(sign.toString())
@@ -52,12 +53,13 @@ exports.verifyPayment = async (req, res) => {
                 const newPurchase = {
                     coinPackName: coinPack.name,
                     purchaseAmount: coinPack.price,
+                    coins: coinPack.coins,
                     razorpayOrderId: razorpay_order_id
                 };
                 const existingCoinsData = await ZingCoinsModel.findOne({});
                 if (!existingCoinsData) {
                     await ZingCoinsModel.create({
-						userId:userId,
+                        userId:userId,
                         coins: coinPack.coins,
                         purchases: [newPurchase]
                     });
@@ -65,11 +67,12 @@ exports.verifyPayment = async (req, res) => {
 					existingCoinsData.coins += coinPack.coins;
                     existingCoinsData.purchases.push(newPurchase);
                     await existingCoinsData.save();
+                    newCoinBalance = existingCoinsData.coins;
                 }
             } else {
                 console.log("No matching coin pack found for the order amount:", orderAmount);
             }
-            return res.status(200).json({ message: "Payment verified successfully" });
+            return res.status(200).json({ message: "Payment verified successfully",newCoinBalance });
         } else {
             return res.status(400).json({ message: "Invalid signature sent!" });
         }
@@ -78,3 +81,18 @@ exports.verifyPayment = async (req, res) => {
         console.log(error);
     }
 };
+exports.zingBalance = async (req,res)=>{
+    try {
+        const userId = new mongoose.Types.ObjectId(req?.userData?.id);
+        const existingCoinsData = await ZingCoinsModel.findOne({userId:userId});
+        if (!existingCoinsData) {
+            return res.status(200).json({coinBalance:0});
+        } else {
+            return res.status(200).json({coinBalance:existingCoinsData.coins});
+        }
+        
+    }catch{
+        res.status(500).json({ message: "Internal Server Error!" });
+        console.log(error);
+    }
+}
