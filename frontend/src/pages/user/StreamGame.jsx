@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import io from 'socket.io-client';
 import VideoPlayer from '../../components/user/gaming/VideoPlayer';
 import ZingCoinsIcon from '../../../public/icons/ZingCoinsIcon';
 import { Button } from '@nextui-org/react';
 import CoinModal from '../../components/user/zincCoins/CoinModal';
+import AxiosWithBaseURLandCredentials from '../../axiosInterceptor';
+import { updateCoins } from '../../store/auth/authSlice';
 
 const socket = io('http://localhost:8000'); // Adjust URL to match your server
 
 function StreamGame() {
+    const coinBalance = useSelector(state => state.auth.coin)
     const [isCoinModelOpen, setIsCoinModelOpen] = useState(false);
-
+    const dispatch = useDispatch()
     const handleGiftModelOpen = () => {
         setIsCoinModelOpen(true);
     };
@@ -40,7 +43,17 @@ function StreamGame() {
             setMessage('');
         }
     };
-
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const getCoinBalance = await AxiosWithBaseURLandCredentials.get('pay/zinc-balance');
+                dispatch(updateCoins({ coin: getCoinBalance.data.coinBalance }));
+            } catch (error) {
+                console.error("Error fetching coin balance:", error);
+            }
+        };
+        fetchData();
+    }, []);
     return (
         <div className='grid grid-cols-12'>
             <div className='col-span-9 rounded-lg p-2 m-2 border-1 border-white max-h-[90vh]'>
@@ -51,7 +64,7 @@ function StreamGame() {
                     <span>Live Chat</span>
                     <span className='flex items-center'>
                         <div className='flex gap-2'>
-                            <ZingCoinsIcon />: 0
+                            <ZingCoinsIcon />: {coinBalance}
                             <Button variant='flat' size='sm' auto onClick={handleGiftModelOpen}>Buy Coins</Button>
                         </div>
                     </span>

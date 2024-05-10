@@ -3,10 +3,14 @@ import { Card, CardBody, CardHeader, Divider, Modal, ModalContent } from '@nextu
 import ZingCoinsIcon from '../../../../public/icons/ZingCoinsIcon';
 import AxiosWithBaseURLandCredentials from '../../../axiosInterceptor';
 import ZingZamLogo from '../../../../public/icons/ZingZamLogo.svg'
+import { useDispatch, useSelector } from 'react-redux';
+import { updateCoins } from '../../../store/auth/authSlice';
 
 function CoinModal({ isCoinModelOpen, setIsCoinModelOpen }) {
     const [razorpayInstance, setRazorpayInstance] = useState(null);
     const [options,setOptions] = useState(null)
+    const coinBalance = useSelector(state=>state.auth.coin)
+    const dispatch  = useDispatch()
     const coinPacks =[
         {
             "name": "Starter Pack",
@@ -39,7 +43,6 @@ function CoinModal({ isCoinModelOpen, setIsCoinModelOpen }) {
     };
     
     const initPayment = (data) => {
-    // Set options state first
     const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: data.amount,
@@ -53,7 +56,10 @@ function CoinModal({ isCoinModelOpen, setIsCoinModelOpen }) {
                 const verifyUrl = "http://localhost:8000/pay/verify";
                 const { data } = await AxiosWithBaseURLandCredentials.post(verifyUrl, response);
                 console.log(data);
-                setOptions(null); // Clear options after payment verification
+                setOptions(null);
+                if(data?.newCoinBalance){
+                    dispatch(updateCoins({coin:data.newCoinBalance}))
+                }
             } catch (error) {
                 console.log(error);
             }
@@ -62,10 +68,7 @@ function CoinModal({ isCoinModelOpen, setIsCoinModelOpen }) {
             color: "#7828C8",
         },
     };
-
-    setOptions(options); // Set options state
-
-    // Initialize Razorpay instance using the options
+    setOptions(options); 
     const rzp1 = new window.Razorpay(options);
     setRazorpayInstance(rzp1);
     rzp1.open();
@@ -100,8 +103,8 @@ function CoinModal({ isCoinModelOpen, setIsCoinModelOpen }) {
                                     <p className="text-md">Buy Coins</p>
                                 </div>
                                 <div className='flex gap-2'>
+                                    <span className='text-1xl'>{coinBalance}</span>
                                     <ZingCoinsIcon />
-                                    <span className='text-1xl'>250</span>
                                 </div>
                             </CardHeader>
                             <Divider />
