@@ -4,7 +4,7 @@ const axios = require('axios');
 const config = {
     rtmp: {
         port: 1935,
-        chunk_size: 600, 
+        chunk_size: 60,
         gop_cache: false,
         ping: 30,
         ping_timeout: 60
@@ -40,7 +40,7 @@ async function validateStreamKeyWithBackend(streamKey) {
 
 nms.on('prePublish', async (id, StreamPath, args) => {
     console.log('[NodeEvent on prePublish]', `id=${ id } StreamPath=${ StreamPath } args=${ JSON.stringify(args) }`);
-    const streamKey = await getStreamKeyFromStreamPath(StreamPath);
+    const streamKey = getStreamKeyFromStreamPath(StreamPath);
     const isValid = await validateStreamKeyWithBackend(streamKey);
     if (!isValid) {
         let session = nms.getSession(id);
