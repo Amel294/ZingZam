@@ -1,19 +1,41 @@
-import ReactPlayer from 'react-player';
+import { useState } from 'react';
+import { ReactFlvPlayer } from 'react-flv-player';
 
 const VideoPlayer = ({streamKey}) => {
-    return (
-      <div className='w-full h-full'>
-        <ReactPlayer 
-          url={`http://localhost:7000/live/${streamKey}.flv` }
-          playing={true} 
-          muted={true} 
-          controls
-          width='100%'
-          height='100%'
-        />
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const maxReconnectAttempts = 3;
 
-      </div>
-    );
+  const handlePlayerError = (err) => {
+    switch (err) {
+      case 'NetworkError':
+      case 'MediaError':
+        if (reconnectAttempts < maxReconnectAttempts) {
+          setReconnectAttempts(reconnectAttempts + 1);
+        } else {
+          console.log('Max reconnect attempts reached');
+        }
+        break;
+      default:
+        console.log('Other error');
+    }
+  };
+
+  return (
+    <div className='w-full h-auto rounded-lg'>
+      <ReactFlvPlayer
+        type="flv"
+        url={`http://localhost:7000/live/${streamKey}.flv`}
+        isLive={true}
+        isMuted={true}
+        enableStashBuffer={false}
+        handleError={handlePlayerError}
+        enableError={true}
+        reconnectInterval={5000}
+        autoPlay={true}
+        key={reconnectAttempts} 
+      />
+    </div>
+  );
 };
 
 export default VideoPlayer;
