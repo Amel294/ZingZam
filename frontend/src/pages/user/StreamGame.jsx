@@ -8,10 +8,10 @@ function StreamGame() {
     const handleCoinModelOpen = () => {
         setIsCoinModelOpen(true);
     };
-    const streamKey = "32437bc855cceb7f6f0e8796f6433153";
+    const streamKey = "d442a8ef46ad30adfae2d42df5e136a3";
     return (
         <>
-            <div className='h-full'>
+            <div className='h-screen'>
                 <div className='grid grid-cols-12  '>
                     <div className='col-span-12 lg:col-span-9 rounded-lg p-2 m-2  border-white flex gap-2 border-1  aspect-video items-center '>
                         <VideoPlayer streamKey={streamKey} className='w-full' />
