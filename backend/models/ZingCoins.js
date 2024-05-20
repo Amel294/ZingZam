@@ -15,17 +15,18 @@ const ZingCoinsSchema = new mongoose.Schema({
         coinPackName: { type: String },
         purchaseAmount: { type: Number },
         coins: { type: Number },
-        razorpayOrderId:{type:String},
+        razorpayOrderId: { type: String },
         timestamp: { type: Date, default: Date.now }
     }],
-    donationsSend: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+    support: [{
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        coins: { type: Number },
+        transactionType: { type: String, enum: ['Send', 'Received'] },
+        timestamp: { type: Date, default: Date.now }
     }],
-    donationsReceived: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }]
 }, {
     timestamps: true
 });
