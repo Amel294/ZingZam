@@ -73,7 +73,8 @@ const AppRoutes = () => {
                     <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="/home" element={<Navigate to="/login" replace />} />
                     <Route path="/profile/:username" element={<Navigate to="/login" replace />} />
-                    <Route path="/streamgame" element={<Navigate to="/login" replace />} />
+                    <Route path="/streamgame/:stream-key" element={<Navigate to="/login" replace />} />
+                    <Route path="/stream" element={<Navigate to="/login" replace />} />
 
                 </>
             )}
@@ -82,8 +83,8 @@ const AppRoutes = () => {
                 <Route index element={<Home />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/profile/:username" element={<Profile />} />
+                <Route path="/streamgame/:streamkey" element={<StreamGame />} />
                 <Route path="/stream" element={<Stream />} />
-                <Route path="/streamgame" element={<StreamGame />} />
             </Route>
             <Route >
                 <Route index element={<Home />} />

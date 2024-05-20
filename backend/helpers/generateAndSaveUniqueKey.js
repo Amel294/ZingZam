@@ -5,7 +5,7 @@ function generateUniqueKey() {
     return crypto.randomBytes(16).toString('hex');  
 }
 
-const  generateAndSaveUniqueKey = async (userId)=> {
+const  generateAndSaveUniqueKey = async (userId,title)=> {
     let unique = false;
     let newKey;
 
@@ -19,9 +19,10 @@ const  generateAndSaveUniqueKey = async (userId)=> {
     }
 
     const newStreamKey = new StreamModel({
+        title:title,
         userId: userId,
         streamKey: newKey,
-        isActive: true
+        isActive: false
     });
 
     await newStreamKey.save();
