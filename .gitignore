@@ -1,5 +1,7 @@
 backend/node_modules
 frontend/node_modules
+streaming_server/node_modules
 V1
 backend/.env
 backend/uploads
+frontend/.env

@@ -21,5 +21,6 @@
         "signup",
         "tailwindcss",
         "Unsave"
-    ]
+    ],
+    "CodeGPT.apiKey": "CodeGPT Plus Beta"
 }
