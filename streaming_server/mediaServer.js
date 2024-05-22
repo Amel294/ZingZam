@@ -1,5 +1,5 @@
-import NodeMediaServer from 'node-media-server'
-import axios from 'axios' 
+const NodeMediaServer = require('node-media-server');
+const axios = require('axios'); 
 
 const config = {
     rtmp: {
