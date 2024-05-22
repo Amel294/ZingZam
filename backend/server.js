@@ -16,7 +16,7 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(cookieParser());
 
-mongoose.connect(process.env.DATABASE_URL_LOCAL)
+mongoose.connect(process.env.DATABASE_URL)
   .then(() => console.log("Connected to the database"))
   .catch((err) => console.error("Failed to connect to database:", err));
 
