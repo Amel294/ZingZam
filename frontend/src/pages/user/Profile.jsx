@@ -7,7 +7,8 @@ import Friends from '../../components/user/profile/Friends';
 import { UserProfile } from '../../components/user/profile/UserProfile';
 import EditUserData from '../../components/user/profile/EditName';
 import AxiosWithBaseURLandCredentials from '../../axiosInterceptor';
-import { Button } from '@nextui-org/react';
+import { Button, Spinner } from '@nextui-org/react';
+import NotFound from './NotFound';
 
 function Profile() {
     const [userData, setUserData] = useState();
@@ -15,6 +16,8 @@ function Profile() {
     const [liked, setLiked] = useState(false);
     const [picture, setPicture] = useState(defaultAvatar);
     const [toggle, setToggle] = useState("posts")
+    const [notFound, setNotFound] = useState(false)
+    const [loading, setLoading] = useState(true)
     useEffect(() => {
         setToggle("posts");
     }, [username]);
@@ -22,10 +25,16 @@ function Profile() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await AxiosWithBaseURLandCredentials.get(`/profile/${username}`, {
+                const response = await AxiosWithBaseURLandCredentials.get(`/profile/${ username }`, {
                     withCredentials: true
                 });
-                setUserData(response.data);
+                if (response.data.notFound === true) {
+                    setNotFound(true)
+                }
+                else{
+                    setUserData(response.data);
+                }
+                setLoading(false)
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -33,17 +42,24 @@ function Profile() {
         fetchData();
     }, [username]);
     return (
-        <div className='flex flex-col items-center w-full gap-4 pt-4 justify-top min-h-screen '>
-            {userData && <>
-                <UserProfile userData={userData} picture={picture} defaultAvatar={defaultAvatar} />
-                <div className='sticky top-16 z-20  pt-2 rounded-b-lg w-[400px] flex gap-2 justify-center '>
-                    <Button size="sm" onClick={() => setToggle("posts")} className='bg-secondary-400'>Post </Button>
-                    <Button size="sm" onClick={() => setToggle("friends")} className='bg-secondary-400'>Friends </Button>
-                </div>
-                {toggle === "friends" && <Friends  />}
-                {toggle === "posts" && <PostProfile />}
-            </>}
-            <EditUserData />
+        <div className='min-h-screen'>
+            {
+                loading ?
+                    <div className='flex justify-center pt-[40vh]'><Spinner /></div>
+                    : notFound ? <NotFound /> :
+                        <div className='flex flex-col items-center w-full gap-4 pt-4 justify-top min-h-screen '>
+                            {userData && <>
+                                <UserProfile userData={userData} picture={picture} defaultAvatar={defaultAvatar} />
+                                <div className='sticky top-16 z-20  pt-2 rounded-b-lg w-[400px] flex gap-2 justify-center '>
+                                    <Button size="sm" onClick={() => setToggle("posts")} className='bg-secondary-400'>Post </Button>
+                                    <Button size="sm" onClick={() => setToggle("friends")} className='bg-secondary-400'>Friends </Button>
+                                </div>
+                                {toggle === "friends" && <Friends />}
+                                {toggle === "posts" && <PostProfile />}
+                            </>}
+                            <EditUserData />
+                        </div>
+            }
         </div>
     );
 }
