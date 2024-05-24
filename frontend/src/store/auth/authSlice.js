@@ -51,6 +51,8 @@ const authSlice = createSlice({
         state.username = value;
       } else if (field === 'picture') {
         state.picture = value;
+      } else if (field === 'bio') {
+        state.bio = value;
       }
     },
     resetAuth(state) {
