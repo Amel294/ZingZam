@@ -63,6 +63,7 @@ exports.verifyPayment = async (req, res) => {
                         coins: coinPack.coins,
                         purchases: [newPurchase]
                     });
+                    newCoinBalance = coinPack.coins
                 } else {	
 					existingCoinsData.coins += coinPack.coins;
                     existingCoinsData.purchases.push(newPurchase);
