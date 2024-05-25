@@ -16,7 +16,7 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(cookieParser());
 
-mongoose.connect(process.env.DATABASE_URL)
+mongoose.connect(process.env.DATABASE_URL_LOCAL)
   .then(() => console.log("Connected to the database"))
   .catch((err) => console.error("Failed to connect to database:", err));
 
@@ -44,9 +44,9 @@ app.use('/stream', streamRoute);
 app.use('/pay', accessTokenValidation, isUserCheck, isBlocked, PaymentRoute);
 
 const initializeSocketServer = require('./socketServer');
-initializeSocketServer(server);
+initializeSocketServer(server, app);
 
-const port = process.env.PORT || 8000;
-server.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+const PORT = process.env.PORT || 8000;
+server.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

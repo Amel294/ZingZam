@@ -161,7 +161,6 @@ exports.getScreenshots = async (req, res) => {
 
 exports.streamStatus = async (req, res) => {
     try {
-        console.log("In stream status")
         const { streamKey } = req.params
         console.log(streamKey)
 
@@ -184,7 +183,7 @@ exports.sendSupport = async (req, res) => {
     try {
         const senderId = new mongoose.Types.ObjectId(req?.userData?.id);
         let { coins, message, streamKey } = req.body;
-        
+
         coins = Number(coins);
         if (coins <= 0) {
             throw new Error('coins must be greater than zero');
@@ -204,6 +203,7 @@ exports.sendSupport = async (req, res) => {
                 $inc: { coins: -coins },
                 $push: {
                     support: {
+                        streamId: stream._id,
                         user: recipientId,
                         coins: coins,
                         transactionType: 'Send',
@@ -225,7 +225,8 @@ exports.sendSupport = async (req, res) => {
                         timestamp: new Date()
                     }
                 }
-            }
+            },
+            { upsert: true }
         );
 
         const streamUpdate = StreamModel.updateOne(
@@ -235,7 +236,7 @@ exports.sendSupport = async (req, res) => {
                     supportReceived: {
                         user: senderId,
                         coins: coins,
-                        message:message,
+                        message: message,
                         timestamp: new Date()
                     }
                 }
@@ -244,9 +245,58 @@ exports.sendSupport = async (req, res) => {
 
         await Promise.all([senderUpdate, recipientUpdate, streamUpdate]);
 
-        res.status(200).send('Support sent successfully');
+        const updatedSender = await ZingCoinsModel.findOne({ userId: senderId });
+
+        const io = req.app.get('socketio');
+        io.to(streamKey).emit('gift received', {
+            senderId,
+            recipientId,
+            coins,
+            message,
+            streamKey
+        });
+
+        res.status(200).send({ ZingBalance: updatedSender.coins });
     } catch (error) {
         console.error(error);
         res.status(500).send(`Error sending support: ${error.message}`);
+    }
+};
+
+exports.getSupporters = async (req, res) => {
+    try {
+        const { streamKey } = req.params;
+        const stream = await StreamModel.findOne({ streamKey }).populate('supportReceived.user', '_id name username');
+        if (!stream) {
+            return res.status(404).json({ status: 'notfound', streamKey });
+        }
+
+        const supportMap = new Map();
+        stream.supportReceived.forEach(support => {
+            const userId = support.user._id.toString();
+            if (!supportMap.has(userId)) {
+                supportMap.set(userId, {
+                    user: {
+                        _id: support.user._id,
+                        name: support.user.name,
+                        username: support.user.username
+                    },
+                    coins: 0,
+                    messages: []
+                });
+            }
+            const userSupport = supportMap.get(userId);
+            userSupport.coins += support.coins;
+            userSupport.messages.push(support.message);
+        });
+
+        const aggregatedSupport = Array.from(supportMap.values())
+            .sort((a, b) => b.coins - a.coins)
+            .slice(0, 3);
+
+        return res.status(200).json({ support: aggregatedSupport });
+    } catch (error) {
+        console.error('Error in getSupporters:', error);
+        res.status(500).json({ status: 'error', message: 'Internal server error' });
     }
 };

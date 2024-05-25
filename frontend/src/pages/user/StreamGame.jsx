@@ -18,7 +18,7 @@ function StreamGame() {
     const handleCoinModelOpen = () => {
         setIsCoinModelOpen(true);
     };
-
+    
     const fetchStreamStatus = async () => {
         try {
             const response = await AxiosWithBaseURLandCredentials.get(`/stream/streamStatus/${streamKey}`);

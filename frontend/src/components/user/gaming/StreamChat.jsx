@@ -10,14 +10,15 @@ import SendCoinsModel from "./SendCoinsModel";
 const socket = io('http://localhost:8000'); // Adjust URL to match your server
 
 function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
-    console.log(streamUserId)
     const coinBalance = useSelector(state => state.auth.coin);
     const currentUserName = useSelector(state => state.auth.username);
     const currentUser = useSelector(state => state.auth.id);
     const [writeMessage, setWriteMessage] = useState('');
     const [chat, setChat] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [isSendCoinOpen, setIsSendCoinOpen] = useState(false)
+    const [isSendCoinOpen, setIsSendCoinOpen] = useState(false);
+    const [giftNotification, setGiftNotification] = useState('');
+    const [topSupporters, setTopSupporters] = useState([]);
     const dispatch = useDispatch();
     const chatContainerRef = useRef(null);
 
@@ -32,19 +33,40 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
         setLoading(false);
     };
 
+    const fetchSupports = async () => {
+        setLoading(true);
+        try {
+            const response = await AxiosWithBaseURLandCredentials.get(`stream/support/${streamKey}`);
+            setTopSupporters(response.data.support);
+        } catch (error) {
+            console.error("Error fetching supporters:", error);
+        }
+        setLoading(false);
+    }
+
     useEffect(() => {
         fetchData();
-    }, [coinBalance]);
+        fetchSupports();
+    }, []);
 
     useEffect(() => {
         socket.emit('join room', streamKey);
         socket.on('chat message', (msg) => {
             setChat(prev => [...prev, msg]);
         });
+        socket.on('gift received', (data) => {
+            const { senderId, recipientId, coins, message } = data;
+            if (recipientId === currentUser) {
+                setGiftNotification(`You received ${coins} Zing Coins from ${senderId} with message: ${message}`);
+                dispatch(updateCoins({ coin: coinBalance + coins }));
+                fetchSupports(); // Refresh the top supporters list when a gift is received
+            }
+        });
         return () => {
             socket.off('chat message');
+            socket.off('gift received');
         };
-    }, [streamKey]);
+    }, [streamKey, coinBalance, currentUser, dispatch]);
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -67,6 +89,17 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
         }
     };
 
+    const sendGift = async (coins, message) => {
+        setLoading(true);
+        try {
+            await AxiosWithBaseURLandCredentials.post('/stream/support', { coins, message, streamKey });
+            fetchSupports(); // Refresh the top supporters list when a gift is sent
+        } catch (error) {
+            console.error("Error sending gift:", error);
+        }
+        setLoading(false);
+    };
+
     return (
         <>
             <div className='border border-gray-300 m-2 rounded-lg max-h-[90vh] flex flex-col h-full shadow-lg dark'>
@@ -79,20 +112,30 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
                         </div>
                     </span>
                 </div>
-                {streamUserId === currentUser &&
-
-                <div>
-                    Gift Receiverd
+                {giftNotification && (
+                    <div className="bg-yellow-500 text-black p-2 rounded-lg my-2 text-center">
+                        {giftNotification}
+                    </div>
+                )}
+                <div className="my-4">
+                    <h2 className="text-white text-center text-lg">Top Contributors</h2>
+                    <ul className="space-y-2">
+                        {topSupporters.map((support, index) => (
+                            <li key={index} className="text-white text-center flex items-center justify-center space-x-2">
+                                <img src={support.user.avatar} alt={`${support.user.name}'s avatar`} className="w-8 h-8 rounded-full" />
+                                <span>{support.user.name} ({support.user.username}): {support.coins} coins</span>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
-}
                 <div ref={chatContainerRef} className='flex-grow overflow-y-scroll p-3 bg-black'>
                     {loading ? <div className='flex justify-center items-center h-full'><CircularProgress size="xl" color="primary" /></div> : (
                         <ul className="space-y-2">
                             <li className="text-gray-500 text-center">Welcome to live chat</li>
                             {chat.map((msg, index) => (
-                                <div key={index} className={`w-full flex ${ msg.senderId === currentUser ? "justify-end" : "justify-start" }`}>
-                                    <div className={`p-2 rounded-lg max-w-[80%] ${ msg.senderId === currentUser ? 'bg-blue-500 text-white' : 'bg-purple-500 text-white' } break-words text-left`}>
-                                        <span className="font-medium text-md">{msg.senderId !== currentUser ? `${ msg.currentUserName }: ` : 'You: '}</span>
+                                <div key={index} className={`w-full flex ${msg.senderId === currentUser ? "justify-end" : "justify-start"}`}>
+                                    <div className={`p-2 rounded-lg max-w-[80%] ${msg.senderId === currentUser ? 'bg-blue-500 text-white' : 'bg-purple-500 text-white'} break-words text-left`}>
+                                        <span className="font-medium text-md">{msg.senderId !== currentUser ? `${msg.currentUserName}: ` : 'You: '}</span>
                                         <span className="whitespace-pre-wrap text-sm">{msg.text}</span>
                                     </div>
                                 </div>
@@ -100,17 +143,16 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
                         </ul>
                     )}
                 </div>
-                {streamUserId !== currentUser &&
-
-                    <div className="dark text-white flex  justify-around py-2 ">
-                        <div className="flex gap-4 items-center" >
+                {streamUserId !== currentUser && (
+                    <div className="dark text-white flex justify-around py-2">
+                        <div className="flex gap-4 items-center">
                             <span className="text-md">Support Streamer:</span>
                             <Button variant="solid" className="bg-secondary-400" size="sm" onClick={() => setIsSendCoinOpen(true)}>
                                 Send Coins
                             </Button>
                         </div>
                     </div>
-                }
+                )}
                 <div className='flex items-center p-2 gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg'>
                     <Input
                         underlined
@@ -125,7 +167,12 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
                     <Button auto variant="solid" className="bg-black border-white" onClick={sendMessage}>Send</Button>
                 </div>
             </div>
-            <SendCoinsModel isSendCoinOpen={isSendCoinOpen} setIsSendCoinOpen={setIsSendCoinOpen} streamKey={streamKey} />
+            <SendCoinsModel 
+                isSendCoinOpen={isSendCoinOpen} 
+                setIsSendCoinOpen={setIsSendCoinOpen} 
+                streamKey={streamKey}
+                onSendGift={sendGift}
+            />
         </>
     );
 }
