@@ -56,7 +56,7 @@ exports.verifyPayment = async (req, res) => {
                     coins: coinPack.coins,
                     razorpayOrderId: razorpay_order_id
                 };
-                const existingCoinsData = await ZingCoinsModel.findOne({});
+                const existingCoinsData = await ZingCoinsModel.findOne({userId:userId});
                 if (!existingCoinsData) {
                     await ZingCoinsModel.create({
                         userId:userId,
