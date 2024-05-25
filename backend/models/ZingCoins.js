@@ -23,6 +23,10 @@ const ZingCoinsSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
         },
+        streamId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Stream'
+        },
         coins: { type: Number },
         transactionType: { type: String, enum: ['Send', 'Received'] },
         timestamp: { type: Date, default: Date.now }
