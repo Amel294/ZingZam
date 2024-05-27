@@ -1,11 +1,7 @@
 import { Button, Card, CardHeader, Divider, Input, Modal, ModalContent } from "@nextui-org/react";
 import { useState } from "react";
-import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
-import { useDispatch } from "react-redux";
-import { updateCoins } from "../../../store/auth/authSlice";
 
 function SendCoinsModel({ isSendCoinOpen, setIsSendCoinOpen, streamKey, onSendGift }) {
-    const dispatch = useDispatch();
     const [coins, setCoins] = useState('');
     const [message, setMessage] = useState('');
 

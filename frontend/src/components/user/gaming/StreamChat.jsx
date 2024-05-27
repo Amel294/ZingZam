@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import ZingCoinsIcon from "../../../../public/icons/ZingCoinsIcon";
-import { Button, Input, CircularProgress } from "@nextui-org/react";
+import { Button, Input, CircularProgress, Avatar, Accordion, AccordionItem } from "@nextui-org/react";
 import { useEffect, useState, useRef } from "react";
 import io from 'socket.io-client';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
@@ -21,7 +21,7 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
     const [topSupporters, setTopSupporters] = useState([]);
     const dispatch = useDispatch();
     const chatContainerRef = useRef(null);
-
+    const [isReportModelOpen,setIsReportModelOpen] = useState(false)
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -57,9 +57,9 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
         socket.on('gift received', (data) => {
             const { senderId, recipientId, coins, message } = data;
             if (recipientId === currentUser) {
-                setGiftNotification(`You received ${coins} Zing Coins from ${senderId} with message: ${message}`);
+                setGiftNotification(`You received ${ coins } Zing Coins from ${ senderId } with message: ${ message }`);
                 dispatch(updateCoins({ coin: coinBalance + coins }));
-                fetchSupports(); // Refresh the top supporters list when a gift is received
+                fetchSupports();
             }
         });
         return () => {
@@ -78,6 +78,7 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             sendMessage();
+
         }
     };
 
@@ -92,10 +93,14 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
     const sendGift = async (coins, message) => {
         setLoading(true);
         try {
-            await AxiosWithBaseURLandCredentials.post('/stream/support', { coins, message, streamKey });
-            fetchSupports(); // Refresh the top supporters list when a gift is sent
+            const response = await AxiosWithBaseURLandCredentials.post('/stream/support', { coins, message, streamKey });
+            if (response.status === 200) {
+                fetchSupports();
+            } else {
+                console.log('Error sending gift');
+            }
         } catch (error) {
-            console.error("Error sending gift:", error);
+            console.log(error)
         }
         setLoading(false);
     };
@@ -117,25 +122,41 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
                         {giftNotification}
                     </div>
                 )}
-                <div className="my-4">
-                    <h2 className="text-white text-center text-lg">Top Contributors</h2>
-                    <ul className="space-y-2">
-                        {topSupporters.map((support, index) => (
-                            <li key={index} className="text-white text-center flex items-center justify-center space-x-2">
-                                <img src={support.user.avatar} alt={`${support.user.name}'s avatar`} className="w-8 h-8 rounded-full" />
-                                <span>{support.user.name} ({support.user.username}): {support.coins} coins</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <Accordion isCompact='true'>
+                    <AccordionItem
+                        key="1"
+                        aria-label="contributors"
+                        title={<div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>Top Contributors</div>}
+                    >
+                        <div className="bg-secondary-400 bg-opacity-35">
+                            <ul className="flex flex-wrap justify-center gap-5 p-2">
+                                {topSupporters.map((support, index) => (
+                                    <li key={index} className="text-white text-center align-top">
+                                        <div className="flex flex-col items-center bg-secondary-400 p-2 rounded-lg min-w-24">
+                                            <div className="flex justify-center mb-2">
+                                                <Avatar src={support.user.avatar} alt={`${ support.user.name }'s avatar`} className="w-8 h-8 rounded-full" />
+                                            </div>
+                                            <div className="mb-1 text-sm font-medium">{support.user.username}</div>
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-sm">{support.coins}</span>
+                                                <ZingCoinsIcon />
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </AccordionItem>
+                </Accordion>
+
                 <div ref={chatContainerRef} className='flex-grow overflow-y-scroll p-3 bg-black'>
                     {loading ? <div className='flex justify-center items-center h-full'><CircularProgress size="xl" color="primary" /></div> : (
                         <ul className="space-y-2">
                             <li className="text-gray-500 text-center">Welcome to live chat</li>
                             {chat.map((msg, index) => (
-                                <div key={index} className={`w-full flex ${msg.senderId === currentUser ? "justify-end" : "justify-start"}`}>
-                                    <div className={`p-2 rounded-lg max-w-[80%] ${msg.senderId === currentUser ? 'bg-blue-500 text-white' : 'bg-purple-500 text-white'} break-words text-left`}>
-                                        <span className="font-medium text-md">{msg.senderId !== currentUser ? `${msg.currentUserName}: ` : 'You: '}</span>
+                                <div key={index} className={`w-full flex ${ msg.senderId === currentUser ? "justify-end" : "justify-start" }`}>
+                                    <div className={`p-2 rounded-lg max-w-[80%] ${ msg.senderId === currentUser ? 'bg-blue-500 text-white' : 'bg-purple-500 text-white' } break-words text-left`}>
+                                        <span className="font-medium text-md">{msg.senderId !== currentUser ? `${ msg.currentUserName }: ` : 'You: '}</span>
                                         <span className="whitespace-pre-wrap text-sm">{msg.text}</span>
                                     </div>
                                 </div>
@@ -167,12 +188,13 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
                     <Button auto variant="solid" className="bg-black border-white" onClick={sendMessage}>Send</Button>
                 </div>
             </div>
-            <SendCoinsModel 
-                isSendCoinOpen={isSendCoinOpen} 
-                setIsSendCoinOpen={setIsSendCoinOpen} 
+            <SendCoinsModel
+                isSendCoinOpen={isSendCoinOpen}
+                setIsSendCoinOpen={setIsSendCoinOpen}
                 streamKey={streamKey}
                 onSendGift={sendGift}
             />
+
         </>
     );
 }
