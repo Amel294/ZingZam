@@ -186,11 +186,11 @@ exports.sendSupport = async (req, res) => {
 
         coins = Number(coins);
         if (coins <= 0) {
-            throw new Error('coins must be greater than zero');
+            return res.status(500).send({message : "0 Zing Coins"});
         }
         const sender = await ZingCoinsModel.findOne({ userId: senderId });
         if (!sender || sender.coins < coins) {
-            throw new Error('Insufficient Zing Coins');
+            return res.status(500).send({message : "Insufficient Zing Coins"});
         }
         const stream = await StreamModel.findOne({ streamKey });
         if (!stream) {
@@ -259,7 +259,7 @@ exports.sendSupport = async (req, res) => {
         res.status(200).send({ ZingBalance: updatedSender.coins });
     } catch (error) {
         console.error(error);
-        res.status(500).send(`Error sending support: ${error.message}`);
+        res.status(500).send(`message: ${error.message}`);
     }
 };
 
