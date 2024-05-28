@@ -46,6 +46,32 @@ app.use('/pay', accessTokenValidation, isUserCheck, isBlocked, PaymentRoute);
 const initializeSocketServer = require('./socketServer');
 initializeSocketServer(server, app);
 
+const Notification = require('./models/NotificationModel');
+const Connections = require('./models/ConnectionsModel');
+
+async function notifyFriendsStreamStart(userId, streamKey) {
+    try {
+        const userConnections = await Connections.findOne({ user: userId }).populate('friends').exec();
+        if (userConnections && userConnections.friends.length > 0) {
+            userConnections.friends.forEach(async (friend) => {
+                // Emit to currently connected users
+                const io = app.get('socketio');
+                io.to(friend._id.toString()).emit('friend stream started', { streamKey });
+
+                // Store notification in the database
+                const notification = new Notification({
+                    user: friend._id,
+                    message: `Your friend started a stream: ${streamKey}`,
+                    data: { streamKey },
+                });
+                await notification.save();
+            });
+        }
+    } catch (error) {
+        console.error('Error notifying friends:', error);
+    }
+}
+
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
