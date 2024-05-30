@@ -1,40 +1,52 @@
-import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Image, Divider } from '@nextui-org/react';
+import React, { useState, useEffect } from 'react';
+import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Image, Divider, Badge, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@nextui-org/react';
 import MainLogo from '/icons/ZingZamLogo.svg';
 import GameSide from '/icons/MainGame.svg';
 import SocialSide from '/icons/MainSocial.svg';
-import { useDispatch, useSelector } from 'react-redux'; // Import useSelector
-import { logoutUser, resetAuth } from '../../../store/auth/authSlice';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { resetPost } from '../../../store/auth/postsSlice';
-import { useState, useEffect } from 'react';
-import Search from '../search/Search';
-import { resetUserPosts } from '../../../store/auth/userPostsSlice';
 import { SearchIcon } from '../../../../public/icons/SearchIcon';
 import DropDownAvatar from './DropDownAvatar';
 import io from 'socket.io-client';
+import Search from '../search/Search';
+import { NotificationIcon } from '../../../../public/icons/NotificationIcon';
 
 export default function MainNavbar() {
     const navigate = useNavigate();
-    const currentUserId = useSelector(state => state.auth.id); // Get the current user ID from Redux store
+    const currentUserId = useSelector(state => state.auth.id);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
 
     useEffect(() => {
-        if (currentUserId) { // Ensure socket connects only if user ID is available
-            const socket = io('http://localhost:8000', {
-                query: { userId: currentUserId }, // Pass the logged-in user's ID
+        let socket;
+        if (currentUserId) {
+            socket = io('http://localhost:8000', {
+                query: { userId: currentUserId },
             });
 
             socket.on('notification', (data) => {
+                console.log('Received notification:', data);
                 setNotifications(prev => [...prev, data]);
             });
 
-            return () => socket.disconnect(); // Clean up the socket connection on component unmount
+            socket.on('connect', () => {
+                console.log('Connected to socket server');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from socket server');
+            });
         }
-    }, [currentUserId]); // Dependency array ensures effect runs when user ID changes
+
+        return () => {
+            if (socket) {
+                socket.disconnect();
+            }
+        };
+    }, [currentUserId]);
 
     const handleNotificationClick = (streamKey) => {
-        navigate(`/stream/${streamKey}`);
+        navigate(`/streamgame/${streamKey}`);
     };
 
     const handleSearchOpen = () => {
@@ -68,21 +80,26 @@ export default function MainNavbar() {
                         <Button as={Link} color="secondary" variant="light" onClick={handleSearchOpen} startContent={<SearchIcon />}>
                             <span className="text-white">Search</span>
                         </Button>
-                        <div className="relative">
-                            <button className="relative">
-                                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-6 h-6 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">{notifications.length}</span>
-                                <i className="bell-icon" /> {/* Replace with your bell icon */}
-                            </button>
-                            {notifications.length > 0 && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg">
-                                    {notifications.map((notification, index) => (
-                                        <div key={index} className="p-2 cursor-pointer hover:bg-gray-100" onClick={() => handleNotificationClick(notification.data.streamKey)}>
+                        <Dropdown placement="bottom-right">
+                            <DropdownTrigger>
+                                <Button isIconOnly auto variant="light">
+                                    <Badge content={notifications.length} placement="top-right" shape="circle" color="success">
+                                        <NotificationIcon />
+                                    </Badge>
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu aria-label="Notification Menu">
+                                {notifications.length > 0 ? (
+                                    notifications.map((notification, index) => (
+                                        <DropdownItem key={index} onClick={() => handleNotificationClick(notification.streamKey)}>
                                             {notification.message}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                                        </DropdownItem>
+                                    ))
+                                ) : (
+                                    <DropdownItem>No new notifications</DropdownItem>
+                                )}
+                            </DropdownMenu>
+                        </Dropdown>
                         <DropDownAvatar />
                     </NavbarItem>
                 </NavbarContent>
