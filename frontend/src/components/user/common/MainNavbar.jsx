@@ -20,7 +20,7 @@ export default function MainNavbar() {
     useEffect(() => {
         let socket;
         if (currentUserId) {
-            socket = io('http://localhost:8000', {
+            socket = io(`${import.meta.env.VITE_BASE_URL_BACKEND}`, {
                 query: { userId: currentUserId },
             });
 

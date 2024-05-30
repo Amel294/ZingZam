@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 const axiosInterceptorSignInSignUp = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: import.meta.env.VITE_BASE_URL_BACKEND,
     withCredentials: true 
 });
 

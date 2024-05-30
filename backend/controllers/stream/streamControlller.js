@@ -214,7 +214,7 @@ async function captureScreenshot(streamUrl, outputPath) {
 exports.getScreenshots = async (req, res) => {
     console.log("Getting screenshot")
     const streamKey = req.params.streamKey;
-    const streamUrl = `http://localhost:7000/live/${ streamKey }.flv`;
+    const streamUrl = `${process.env.BASE_URL_STREAM}/live/${ streamKey }.flv`;
     const outputPath = `./screenshots/screenshot-${ streamKey }.png`;
     console.log(streamKey)
     try {

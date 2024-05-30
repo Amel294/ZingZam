@@ -7,7 +7,7 @@ import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 import { updateCoins } from "../../../store/auth/authSlice";
 import SendCoinsModel from "./SendCoinsModel";
 
-const socket = io('http://localhost:8000'); // Adjust URL to match your server
+const socket = io(`${import.meta.env.VITE_BASE_URL_BACKEND}`);
 
 function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
     const coinBalance = useSelector(state => state.auth.coin);

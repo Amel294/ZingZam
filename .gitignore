@@ -5,3 +5,4 @@ V1
 backend/.env
 backend/uploads
 frontend/.env
+streaming_server/.env

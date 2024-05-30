@@ -27,7 +27,7 @@ const VideoPlayer = ({ streamKey }) => {
     <div className='video-player-container hover:cursor-pointer' style={playerStyle}>
       {isBuffering && <div className="buffering">Loading...</div>}
       <ReactPlayer
-        url={`http://localhost:7000/live/${streamKey}.flv`}
+        url={`${import.meta.env.VITE_BASE_URL_STREAM}/live/${streamKey}.flv`}
         playing
         controls
         width='100%'

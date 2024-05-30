@@ -53,7 +53,7 @@ function CoinModal({ isCoinModelOpen, setIsCoinModelOpen }) {
         image: ZingZamLogo,
         handler: async (response) => {
             try {
-                const verifyUrl = "http://localhost:8000/pay/verify";
+                const verifyUrl = `${import.meta.env.VITE_BASE_URL_BACKEND}/pay/verify`;
                 const { data } = await AxiosWithBaseURLandCredentials.post(verifyUrl, response);
                 console.log(data);
                 setOptions(null);
@@ -77,7 +77,7 @@ function CoinModal({ isCoinModelOpen, setIsCoinModelOpen }) {
     const handlePayment = async (pack) => {
         try {
             handleClose()
-            const orderUrl = "http://localhost:8000/pay/orders";
+            const orderUrl = `${import.meta.env.VITE_BASE_URL_BACKEND}/pay/orders`;
             const { data } = await AxiosWithBaseURLandCredentials.post(orderUrl, { amount: pack.price, name: pack.name, coins: pack.coins });
             console.log(data);
             initPayment({

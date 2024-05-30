@@ -33,7 +33,7 @@ function getStreamKeyFromStreamPath(path) {
 
 async function validateStreamKeyWithBackend(streamKey) {
     try {
-        const response = await axios.post('http://localhost:8000/stream/stream-key-validate', { streamKey: streamKey });
+        const response = await axios.post(`${process.env.BASE_URL_BACKEND}/stream/stream-key-validate`, { streamKey: streamKey });
         return response.data.isValid;
     } catch (error) {
         console.error('Error validating stream key:', error.message);
@@ -43,7 +43,7 @@ async function validateStreamKeyWithBackend(streamKey) {
 
 async function setStreamActive(streamKey) {
     try {
-        const response = await axios.patch('http://localhost:8000/stream/activateStream', { streamKey: streamKey });
+        const response = await axios.patch(`${process.env.BASE_URL_BACKEND}/stream/activateStream`, { streamKey: streamKey });
         return response.status === 200;
     } catch (error) {
         console.log('Error activating stream:', error.message);
@@ -53,7 +53,7 @@ async function setStreamActive(streamKey) {
 
 async function setStreamInactive(streamKey) {
     try {
-        const response = await axios.patch('http://localhost:8000/stream/deactivateStream', { streamKey: streamKey });
+        const response = await axios.patch(`${process.env.BASE_URL_BACKEND}/stream/deactivateStream`, { streamKey: streamKey });
         return response.status === 200;
     } catch (error) {
         console.log('Error deactivating stream:', error.message);
@@ -113,7 +113,7 @@ nms.on('donePublish', async (id, StreamPath, args) => {
     const streamKey = getStreamKeyFromStreamPath(StreamPath);
 
     try {
-        const response = await axios.patch('http://localhost:8000/stream/deactivateStream', { streamKey: streamKey });
+        const response = await axios.patch(`${process.env.BASE_URL_BACKEND}/stream/deactivateStream`, { streamKey: streamKey });
         console.log('Stream stopped API call response:', response.data);
     } catch (error) {
         console.error('Error sending stream stopped API call:', error.message);

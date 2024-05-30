@@ -26,7 +26,7 @@ export default function LoginSide() {
                 toast.error("Invalid Username or password")
                 return
             }
-            const response = await axios.post('http://localhost:8000/user/login', {
+            const response = await axios.post(`${ import.meta.env.VITE_BASE_URL_BACKEND }`, {
                 email,
                 password,
             }, { withCredentials: true });
@@ -34,7 +34,7 @@ export default function LoginSide() {
             if (response.data.error) {
                 toast.error(`${ response.data.error }`)
             } else {
-               
+
                 if (response.data.role === "user") {
 
                     await dispatch(loginUser({
@@ -68,7 +68,7 @@ export default function LoginSide() {
                 }
             }
         } catch (error) {
-            if(error.response.data.isBlocked === true) {
+            if (error.response.data.isBlocked === true) {
                 toast.error("You are blocked by admin")
                 return
             }
