@@ -1,6 +1,6 @@
 const express = require('express');
 const StreamModel = require('../../models/StreamModel');
-const { generateStreamKey, deleteStreamKey,validateStreamKey, activateStream,deactivateStream,activateStreamers,activeStreams,getScreenshots,streamStatus,activeFriendsStreams,sendSupport,getSupporters } = require('../../controllers/stream/streamControlller');
+const { generateStreamKey, deleteStreamKey,validateStreamKey, activateStream,deactivateStream,activateStreamers,activeStreams,getScreenshots,streamStatus,activeFriendsStreams,sendSupport,getSupporters,getUserStreams } = require('../../controllers/stream/streamControlller');
 const { accessTokenValidation } = require('../../helpers/accessTokenValidation');
 const { isUserCheck } = require('../../helpers/isUserCheck');
 const { isBlocked } = require('../../helpers/blockedCheck');
@@ -16,4 +16,5 @@ router.get('/getScreenshots/:streamKey',getScreenshots)
 router.get('/streamStatus/:streamKey',accessTokenValidation,isUserCheck,isBlocked,streamStatus)
 router.post('/support',accessTokenValidation,isUserCheck,isBlocked,sendSupport)
 router.get('/support/:streamKey',accessTokenValidation,isUserCheck,isBlocked,getSupporters)
+router.get('/userStreams/:page', accessTokenValidation, isUserCheck, isBlocked, getUserStreams);
 module.exports = router;

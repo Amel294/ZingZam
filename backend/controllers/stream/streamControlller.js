@@ -65,13 +65,17 @@ exports.activateStream = async (req, res) => {
             { isActive: true, createdAt: new Date() },
             { new: true }
         );
-
+        
         if (!stream) {
             return res.status(404).json({ error: 'Stream not found' });
         }
 
         if (!stream.userId) {
             return res.status(400).json({ error: 'Stream does not have a valid user' });
+        }
+        if(!stream.streamStart){
+            stream.streamStart = new Date()
+            stream.save()
         }
 
         const userId = stream.userId;
@@ -139,7 +143,7 @@ exports.deactivateStream = async (req, res) => {
         const { streamKey } = req.body;
         const stream = await StreamModel.findOneAndUpdate(
             { streamKey },
-            { isActive: false },
+            { isActive: false,streamEnd: new Date() },
             { new: true }
         )
         if (stream) {
@@ -364,5 +368,51 @@ exports.getSupporters = async (req, res) => {
     } catch (error) {
         console.error('Error in getSupporters:', error);
         res.status(500).json({ status: 'error', message: 'Internal server error' });
+    }
+};
+
+exports.getUserStreams = async (req, res) => {
+    try {
+        const { page } = req.params;
+        const userId = req.userData.id;
+        const perPage = 10;
+        const streams = await StreamModel.find({ userId: userId })
+            .skip((page - 1) * perPage)
+            .limit(perPage)
+            .populate('userId', 'username')
+            .populate('supportReceived.user', 'username')
+            .exec();
+
+        const responseData = streams.map(stream => {
+            const topContributors = stream.supportReceived
+                .reduce((acc, support) => {
+                    const existing = acc.find(item => item.user.username === support.user.username);
+                    if (existing) {
+                        existing.coins += support.coins;
+                    } else {
+                        acc.push({ user: support.user, coins: support.coins });
+                    }
+                    return acc;
+                }, [])
+                .sort((a, b) => b.coins - a.coins)
+                .slice(0, 3);
+
+            return {
+                streamId: stream._id,
+                title: stream.title,
+                startTime: stream.streamStart,
+                endTime: stream.streamEnd,
+                contributionsReceived: stream.supportReceived.length,
+                topContributors: topContributors.map(contributor => ({
+                    username: contributor.user.username,
+                    coins: contributor.coins
+                }))
+            };
+        });
+
+        res.status(200).json(responseData);
+    } catch (error) {
+        console.error('Error fetching stream data:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };

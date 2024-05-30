@@ -23,7 +23,12 @@ const streamSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        expires: '24h'
+    },
+    streamStart : {
+        type: Date,
+    },
+    streamEnd : {
+        type:Date,
     },
     supportReceived : [{
         user: {

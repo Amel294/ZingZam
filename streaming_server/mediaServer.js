@@ -1,5 +1,5 @@
 const NodeMediaServer = require('node-media-server');
-const axios = require('axios'); 
+const axios = require('axios');
 
 const config = {
     rtmp: {
@@ -23,6 +23,9 @@ const config = {
 
 const nms = new NodeMediaServer(config);
 
+const reconnectAttempts = {};
+const activeStreams = {};
+
 function getStreamKeyFromStreamPath(path) {
     let parts = path.split('/');
     return parts[parts.length - 1];
@@ -37,44 +40,87 @@ async function validateStreamKeyWithBackend(streamKey) {
         return false;
     }
 }
-async function setStreamActive(streamKey){
+
+async function setStreamActive(streamKey) {
     try {
-        const response = await axios.patch('http://localhost:8000/stream/activateStream',{streamKey : streamKey})
-        return response.status === 200
+        const response = await axios.patch('http://localhost:8000/stream/activateStream', { streamKey: streamKey });
+        return response.status === 200;
     } catch (error) {
-        console.log(error)
+        console.log('Error activating stream:', error.message);
+        return false;
+    }
+}
+
+async function setStreamInactive(streamKey) {
+    try {
+        const response = await axios.patch('http://localhost:8000/stream/deactivateStream', { streamKey: streamKey });
+        return response.status === 200;
+    } catch (error) {
+        console.log('Error deactivating stream:', error.message);
+        return false;
+    }
+}
+
+function checkInactivity(streamKey) {
+    if (activeStreams[streamKey]) {
+        const now = Date.now();
+        if (now - activeStreams[streamKey].lastActive > 60000) { // 1 minute inactivity
+            console.log(`Stream ${streamKey} has been inactive for 1 minute. Deactivating.`);
+            setStreamInactive(streamKey);
+            delete activeStreams[streamKey];
+        }
     }
 }
 
 nms.on('prePublish', async (id, StreamPath, args) => {
-    console.log('[NodeEvent on prePublish]', `id=${ id } StreamPath=${ StreamPath } args=${ JSON.stringify(args) }`);
+    console.log('[NodeEvent on prePublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
     const streamKey = getStreamKeyFromStreamPath(StreamPath);
     const isValid = await validateStreamKeyWithBackend(streamKey);
-    const streamIsActivated  = await setStreamActive(streamKey)
-    if (!streamIsActivated ) {
+    const streamIsActivated = await setStreamActive(streamKey);
+
+    if (!isValid || !streamIsActivated) {
         let session = nms.getSession(id);
         session.reject();
-        console.log('Failed to activate stream:', streamKey);
-    } else {
-        console.log('Stream key is valid:', streamKey);
+        console.log('Rejected stream with invalid or inactive key:', streamKey);
+        return;
     }
-    if (!isValid ) {
+
+    console.log('Stream key is valid and activated:', streamKey);
+
+    // Initialize or reset reconnect attempts and active stream tracking
+    reconnectAttempts[streamKey] = (reconnectAttempts[streamKey] || 0) + 1;
+    activeStreams[streamKey] = { lastActive: Date.now() };
+
+    if (reconnectAttempts[streamKey] > 10) {
         let session = nms.getSession(id);
         session.reject();
-        console.log('Rejected stream with invalid key:', streamKey);
-    } else {
-        console.log('Stream key is valid:', streamKey);
+        console.log('Rejected stream with excessive reconnect attempts:', streamKey);
+        return;
     }
+
+    // Check for inactivity
+    setInterval(() => checkInactivity(streamKey), 60000);
 });
-nms.on('donePublish', async (id, StreamPath, args) => {
-    console.log('[NodeEvent on donePublish]', `id=${ id } StreamPath=${ StreamPath } args=${ JSON.stringify(args) }`);
+
+nms.on('postPublish', async (id, StreamPath, args) => {
+    console.log('[NodeEvent on postPublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
     const streamKey = getStreamKeyFromStreamPath(StreamPath);
+    activeStreams[streamKey].lastActive = Date.now();
+});
+
+nms.on('donePublish', async (id, StreamPath, args) => {
+    console.log('[NodeEvent on donePublish]', `id=${id} StreamPath=${StreamPath} args=${JSON.stringify(args)}`);
+    const streamKey = getStreamKeyFromStreamPath(StreamPath);
+
     try {
         const response = await axios.patch('http://localhost:8000/stream/deactivateStream', { streamKey: streamKey });
         console.log('Stream stopped API call response:', response.data);
     } catch (error) {
         console.error('Error sending stream stopped API call:', error.message);
     }
+
+    delete reconnectAttempts[streamKey];
+    delete activeStreams[streamKey];
 });
 
 nms.run();

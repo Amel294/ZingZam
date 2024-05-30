@@ -9,6 +9,7 @@ import AxiosWithBaseURLandCredentials from '../../axiosInterceptor';
 import { Button, Spinner } from '@nextui-org/react';
 import NotFound from './NotFound';
 import { useSelector } from 'react-redux';
+import StreamProfile from '../../components/user/profile/StreamProfile';
 
 function Profile() {
     const [userData, setUserData] = useState();
@@ -67,9 +68,11 @@ function Profile() {
                             <div className='sticky top-16 z-20  pt-2 rounded-b-lg w-[400px] flex gap-2 justify-center '>
                                 <Button size="sm" onClick={() => setToggle("posts")} className='bg-secondary-400'>Post </Button>
                                 <Button size="sm" onClick={() => setToggle("friends")} className='bg-secondary-400'>Friends </Button>
+                                <Button size="sm" onClick={() => setToggle("stream")} className='bg-secondary-400'>Stream </Button>
                             </div>
                             {toggle === "friends" && <Friends />}
                             {toggle === "posts" && <PostProfile />}
+                            {toggle === "stream" && <StreamProfile />}
                         </>}
                         <EditUserData />
                     </div>
