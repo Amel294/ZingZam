@@ -1,27 +1,39 @@
 const PostModel = require('../models/PostModel');
 const ReportModel = require('../models/ReportModel');
-
-exports.reportPost = async (req, res) => {
+const StreamModel = require('../models/StreamModel')
+exports.report = async (req, res) => {
     try {
-        const { postId, reason, description } = req.body;
+        const { postId, reason, description, type, streamKey } = req.body;
 
-        if (!postId || !reason || !description) {
-            return res.status(400).json({ error: 'Post ID ,reason and description are required' });
+        if (!reason || !description || (!postId && !streamKey)) {
+            return res.status(400).json({ error: 'Reason, description, and either postId or streamKey are required' });
         }
 
         const reportedBy = req?.userData?.id;
-        const reportedPost = await PostModel.findOne({ _id: postId }, { userId: 1, _id: 0 });
+        let reportedUser;
 
-        if (!reportedPost) {
-            return res.status(404).json({ error: 'Post not found' });
+        if (postId) {
+            const reportedPost = await PostModel.findOne({ _id: postId }, { userId: 1 });
+            if (!reportedPost) {
+                return res.status(404).json({ error: 'Post not found' });
+            }
+            reportedUser = reportedPost.userId;
+        } else if (streamKey) {
+            const reportedStream = await StreamModel.findOne({ streamKey: streamKey }, { userId: 1 });
+            if (!reportedStream) {
+                return res.status(404).json({ error: 'Stream not found' });
+            }
+            reportedUser = reportedStream.userId;
         }
 
         const report = new ReportModel({
-            postId,
+            postId: postId || null,
+            streamKey: streamKey || null,
             reason,
             description,
             reportedBy,
-            reportedUser: reportedPost.userId,
+            reportedUser,
+            type
         });
 
         await report.save();
@@ -32,6 +44,7 @@ exports.reportPost = async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
 exports.getReports = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;

@@ -44,10 +44,11 @@ export default function ReportPostPopUpModal({ isReportOpen, setIsReportOpen, po
         try {
             const isDescriptionValid = validateDescription(); 
         if (!isDescriptionValid) return; 
-            const response = await AxiosWithBaseURLandCredentials.post(`/report/reportPost`, {
+            const response = await AxiosWithBaseURLandCredentials.post(`/report/report`, {
                 postId: postId,
                 reason: reportReason,
-                description: reportDescription
+                description: reportDescription,
+                type:"post"
             });
             toast.success(response.data.message);
             setIsReportOpen(false);

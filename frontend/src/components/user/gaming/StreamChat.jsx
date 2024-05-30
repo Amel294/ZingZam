@@ -6,6 +6,7 @@ import io from 'socket.io-client';
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 import { updateCoins } from "../../../store/auth/authSlice";
 import SendCoinsModel from "./SendCoinsModel";
+import ReportStreamModel from "./ReportStreamModel";
 
 const socket = io(`${import.meta.env.VITE_BASE_URL_BACKEND}`);
 
@@ -22,6 +23,8 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
     const dispatch = useDispatch();
     const chatContainerRef = useRef(null);
     const [isReportModelOpen,setIsReportModelOpen] = useState(false)
+    const [isReportStreamModel, setIsReportStreamModel] = useState(false)
+
     const fetchData = async () => {
         setLoading(true);
         try {
@@ -110,6 +113,7 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
             <div className='border border-gray-300 m-2 rounded-lg max-h-[90vh] flex flex-col h-full shadow-lg dark'>
                 <div className='bg-secondary-400 rounded-t-lg text-lg py-2 flex justify-between px-4 items-center bg-gradient-to-r from-purple-500 to-indigo-500 text-white'>
                     <span>Live Chat</span>
+                    <Button size="sm" color="danger" onClick={()=>setIsReportStreamModel(true)}>Report</Button>
                     <span className='flex items-center'>
                         <div className='flex gap-2 items-center'>
                             <ZingCoinsIcon />: {coinBalance}
@@ -194,6 +198,7 @@ function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
                 streamKey={streamKey}
                 onSendGift={sendGift}
             />
+            <ReportStreamModel isReportStreamModel={isReportStreamModel} setIsReportStreamModel={setIsReportStreamModel} streamKey={streamKey}/>
 
         </>
     );

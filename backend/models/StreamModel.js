@@ -38,7 +38,11 @@ const streamSchema = new mongoose.Schema({
         message:{type:String},
         coins: { type: Number },
         timestamp: { type: Date, default: Date.now },
-    }]
+    }],
+    isBlocked :{
+        type:Boolean,
+        default :false
+    }
 });
 
 module.exports = mongoose.model('Stream', streamSchema);
