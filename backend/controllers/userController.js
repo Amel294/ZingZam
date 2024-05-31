@@ -1,4 +1,4 @@
-const { validateLength, validatePassword } = require('../helpers/ValidationHelper');
+const { validateLength, validatePassword } = require('../helpers/validationHelper');
 const UserModel = require('../models/UserModel');
 const validator = require('validator');
 const bcrypt = require("bcrypt");
