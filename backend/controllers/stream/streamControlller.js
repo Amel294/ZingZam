@@ -52,7 +52,7 @@ exports.deleteStreamKey = async (req, res) => {
     }
 };
 
-const activateStream = async (req, res) => {
+exports.activateStream = async (req, res) => {
     try {
         const { streamKey } = req.body;
 
@@ -139,8 +139,6 @@ const activateStream = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
-module.exports = { activateStream };
 
 exports.deactivateStream = async (req, res) => {
     try {
