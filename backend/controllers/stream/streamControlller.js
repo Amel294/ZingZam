@@ -52,7 +52,7 @@ exports.deleteStreamKey = async (req, res) => {
     }
 };
 
-exports.activateStream = async (req, res) => {
+const activateStream = async (req, res) => {
     try {
         const { streamKey } = req.body;
 
@@ -73,24 +73,27 @@ exports.activateStream = async (req, res) => {
         if (!stream.userId) {
             return res.status(400).json({ error: 'Stream does not have a valid user' });
         }
+
         if (!stream.streamStart) {
-            stream.streamStart = new Date()
-            stream.save()
+            stream.streamStart = new Date();
+            await stream.save();
         }
 
         const userId = stream.userId;
+        const user = await UserModel.findById(userId);  // Ensure user is fetched from the database
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
         const connections = await ConnectionsModel.findOne({ user: userId }).populate('friends');
+        let notifications = [];
 
         if (connections) {
-
             const friends = connections.friends;
-            const user = await UserModel.findById(userId);
-
-            // Notify friends
-            const notifications = friends.map(friend => {
+            notifications = friends.map(friend => {
                 const notification = new NotificationModel({
                     user: friend._id,
-                    message: `${ user.username } has started a stream.`,
+                    message: `${user.username} has started a stream.`,
                     data: { streamId: stream._id, userId: user._id, streamKey: stream.streamKey },
                 });
 
@@ -104,7 +107,7 @@ exports.activateStream = async (req, res) => {
                 });
 
                 // Log the notification details
-                console.log(`Notification sent from ${ user.username } to ${ friend.username }`);
+                console.log(`Notification sent from ${user.username} to ${friend.username}`);
 
                 return notification.save();
             });
@@ -126,7 +129,7 @@ exports.activateStream = async (req, res) => {
         });
 
         // Log the notification details
-        console.log(`Notification sent to ${ user.username } (streamer)`);
+        console.log(`Notification sent to ${user.username} (streamer)`);
 
         await Promise.all([...notifications, streamerNotification.save()]);
 
@@ -136,6 +139,9 @@ exports.activateStream = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+module.exports = { activateStream };
+
 exports.deactivateStream = async (req, res) => {
     try {
         const { streamKey } = req.body;
