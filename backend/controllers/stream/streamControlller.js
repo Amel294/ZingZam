@@ -5,7 +5,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
 const ConnectionsModel = require("../../models/ConnectionsModel");
-const ZingCoinsModel= require("../../models/ZingCoins");
+const ZingCoinsModel = require("../../models/ZingCoins");
 const UserModel = require("../../models/UserModel");
 const NotificationModel = require("../../models/NotificationModel");
 exports.generateStreamKey = async (req, res) => {
@@ -65,7 +65,7 @@ exports.activateStream = async (req, res) => {
             { isActive: true, createdAt: new Date() },
             { new: true }
         );
-        
+
         if (!stream) {
             return res.status(404).json({ error: 'Stream not found' });
         }
@@ -73,7 +73,7 @@ exports.activateStream = async (req, res) => {
         if (!stream.userId) {
             return res.status(400).json({ error: 'Stream does not have a valid user' });
         }
-        if(!stream.streamStart){
+        if (!stream.streamStart) {
             stream.streamStart = new Date()
             stream.save()
         }
@@ -81,35 +81,34 @@ exports.activateStream = async (req, res) => {
         const userId = stream.userId;
         const connections = await ConnectionsModel.findOne({ user: userId }).populate('friends');
 
-        if (!connections) {
-            return res.status(404).json({ error: 'User connections not found' });
+        if (connections) {
+
+            const friends = connections.friends;
+            const user = await UserModel.findById(userId);
+
+            // Notify friends
+            const notifications = friends.map(friend => {
+                const notification = new NotificationModel({
+                    user: friend._id,
+                    message: `${ user.username } has started a stream.`,
+                    data: { streamId: stream._id, userId: user._id, streamKey: stream.streamKey },
+                });
+
+                // Emit socket event to each friend
+                const io = req.app.get('socketio');
+                io.to(friend._id.toString()).emit('notification', {
+                    message: notification.message,
+                    streamId: stream._id,
+                    userId: user._id,
+                    streamKey: stream.streamKey
+                });
+
+                // Log the notification details
+                console.log(`Notification sent from ${ user.username } to ${ friend.username }`);
+
+                return notification.save();
+            });
         }
-
-        const friends = connections.friends;
-        const user = await UserModel.findById(userId);
-
-        // Notify friends
-        const notifications = friends.map(friend => {
-            const notification = new NotificationModel({
-                user: friend._id,
-                message: `${user.username} has started a stream.`,
-                data: { streamId: stream._id, userId: user._id, streamKey: stream.streamKey },
-            });
-
-            // Emit socket event to each friend
-            const io = req.app.get('socketio');
-            io.to(friend._id.toString()).emit('notification', {
-                message: notification.message,
-                streamId: stream._id,
-                userId: user._id,
-                streamKey: stream.streamKey
-            });
-
-            // Log the notification details
-            console.log(`Notification sent from ${user.username} to ${friend.username}`);
-
-            return notification.save();
-        });
 
         // Notify the streamer
         const streamerNotification = new NotificationModel({
@@ -127,7 +126,7 @@ exports.activateStream = async (req, res) => {
         });
 
         // Log the notification details
-        console.log(`Notification sent to ${user.username} (streamer)`);
+        console.log(`Notification sent to ${ user.username } (streamer)`);
 
         await Promise.all([...notifications, streamerNotification.save()]);
 
@@ -137,13 +136,12 @@ exports.activateStream = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 exports.deactivateStream = async (req, res) => {
     try {
         const { streamKey } = req.body;
         const stream = await StreamModel.findOneAndUpdate(
             { streamKey },
-            { isActive: false,streamEnd: new Date() },
+            { isActive: false, streamEnd: new Date() },
             { new: true }
         )
         if (stream) {
@@ -214,7 +212,7 @@ async function captureScreenshot(streamUrl, outputPath) {
 exports.getScreenshots = async (req, res) => {
     console.log("Getting screenshot")
     const streamKey = req.params.streamKey;
-    const streamUrl = `${process.env.BASE_URL_STREAM}/live/${ streamKey }.flv`;
+    const streamUrl = `${ process.env.BASE_URL_STREAM }/live/${ streamKey }.flv`;
     const outputPath = `./screenshots/screenshot-${ streamKey }.png`;
     console.log(streamKey)
     try {
@@ -236,12 +234,12 @@ exports.streamStatus = async (req, res) => {
 
         const stream = await StreamModel.findOne({ streamKey });
         if (!stream) {
-            return res.json({ status: 'notfound' ,userId : stream.userId });
+            return res.json({ status: 'notfound', userId: stream.userId });
         }
         if (stream.isActive === false) {
-            return res.json({ status: 'inactive',userId : stream.userId });
+            return res.json({ status: 'inactive', userId: stream.userId });
         } else {
-            return res.json({ status: 'active',userId : stream.userId });
+            return res.json({ status: 'active', userId: stream.userId });
         }
     } catch (error) {
         console.error(error);
@@ -256,11 +254,11 @@ exports.sendSupport = async (req, res) => {
 
         coins = Number(coins);
         if (coins <= 0) {
-            return res.status(500).send({message : "0 Zing Coins"});
+            return res.status(500).send({ message: "0 Zing Coins" });
         }
         const sender = await ZingCoinsModel.findOne({ userId: senderId });
         if (!sender || sender.coins < coins) {
-            return res.status(500).send({message : "Insufficient Zing Coins"});
+            return res.status(500).send({ message: "Insufficient Zing Coins" });
         }
         const stream = await StreamModel.findOne({ streamKey });
         if (!stream) {
@@ -329,7 +327,7 @@ exports.sendSupport = async (req, res) => {
         res.status(200).send({ ZingBalance: updatedSender.coins });
     } catch (error) {
         console.error(error);
-        res.status(500).send(`message: ${error.message}`);
+        res.status(500).send(`message: ${ error.message }`);
     }
 };
 
