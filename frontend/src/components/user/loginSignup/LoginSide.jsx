@@ -26,7 +26,7 @@ export default function LoginSide() {
                 toast.error("Invalid Username or password")
                 return
             }
-            const response = await axios.post(`${ import.meta.env.VITE_BASE_URL_BACKEND }`, {
+            const response = await axios.post(`${ import.meta.env.VITE_BASE_URL_BACKEND }/user/login`, {
                 email,
                 password,
             }, { withCredentials: true });
