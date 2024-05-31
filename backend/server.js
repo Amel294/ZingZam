@@ -10,15 +10,15 @@ const app = express();
 const server = http.createServer(app);
 app.use(express.json());
 app.use(cors({
-  origin: process.env.BASE_URL_FRONTEND,
-  credentials: true 
+    origin: process.env.BASE_URL_FRONTEND,
+    credentials: true
 }));
 app.use(morgan('dev'));
 app.use(cookieParser());
 
-mongoose.connect(process.env.DATABASE_URL_LOCAL)
-  .then(() => console.log("Connected to the database"))
-  .catch((err) => console.error("Failed to connect to database:", err));
+mongoose.connect(process.env.DATABASE_URL)
+    .then(() => console.log("Connected to the database"))
+    .catch((err) => console.error("Failed to connect to database:", err));
 
 const UserRoute = require('./routes/user');
 const PostRoute = require('./routes/post');
@@ -61,7 +61,7 @@ async function notifyFriendsStreamStart(userId, streamKey) {
                 // Store notification in the database
                 const notification = new Notification({
                     user: friend._id,
-                    message: `Your friend started a stream: ${streamKey}`,
+                    message: `Your friend started a stream: ${ streamKey }`,
                     data: { streamKey },
                 });
                 await notification.save();
@@ -74,5 +74,5 @@ async function notifyFriendsStreamStart(userId, streamKey) {
 
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${ PORT }`);
 });
