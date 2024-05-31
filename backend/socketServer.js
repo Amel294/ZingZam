@@ -4,7 +4,7 @@ const Notification = require('./models/NotificationModel'); // Adjust the path
 function initializeSocketServer(server, app) {
     const io = socketIo(server, {
         cors: {
-            origin: process.env.BASE_URL_FRONTEND,
+            origin: [process.env.BASE_URL_FRONTEND, process.env.BASE_URL_DOMAIN],
             methods: ["GET", "POST"],
             allowedHeaders: ["my-custom-header"],
             credentials: true

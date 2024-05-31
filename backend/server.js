@@ -2,7 +2,7 @@ const express = require("express");
 const http = require("http");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 require('dotenv').config();
 
@@ -10,7 +10,7 @@ const app = express();
 const server = http.createServer(app);
 app.use(express.json());
 app.use(cors({
-    origin: process.env.BASE_URL_FRONTEND,
+    origin: [process.env.BASE_URL_FRONTEND, process.env.BASE_URL_DOMAIN],
     credentials: true
 }));
 app.use(morgan('dev'));
@@ -22,12 +22,12 @@ mongoose.connect(process.env.DATABASE_URL)
 
 const UserRoute = require('./routes/user');
 const PostRoute = require('./routes/post');
-const adminRoutes = require('./routes/admin/userManagement')
-const profileRoute = require('./routes/profile')
+const adminRoutes = require('./routes/admin/userManagement');
+const profileRoute = require('./routes/profile');
 const connectionsRoute = require('./routes/connections');
 const reportRoute = require('./routes/reports');
-const streamRoute = require('./routes/stream/stream')
-const PaymentRoute = require('./routes/payment')
+const streamRoute = require('./routes/stream/stream');
+const PaymentRoute = require('./routes/payment');
 const { accessTokenValidation } = require('./helpers/accessTokenValidation');
 const { isBlocked } = require("./helpers/blockedCheck");
 const { isUserCheck } = require("./helpers/isUserCheck");
@@ -61,7 +61,7 @@ async function notifyFriendsStreamStart(userId, streamKey) {
                 // Store notification in the database
                 const notification = new Notification({
                     user: friend._id,
-                    message: `Your friend started a stream: ${ streamKey }`,
+                    message: `Your friend started a stream: ${streamKey}`,
                     data: { streamKey },
                 });
                 await notification.save();
@@ -74,5 +74,5 @@ async function notifyFriendsStreamStart(userId, streamKey) {
 
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${ PORT }`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
