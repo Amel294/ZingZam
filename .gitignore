@@ -6,3 +6,5 @@ backend/.env
 backend/uploads
 frontend/.env
 streaming_server/.env
+backend/.env.production
+backend/.env.development
