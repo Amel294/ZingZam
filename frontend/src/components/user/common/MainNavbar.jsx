@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Image, Divider, Badge, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@nextui-org/react';
 import MainLogo from '/icons/ZingZamLogo.svg';
 import GameSide from '/icons/MainGame.svg';
@@ -20,7 +20,7 @@ export default function MainNavbar() {
     useEffect(() => {
         let socket;
         if (currentUserId) {
-            socket = io(`${import.meta.env.VITE_BASE_URL_BACKEND}`, {
+            socket = io(`${import.meta.env.VITE_BASE_URL_SOCKET}`, {
                 query: { userId: currentUserId },
             });
 

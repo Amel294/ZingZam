@@ -8,7 +8,7 @@ import { updateCoins } from "../../../store/auth/authSlice";
 import SendCoinsModel from "./SendCoinsModel";
 import ReportStreamModel from "./ReportStreamModel";
 
-const socket = io(`${import.meta.env.VITE_BASE_URL_BACKEND}`);
+const socket = io(`${import.meta.env.VITE_BASE_URL_SOCKET}`);
 
 function StreamChat({ handleCoinModelOpen, streamKey, streamUserId }) {
     const coinBalance = useSelector(state => state.auth.coin);
