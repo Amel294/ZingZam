@@ -4,7 +4,10 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
-require('dotenv').config();
+const dotenv = require('dotenv');
+
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+dotenv.config({ path: envFile });
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +16,7 @@ app.use(cors({
     origin: [process.env.BASE_URL_FRONTEND, process.env.BASE_URL_DOMAIN],
     credentials: true
 }));
+
 app.use(morgan('dev'));
 app.use(cookieParser());
 
@@ -34,14 +38,14 @@ const { isUserCheck } = require("./helpers/isUserCheck");
 const { adminTokenValidation } = require("./helpers/adminTokenValidation");
 const { isAdminCheck } = require("./helpers/isAdminCheck");
 
-app.use('/admin', adminTokenValidation, isAdminCheck, adminRoutes);
-app.use('/user', UserRoute);
-app.use('/post', accessTokenValidation, isUserCheck, isBlocked, PostRoute);
-app.use('/profile', accessTokenValidation, isUserCheck, isBlocked, profileRoute);
-app.use('/connections', accessTokenValidation, isUserCheck, isBlocked, connectionsRoute);
-app.use('/report', reportRoute);
-app.use('/stream', streamRoute);
-app.use('/pay', accessTokenValidation, isUserCheck, isBlocked, PaymentRoute);
+app.use('/api/admin', adminTokenValidation, isAdminCheck, adminRoutes);
+app.use('/api/user', UserRoute);
+app.use('/api/post', accessTokenValidation, isUserCheck, isBlocked, PostRoute);
+app.use('/api/profile', accessTokenValidation, isUserCheck, isBlocked, profileRoute);
+app.use('/api/connections', accessTokenValidation, isUserCheck, isBlocked, connectionsRoute);
+app.use('/api/report', reportRoute);
+app.use('/api/stream', streamRoute);
+app.use('/api/pay', accessTokenValidation, isUserCheck, isBlocked, PaymentRoute);
 
 const initializeSocketServer = require('./socketServer');
 initializeSocketServer(server, app);
