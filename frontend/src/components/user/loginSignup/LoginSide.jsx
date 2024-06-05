@@ -68,7 +68,7 @@ export default function LoginSide() {
                 }
             }
         } catch (error) {
-            if (error.response.data.isBlocked === true) {
+            if (error?.response?.data?.isBlocked === true) {
                 toast.error("You are blocked by admin")
                 return
             }
