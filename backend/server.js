@@ -4,19 +4,17 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
-const dotenv = require('dotenv');
-
-const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
-dotenv.config({ path: envFile });
+const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+
 app.use(express.json());
 app.use(cors({
     origin: [process.env.BASE_URL_FRONTEND, process.env.BASE_URL_DOMAIN],
     credentials: true
 }));
-
 app.use(morgan('dev'));
 app.use(cookieParser());
 
@@ -75,6 +73,22 @@ async function notifyFriendsStreamStart(userId, streamKey) {
         console.error('Error notifying friends:', error);
     }
 }
+
+const _dirname = path.dirname("");
+const buildPath = path.join(_dirname, "../frontend/dist");
+
+app.use(express.static(buildPath));
+
+app.get("/*", function (req, res) {
+    res.sendFile(
+        path.join(__dirname, "../frontend/dist/index.html"),
+        function (err) {
+            if (err) {
+                res.status(500).send(err);
+            }
+        }
+    );
+});
 
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {
