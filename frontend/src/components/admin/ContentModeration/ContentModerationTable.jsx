@@ -63,7 +63,8 @@ export default function UserManagement() {
     };
 
     const columns = [
-        { name: "POST ID", uid: "postId" },
+        { name: "ID", uid: "id" },
+        { name: "TYPE", uid: "type" },
         { name: "REASON", uid: "reason" },
         { name: "DESCRIPTION", uid: "description" },
         { name: "REPORTED BY", uid: "reportedBy" },
@@ -75,6 +76,8 @@ export default function UserManagement() {
 
     const renderCell = (report, columnKey) => {
         switch (columnKey) {
+            case "id":
+                return report.type === "stream" ? report.streamKey : report.postId;
             case "reportedBy":
             case "reportedUser":
                 return report[columnKey].name;
