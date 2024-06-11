@@ -25,7 +25,7 @@ export default function MainNavbar() {
     useEffect(() => {
         let socket;
         if (currentUserId) {
-            socket = io(`${import.meta.env.VITE_BASE_URL_SOCKET}`, {
+            socket = io(`${ import.meta.env.VITE_BASE_URL_SOCKET }`, {
                 query: { userId: currentUserId },
             });
 
@@ -51,7 +51,7 @@ export default function MainNavbar() {
     }, [currentUserId]);
 
     const handleNotificationClick = (streamKey) => {
-        navigate(`/streamgame/${streamKey}`);
+        navigate(`/streamgame/${ streamKey }`);
     };
 
     const handleSearchOpen = () => {
@@ -110,7 +110,7 @@ export default function MainNavbar() {
                 </NavbarContent>
             </Navbar>
             <Search isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen} />
-            <div className='sm:hidden bg-black border-t-1 border-gray-400 sticky top-[92.7vh] w-full z-30 h-16 flex items-center justify-center gap-2'>
+            <div className='sm:hidden bg-black border-t-1 border-gray-400 fixed bottom-0 left-0 w-full z-30 h-16 flex items-center justify-center gap-2'>
                 <div className='flex w-[75vw] items-center justify-between'>
                     <Button onClick={() => navigate(`/`)} isIconOnly className='bg-transparent'><MainSocial /></Button>
                     <Button onClick={() => navigate(`/stream`)} isIconOnly className='bg-transparent'><MainGame /></Button>
