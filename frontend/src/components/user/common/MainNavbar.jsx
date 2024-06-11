@@ -1,5 +1,5 @@
-import  { useState, useEffect } from 'react';
-import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Image, Divider, Badge, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@nextui-org/react';
+import { useState, useEffect } from 'react';
+import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button, Image, Divider, Badge, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Avatar } from '@nextui-org/react';
 import MainLogo from '/icons/ZingZamLogo.svg';
 import GameSide from '/icons/MainGame.svg';
 import SocialSide from '/icons/MainSocial.svg';
@@ -10,10 +10,15 @@ import DropDownAvatar from './DropDownAvatar';
 import io from 'socket.io-client';
 import Search from '../search/Search';
 import { NotificationIcon } from '../../../../public/icons/NotificationIcon';
+import MainSocial from '../../../../public/icons/MainSocial';
+import MainGame from '../../../../public/icons/MainGame';
+import AvatarNavBar from './AvatarNavBar';
+import { SearchIconLarge } from '../../../../public/icons/SearchIconLarge';
 
 export default function MainNavbar() {
     const navigate = useNavigate();
     const currentUserId = useSelector(state => state.auth.id);
+    const currentUserName = useSelector(state => state.auth.username);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
 
@@ -105,6 +110,16 @@ export default function MainNavbar() {
                 </NavbarContent>
             </Navbar>
             <Search isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen} />
+            <div className='sm:hidden bg-black border-t-1 border-gray-400 sticky top-[92.7vh] w-full z-30 h-16 flex items-center justify-center gap-2'>
+                <div className='flex w-[75vw] items-center justify-between'>
+                    <Button onClick={() => navigate(`/`)} isIconOnly className='bg-transparent'><MainSocial /></Button>
+                    <Button onClick={() => navigate(`/stream`)} isIconOnly className='bg-transparent'><MainGame /></Button>
+                    <Button as={Link} color="secondary" className='bg-transparent' onClick={handleSearchOpen} startContent={<SearchIconLarge />} isIconOnly>
+                    </Button>
+                    <Button onClick={() => navigate(`/profile/${ currentUserName }`)} isIconOnly className='bg-transparent'><AvatarNavBar /></Button>
+                </div>
+            </div>
+
         </>
     );
 }
