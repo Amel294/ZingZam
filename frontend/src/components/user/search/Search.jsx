@@ -1,20 +1,25 @@
 
-import { Modal, ModalContent,  ModalBody, Button, Input, Avatar } from "@nextui-org/react";
+import { Modal, ModalContent, ModalBody, Button, Input, Avatar } from "@nextui-org/react";
 import { useNavigate } from "react-router-dom";
 import { SearchIcon } from "../../../../public/icons/SearchIcon";
 import { useState } from "react";
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
+import toast from "react-hot-toast";
 
 export default function App({ isSearchOpen, setIsSearchOpen }) {
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);
-
+    const [isEmpty, setIsEmpty] = useState(false);
     const handleClose = () => {
         setIsSearchOpen(false)
     }
 
     const handleSearch = async () => {
+        if(searchQuery.trim() === ''){
+            toast.error("Empty search")
+            return
+        }
         console.log("Enter pressed");
         try {
             const response = await AxiosWithBaseURLandCredentials.get(`/connections/search-users`, {
@@ -22,6 +27,9 @@ export default function App({ isSearchOpen, setIsSearchOpen }) {
                     query: searchQuery
                 }
             });
+            if (response.data.length === 0) {
+                setIsEmpty(true)
+            }
             setUsers(response.data);
         } catch (error) {
             console.error('Error:', error);
@@ -46,7 +54,7 @@ export default function App({ isSearchOpen, setIsSearchOpen }) {
     }
     const handleGoToProfile = (userName) => {
         setIsSearchOpen(false)
-        navigate(`/profile/${userName}`);
+        navigate(`/profile/${ userName }`);
     }
     return (
         <Modal isOpen={isSearchOpen} onClose={handleClose} className="dark text-white w-full bg-transparent shadow-none" placement="center" size="md" backdrop="blur" >
@@ -69,7 +77,7 @@ export default function App({ isSearchOpen, setIsSearchOpen }) {
                             onChange={handleChange}
                             onKeyDown={handleKeyDown}
                         />
-                        {users.length > 0 &&
+                        {users.length > 0 ? (
                             <ModalBody className="dark shadow-none bg-zinc-900 rounded-xl mt-1 max-h-[300px] overflow-y-auto">
                                 <div className="flex flex-col gap-2 py-4">
                                     {users.map((user) => (
@@ -81,12 +89,20 @@ export default function App({ isSearchOpen, setIsSearchOpen }) {
                                                     <span className="text-xs text-default-400">{user.name}</span>
                                                 </div>
                                             </div>
-                                            <Button size="sm" color="secondary" onClick={()=>handleGoToProfile(user.username)}>Visit Profile</Button>
+                                            <Button size="sm" color="secondary" onClick={() => handleGoToProfile(user.username)}>Visit Profile</Button>
                                         </div>
                                     ))}
                                 </div>
                             </ModalBody>
-                        }
+                        ) : isEmpty ? (
+                            <ModalBody className="dark shadow-none bg-zinc-900 rounded-xl mt-1 max-h-[300px] overflow-y-auto">
+                                <div className="flex justify-center items-center h-full">
+                                    No users found
+                                    {console.log("no users found")}
+                                </div>
+                            </ModalBody>
+                        ) : null}
+
                     </>
                 )}
             </ModalContent>
