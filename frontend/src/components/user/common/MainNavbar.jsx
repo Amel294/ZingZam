@@ -108,17 +108,17 @@ export default function MainNavbar() {
                         <DropDownAvatar />
                     </NavbarItem>
                 </NavbarContent>
+                <div className='sm:hidden bg-black border-t-1 border-gray-400 fixed bottom-0 left-0 w-full z-30 h-16 flex items-center justify-center gap-2'>
+                    <div className='flex w-[75vw] items-center justify-between'>
+                        <Button onClick={() => navigate(`/`)} isIconOnly className='bg-transparent'><MainSocial /></Button>
+                        <Button onClick={() => navigate(`/stream`)} isIconOnly className='bg-transparent'><MainGame /></Button>
+                        <Button as={Link} color="secondary" className='bg-transparent' onClick={handleSearchOpen} startContent={<SearchIconLarge />} isIconOnly>
+                        </Button>
+                        <Button onClick={() => navigate(`/profile/${ currentUserName }`)} isIconOnly className='bg-transparent'><AvatarNavBar /></Button>
+                    </div>
+                </div>
             </Navbar>
             <Search isSearchOpen={isSearchOpen} setIsSearchOpen={setIsSearchOpen} />
-            <div className='sm:hidden bg-black border-t-1 border-gray-400 fixed bottom-0 left-0 w-full z-30 h-16 flex items-center justify-center gap-2'>
-                <div className='flex w-[75vw] items-center justify-between'>
-                    <Button onClick={() => navigate(`/`)} isIconOnly className='bg-transparent'><MainSocial /></Button>
-                    <Button onClick={() => navigate(`/stream`)} isIconOnly className='bg-transparent'><MainGame /></Button>
-                    <Button as={Link} color="secondary" className='bg-transparent' onClick={handleSearchOpen} startContent={<SearchIconLarge />} isIconOnly>
-                    </Button>
-                    <Button onClick={() => navigate(`/profile/${ currentUserName }`)} isIconOnly className='bg-transparent'><AvatarNavBar /></Button>
-                </div>
-            </div>
 
         </>
     );
