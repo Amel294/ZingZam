@@ -8,11 +8,21 @@ const ConnectionsModel = require("../../models/ConnectionsModel");
 const ZingCoinsModel = require("../../models/ZingCoins");
 const UserModel = require("../../models/UserModel");
 const NotificationModel = require("../../models/NotificationModel");
+
 exports.generateStreamKey = async (req, res) => {
     try {
         const userId = new mongoose.Types.ObjectId(req?.userData?.id);
         const title = req.body.title;
-        await StreamModel.deleteMany({ userId: userId, title: { $ne: title } });
+        await StreamModel.deleteMany({ userId: userId, streamEnd: { $exists: false } });
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const requestCount = await StreamModel.countDocuments({
+            userId: userId,
+            createdAt: { $gte: today }
+        });
+        if (requestCount >= 10) {
+            return res.status(429).json({ message: "API key request limit reached for today" });
+        }
         const existingKey = await StreamModel.findOne({ userId: userId, title: title });
         if (existingKey) {
             return res.json({ streamKey: existingKey.streamKey, serverLink: process.env.RTMP_SERVER });
@@ -28,7 +38,7 @@ exports.generateStreamKey = async (req, res) => {
 exports.validateStreamKey = async (req, res) => {
     try {
         const { streamKey } = req.body
-        const existingKey = await StreamModel.findOne({ streamKey: streamKey });
+        const existingKey = await StreamModel.findOne({ streamKey: streamKey,streamEnd: { $exists: false } });
         console.log(existingKey)
         if (existingKey) {
             return res.status(200).json({ isValid: true })
@@ -61,7 +71,7 @@ exports.activateStream = async (req, res) => {
         }
 
         const stream = await StreamModel.findOneAndUpdate(
-            { streamKey },
+            { streamKey,streamEnd: { $exists: false } },
             { isActive: true, createdAt: new Date() },
             { new: true }
         );

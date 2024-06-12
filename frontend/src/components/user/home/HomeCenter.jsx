@@ -82,7 +82,7 @@ function HomeCenter() {
         ) : null}
       </InfiniteScroll>
       {showScrollToTop && (
-        <Button isIconOnly endContent={<ScrollToTopIcon/>} className="fixed bottom-1 right-1 p-2 z-40" variant="light" onPress={scrollToTop}>
+        <Button isIconOnly endContent={<ScrollToTopIcon/>} className="fixed bottom-3 right-1 p-2 z-40" variant="light" onPress={scrollToTop}>
         </Button>
       )}
     </div>

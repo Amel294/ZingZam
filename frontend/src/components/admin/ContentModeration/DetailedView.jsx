@@ -36,6 +36,28 @@ export default function DetailedView({ isDetailedOpen, setIsDetailedOpen, report
             toast.error('An error occurred. Please try again.');
         }
     };
+    const handleBlockAndStopStream = async () => {
+        try {
+            setIsLoading(true)
+            const response = await AxiosWithBaseURLandCredentials.post(`/admin/stop-stream-and-block-user/${ reportDetails.reportedUser._id }/${ reportId }`, {}, { withCredentials: true });
+            if (response) {
+                toast.success('User blocked and Stream stopped successfully');
+                setReportDetails(prevDetails => ({
+                    ...prevDetails,
+                    status: 'closed',
+                    actionTaken: 'block'
+                }));
+            } else {
+                toast.error('Failed to update the report status');
+            }
+            handleClose()
+            setIsLoading(false)
+        } catch (error) {
+            setIsLoading(false)
+            console.error(error);
+            toast.error('An error occurred. Please try again.');
+        }
+    };
 
     const getDetails = async () => {
         if (reportId == null) return;
@@ -97,12 +119,20 @@ export default function DetailedView({ isDetailedOpen, setIsDetailedOpen, report
                                 <div className="font-semibold">Reported by:</div>
                                 <div className="mb-2">{reportDetails.reportedBy.name}</div>
                                 <hr className="my-2" />
-                                <div className="flex gap-4 pt-4">
-                                    {isLoading ? <Spinner /> :
-                                        <Button color="danger" onClick={() => handleChangeStatus()}>Block user</Button>
-                                    }
-                                    <Button color="warning">Delete Post</Button>
-                                </div>
+                                {reportDetails.type === 'post' ?
+                                    <div className="flex gap-4 pt-4">
+                                        {isLoading ? <Spinner /> :
+                                            <Button color="danger" onClick={() => handleChangeStatus()}>Block user</Button>
+                                        }
+                                        <Button color="warning">Delete Post</Button>
+                                    </div>
+                                    :
+                                    <>
+                                        {isLoading ? <Spinner /> :
+                                            <Button color='danger' onClick={()=>handleBlockAndStopStream()}>Stop and Block User</Button>
+                                        }
+                                    </>
+                                }
                             </div>
                         )}
                     </div>

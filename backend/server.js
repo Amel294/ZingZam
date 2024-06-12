@@ -12,7 +12,7 @@ const server = http.createServer(app);
 
 app.use(express.json());
 app.use(cors({
-    origin: [process.env.BASE_URL_FRONTEND, process.env.BASE_URL_DOMAIN],
+    origin: [process.env.BASE_URL_FRONTEND, process.env.BASE_URL_DOMAIN,'http://localhost:5173'],
     credentials: true
 }));
 app.use(morgan('dev'));
