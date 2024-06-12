@@ -1,6 +1,5 @@
 import { RadioGroup, Radio } from "@nextui-org/react";
 
-// eslint-disable-next-line react/prop-types
 export default function GenderRadio({ gender, setGender }) {
     return (
         <div className="ps-3">

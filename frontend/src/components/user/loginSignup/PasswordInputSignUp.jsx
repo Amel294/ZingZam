@@ -1,26 +1,24 @@
-/* eslint-disable react/prop-types */
-// PasswordInput.js
-
 import React from "react";
 import { Input } from "@nextui-org/react";
 import { validatePassword } from "../../../utils/validation/formValidation";
 
-export default function PasswordInputSignUp({password,setPassword,passwordValid ,setPasswordValid}) {
-    console.log(passwordValid)
-
+export default function PasswordInputSignUp({ password, setPassword, passwordValid, setPasswordValid, passwordTouched }) {
     const isInvalid = React.useMemo(() => {
-        if (password === ""){
-            setPasswordValid(false)
-            return false
-        } 
-        if (validatePassword(password)){
-            setPasswordValid(true)
-            return false
-        } else{
-            setPasswordValid(false)
-            return true
+        if (!passwordTouched) {
+            return false; // Don't show error if the input hasn't been touched
         }
-    }, [password,setPasswordValid]);
+        if (password === "") {
+            setPasswordValid(false);
+            return true;
+        }
+        if (validatePassword(password)) {
+            setPasswordValid(true);
+            return false;
+        } else {
+            setPasswordValid(false);
+            return true;
+        }
+    }, [password, passwordTouched, setPasswordValid]);
 
     return (
         <Input

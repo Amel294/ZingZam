@@ -1,26 +1,25 @@
-// EmailInput.js
 import { Input } from "@nextui-org/react";
 import { useMemo } from "react";
 import { validateEmail } from "../../../utils/validation/formValidation";
 
-// eslint-disable-next-line react/prop-types
-export default function EmailInput({ email, setEmail,emailValid,setEmailValid }) {
-    console.log("emailValid")
-    console.log(emailValid)
-    
+export default function EmailInput({ email, setEmail, emailValid, setEmailValid, emailTouched }) {
     const isInvalid = useMemo(() => {
-        if (email === ""){
-            setEmailValid(false);
-            return false;
-        } 
-        if(validateEmail(email)){
-            setEmailValid(true);
-            return false;
-        }else{
+        if (!emailTouched) {
+            return false; // Don't show error if the input hasn't been touched
+        }
+        if (email === "") {
             setEmailValid(false);
             return true;
         }
-    }, [email,setEmailValid]);
+        if (validateEmail(email)) {
+            setEmailValid(true);
+            return false;
+        } else {
+            setEmailValid(false);
+            return true;
+        }
+    }, [email, emailTouched, setEmailValid]);
+
     return (
         <Input
             value={email}
