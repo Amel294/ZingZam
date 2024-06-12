@@ -14,8 +14,12 @@ const tempUserSchema = mongoose.Schema({
   },
   expiresIn: {
     type: Date,
-    required: true
-  }
+    required: true,
+  },
+  verificationAttempts: {
+    type: Number,
+    default: 0,
+  },
 }, {
   timestamps: true,
   expires: 600

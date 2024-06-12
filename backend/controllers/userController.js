@@ -81,7 +81,23 @@ exports.verify = async (req, res) => {
         const { otp } = req.body;
         const otpUser = await TempUserModel.findOne({ email: data.email });
         if (!otpUser) return res.status(400).send({ error: 'Invalid OTP' });
-        if (otpUser.otp !== otp) return res.status(400).send({ error: 'Invalid OTP' });
+        if (otpUser.verificationAttempts >= 3) {
+            const newOtp = generateOtpForUser();
+            const expiresIn = new Date(Date.now() + 5 * 60 * 1000);
+            await TempUserModel.updateOne(
+                { email: data.email },
+                { otp: newOtp, expiresIn, verificationAttempts: 0 }
+            );
+            await sendOtpEmail(newOtp, data.email, true);
+            return res.status(200).send({ error: 'OTP expired due to 3 failed attempts. A new OTP has been sent.' });
+        }
+        if (otpUser.otp !== otp) {
+            await TempUserModel.updateOne(
+                { email: data.email },
+                { $inc: { verificationAttempts: 1 } }
+            );
+            return res.status(200).send({ error: 'Invalid OTP' });
+        }
         const newUser = new UserModel({
             name: data.name,
             username: data.username,
@@ -92,6 +108,7 @@ exports.verify = async (req, res) => {
             verified: true,
         });
         await newUser.save();
+        await TempUserModel.deleteOne({ email: data.email });
         res.status(200).send({ message: 'Token verified successfully', name: newUser.name });
     } catch (error) {
         if (error.message === 'OTP time expired') {
@@ -101,11 +118,12 @@ exports.verify = async (req, res) => {
         }
     }
 };
+
 exports.resend = async (req, res) => {
     try {
         const jwtToken = req?.cookies?.tempToken;
         const data = getDataFromJWTCookie_temporaryToken(res, jwtToken);
-        const otp = generateOtpForUser()
+        const otp = generateOtpForUser();
         const tempTokenMaxAge = 5 * 60 * 1000;
         const tempToken = await generateTempToken({
             name: data.name,
@@ -117,27 +135,25 @@ exports.resend = async (req, res) => {
             otp
         });
         await TempUserModel.deleteOne({ email: data.email });
-        const expiresIn = new Date(Date.now() + 5 * 60 * 1000)
+        const expiresIn = new Date(Date.now() + 5 * 60 * 1000);
         await TempUserModel.create({
             email: data.email,
             otp,
-            expiresIn
+            expiresIn,
+            verificationAttempts: 0 
         });
-        await sendOtpEmail(otp, data.email, isResend = true)
+        await sendOtpEmail(otp, data.email, true);
         res.cookie('tempToken', tempToken, {
-            // httpOnly: true,
-            // secure: true,
-            // sameSite: 'strict',
             maxAge: tempTokenMaxAge,
         });
         res.status(200).json({
-            message: "Resend OTP send successfully"
+            message: "Resend OTP sent successfully"
         });
-
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
-}
+};
+
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;

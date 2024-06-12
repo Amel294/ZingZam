@@ -89,27 +89,30 @@ export default function SignUpSide() {
                 }, {
                     withCredentials: true
                 });
-                console.log(response);
-                console.log("testing toast success");
                 if (response.data.error) {
-                    toast.error(`${response.data.error}`);
+                    if (response.data.error.includes('OTP expired due to 3 failed attempts')) {
+                        toast.error(response.data.error);
+                        setOtp('')
+                    } else {
+                        toast.error(response.data.error);
+                    }
                 } else {
                     toast.success(`Welcome to the clan! ${response.data.name}. Redirecting to Sign in `);
                     setOtpPage(false);
-                    console.log("Otp page set to" + otpPage);
+                    setTimeout(() => {
+                        setIsLoading(false);
+                        navigate('/login');
+                    }, 2000);
                 }
-                await setTimeout(() => {
-                    setIsLoading(false);
-                    navigate('/login');
-                }, 2000);
             } catch (error) {
-                toast.error("This didn't work.");
+                console.log({error})
+                toast.error(error.response.error);
             } finally {
                 setIsLoading(false);
             }
         }
     };
-
+    
     return (
         <div className="flex flex-col w-full items-center over">
             {otpPage ? (
