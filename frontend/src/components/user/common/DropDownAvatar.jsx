@@ -1,4 +1,4 @@
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem, Button, User } from "@nextui-org/react";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownSection, DropdownItem, Button, User, Link } from "@nextui-org/react";
 import DropDownIcon from "../../../../public/icons/DropDownIcon";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -47,8 +47,8 @@ export default function DropDownAvatar() {
                         }}
                         avatarProps={{
                             size: "sm",
-                            showFallback:true,
-                            fallback : `${user.name.slice(0,2)}`,
+                            showFallback: true,
+                            fallback: `${ user.name.slice(0, 2) }`,
                             src: `${ user.picture }`,
                         }}
                     />
@@ -72,10 +72,9 @@ export default function DropDownAvatar() {
                 }}
             >
                 <DropdownSection aria-label="Profile & Actions" showDivider>
-                    <DropdownItem key="profile">
+                    <DropdownItem key="profile" onClick={() => navigate(`/profile/${ user.username }`)}>
                         Profile
                     </DropdownItem>
-                    <DropdownItem key="settings">Settings</DropdownItem>
                 </DropdownSection>
                 <DropdownSection aria-label="Logout">
                     <DropdownItem className="text-danger" color="danger" key="logout" onClick={handleLogOut}>Log Out</DropdownItem>
