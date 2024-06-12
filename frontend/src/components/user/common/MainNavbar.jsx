@@ -51,7 +51,11 @@ export default function MainNavbar() {
     }, [currentUserId]);
 
     const handleNotificationClick = (streamKey) => {
-        navigate(`/streamgame/${ streamKey }`);
+        if (streamKey) {
+            navigate(`/streamgame/${streamKey}`);
+        } else {
+            console.error('Invalid stream key');
+        }
     };
 
     const handleSearchOpen = () => {

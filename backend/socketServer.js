@@ -11,7 +11,7 @@ function initializeSocketServer(server, app) {
         }
     });
 
-    app.set('socketio', io); 
+    app.set('socketio', io);
 
     io.on("connection", async (socket) => {
         const userId = socket.handshake.query.userId;
@@ -23,9 +23,9 @@ function initializeSocketServer(server, app) {
                 notifications.forEach(notification => {
                     socket.emit('notification', {
                         message: notification.message,
+                        streamKey: notification.data.streamKey, 
                         data: notification.data,
                     });
-                    // Mark notification as read
                     notification.isRead = true;
                     notification.save();
                 });
