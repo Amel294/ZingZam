@@ -85,15 +85,13 @@ function Stream() {
           <div className="flex justify-between px-24 items-center">
             <div className="text-3xl py-6">Live Streams</div>
             <div className="flex gap-2">
-
-            <Button variant="solid" className="bg-secondary-400" onClick={refreshStream}>
-              Refresh Stream
-            </Button>
-            <Button variant="solid" className="bg-secondary-400" onClick={handleServerAndKeyModel}>
-              Start Streaming
-            </Button>
+              <Button variant="solid" className="bg-secondary-400" onClick={refreshStream}>
+                Refresh Stream
+              </Button>
+              <Button variant="solid" className="bg-secondary-400" onClick={handleServerAndKeyModel}>
+                Start Streaming
+              </Button>
             </div>
-
           </div>
           <div className="flex items-center justify-center md:justify-normal md:flex md:flex-col md:overflow-y-auto h-auto">
             <div className="flex flex-wrap justify-center gap-4 pb-6">

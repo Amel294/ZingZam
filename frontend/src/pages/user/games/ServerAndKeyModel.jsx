@@ -7,8 +7,14 @@ function ServerAndKeyModel({ isServerAndKeyModelOpen, setIsServerAndKeyModelOpen
     const [title, setTitle] = useState("");
     const [loading, setLoading] = useState(false);
     const [streamData, setStreamData] = useState(null);
+
     const handleClose = () => {
         setIsServerAndKeyModelOpen(false);
+    };
+
+    const handleNewKey = () => {
+        setStreamData(null);
+        setTitle("");
     };
 
     return (
@@ -23,7 +29,7 @@ function ServerAndKeyModel({ isServerAndKeyModelOpen, setIsServerAndKeyModelOpen
                         </CardHeader>
                         <Divider />
                         {streamData ? (
-                            <GeneratedApiAndServer streamData={streamData} />
+                            <GeneratedApiAndServer streamData={streamData} handleNewKey={handleNewKey} />
                         ) : (
                             <SetTitle
                                 title={title}
@@ -77,7 +83,7 @@ function SetTitle({ title, setTitle, setLoading, loading, setStreamData, onClose
     );
 }
 
-function GeneratedApiAndServer({ streamData }) {
+function GeneratedApiAndServer({ streamData, handleNewKey }) {
     const handleCopy = async (text) => {
         try {
             await navigator.clipboard.writeText(text);
@@ -88,7 +94,7 @@ function GeneratedApiAndServer({ streamData }) {
     };
 
     return (
-        <CardBody className="flex gap-4 py-4">
+        <CardBody className="flex flex-col gap-4 py-4">
             <div className='flex justify-between items-center'>
                 <p>API Key: </p>
                 <div className='flex gap-2 items-center'>
@@ -107,6 +113,9 @@ function GeneratedApiAndServer({ streamData }) {
                     </Button>
                 </div>
             </div>
+            <Button className="bg-secondary-400 w-full" variant="solid" onClick={handleNewKey}>
+                Generate New Stream Key
+            </Button>
         </CardBody>
     );
 }
