@@ -16,5 +16,5 @@ router.get('/getScreenshots/:streamKey',getScreenshots)
 router.get('/streamStatus/:streamKey',accessTokenValidation,isUserCheck,isBlocked,streamStatus)
 router.post('/support',accessTokenValidation,isUserCheck,isBlocked,sendSupport)
 router.get('/support/:streamKey',accessTokenValidation,isUserCheck,isBlocked,getSupporters)
-router.get('/userStreams/:page', accessTokenValidation, isUserCheck, isBlocked, getUserStreams);
+router.get('/userStreams/:username/:page', accessTokenValidation, isUserCheck, isBlocked, getUserStreams);
 module.exports = router;

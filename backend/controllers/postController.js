@@ -565,3 +565,27 @@ exports.getIndividualPost = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch post details' });
     }
 };
+
+exports.getSavedPosts = async (req, res) => {
+    try {
+        const id = req?.userData?.id;
+        const userId = new mongoose.Types.ObjectId(id);
+        const page = parseInt(req.params.page) || 1;
+        const limit = 1;
+        const skip = (page - 1) * limit;
+
+        const savedPosts = await SavedPostModel.findOne({ user: userId })
+            .populate({
+                path: 'savedPost',
+                select: 'imageUrl createdAt', 
+                options: { sort: { createdAt: -1 }, skip, limit }
+            })
+            .exec();
+
+        const posts = savedPosts ? savedPosts.savedPost : [];
+        res.status(200).json({ posts, hasMore: posts.length === limit });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Failed to fetch saved posts' });
+    }
+};

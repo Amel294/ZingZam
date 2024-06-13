@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
 import { Accordion, AccordionItem, Button } from "@nextui-org/react";
 
@@ -7,15 +8,23 @@ function StreamProfile() {
     const [streamData, setStreamData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-
+    const { username } = useParams();
+    
     async function fetchStreams() {
         try {
             setLoading(true);
-            const response = await AxiosWithBaseURLandCredentials.get(`/stream/userStreams/${page}`);
+            const response = await AxiosWithBaseURLandCredentials.get(`/stream/userStreams/${username}/${page}`);
             if (response.status === 200) {
-                setStreamData(prev => [...prev, ...response.data.streams]);
-                setPage(prev => prev + 1);
-                setHasMore(response.data.hasMore);
+                const { streams, hasMore } = response.data;
+                if (Array.isArray(streams)) {
+                    setStreamData(prev => [...prev, ...streams]);
+                    setPage(prev => prev + 1);
+                    setHasMore(hasMore);
+                } else {
+                    console.log("Unexpected response structure:", response.data);
+                }
+            } else {
+                console.log("Unexpected response:", response);
             }
         } catch (error) {
             console.log("Error fetching streams:", error);
@@ -26,10 +35,11 @@ function StreamProfile() {
 
     useEffect(() => {
         fetchStreams();
-    }, []);
+    }, [username]);
 
     return (
         <div className="w-full max-w-[400px]">
+        {streamData &&
             <Accordion variant="bordered" className="w-full">
                 {streamData.map((stream, index) => (
                     <AccordionItem key={index} aria-label={`Stream ${index + 1}`} title={stream.title}>
@@ -49,6 +59,7 @@ function StreamProfile() {
                     </AccordionItem>
                 ))}
             </Accordion>
+        }
             {hasMore && (
                 <div className="flex justify-center mt-4">
                     <Button

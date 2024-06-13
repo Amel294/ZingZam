@@ -38,7 +38,7 @@ exports.generateStreamKey = async (req, res) => {
 exports.validateStreamKey = async (req, res) => {
     try {
         const { streamKey } = req.body
-        const existingKey = await StreamModel.findOne({ streamKey: streamKey,streamEnd: { $exists: false } });
+        const existingKey = await StreamModel.findOne({ streamKey: streamKey, streamEnd: { $exists: false } });
         console.log(existingKey)
         if (existingKey) {
             return res.status(200).json({ isValid: true })
@@ -71,7 +71,7 @@ exports.activateStream = async (req, res) => {
         }
 
         const stream = await StreamModel.findOneAndUpdate(
-            { streamKey,streamEnd: { $exists: false } },
+            { streamKey, streamEnd: { $exists: false } },
             { isActive: true, createdAt: new Date() },
             { new: true }
         );
@@ -103,7 +103,7 @@ exports.activateStream = async (req, res) => {
             notifications = friends.map(friend => {
                 const notification = new NotificationModel({
                     user: friend._id,
-                    message: `${user.username} has started a stream.`,
+                    message: `${ user.username } has started a stream.`,
                     data: { streamId: stream._id, userId: user._id, streamKey: stream.streamKey },
                 });
 
@@ -117,7 +117,7 @@ exports.activateStream = async (req, res) => {
                 });
 
                 // Log the notification details
-                console.log(`Notification sent from ${user.username} to ${friend.username}`);
+                console.log(`Notification sent from ${ user.username } to ${ friend.username }`);
 
                 return notification.save();
             });
@@ -139,7 +139,7 @@ exports.activateStream = async (req, res) => {
         });
 
         // Log the notification details
-        console.log(`Notification sent to ${user.username} (streamer)`);
+        console.log(`Notification sent to ${ user.username } (streamer)`);
 
         await Promise.all([...notifications, streamerNotification.save()]);
 
@@ -385,17 +385,19 @@ exports.getSupporters = async (req, res) => {
 
 exports.getUserStreams = async (req, res) => {
     try {
-        const { page } = req.params;
-        const userId = req.userData.id;
+        const { page, username } = req.params;
+        const user = await UserModel.findOne({ username: username }, { _id: 1 }).exec();
+        console.log(user);
+
         const perPage = 1;
-        const streams = await StreamModel.find({ userId: userId })
+        const streams = await StreamModel.find({ userId: user._id })
             .skip((page - 1) * perPage)
             .limit(perPage)
             .populate('userId', 'username')
             .populate('supportReceived.user', 'username')
             .exec();
 
-        const totalStreams = await StreamModel.countDocuments({ userId: userId });
+        const totalStreams = await StreamModel.countDocuments({ userId: user._id });
         const hasMore = (page * perPage) < totalStreams;
 
         const responseData = streams.map(stream => {

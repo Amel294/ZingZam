@@ -10,6 +10,7 @@ import { Button, Spinner } from '@nextui-org/react';
 import NotFound from './NotFound';
 import { useSelector } from 'react-redux';
 import StreamProfile from '../../components/user/profile/StreamProfile';
+import SavedPosts from '../../components/user/profile/SavedPosts';
 
 function Profile() {
     const [userData, setUserData] = useState();
@@ -69,7 +70,11 @@ function Profile() {
                                 <Button size="sm" onClick={() => setToggle("posts")} className='bg-secondary-400'>Post </Button>
                                 <Button size="sm" onClick={() => setToggle("friends")} className='bg-secondary-400'>Friends </Button>
                                 <Button size="sm" onClick={() => setToggle("stream")} className='bg-secondary-400'>Stream </Button>
+                                {reduxUserData.username === username && (
+                                    <Button size="sm" onClick={() => setToggle("saved")} className='bg-secondary-400'>Saved </Button>
+                                )}
                             </div>
+                            {toggle === "saved" && <SavedPosts />}
                             {toggle === "friends" && <Friends />}
                             {toggle === "posts" && <PostProfile />}
                             {toggle === "stream" && <StreamProfile />}
