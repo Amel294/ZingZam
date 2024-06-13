@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
 import AxiosWithBaseURLandCredentials from "../../../axiosInterceptor";
-import { Accordion, AccordionItem } from "@nextui-org/react";
+import { Accordion, AccordionItem, Button } from "@nextui-org/react";
 
 function StreamProfile() {
     const [page, setPage] = useState(1);
     const [streamData, setStreamData] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
 
     async function fetchStreams() {
         try {
+            setLoading(true);
             const response = await AxiosWithBaseURLandCredentials.get(`/stream/userStreams/${page}`);
             if (response.status === 200) {
-                setStreamData(prev => [...prev, ...response.data]);
+                setStreamData(prev => [...prev, ...response.data.streams]);
                 setPage(prev => prev + 1);
+                setHasMore(response.data.hasMore);
             }
         } catch (error) {
             console.log("Error fetching streams:", error);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -43,6 +49,16 @@ function StreamProfile() {
                     </AccordionItem>
                 ))}
             </Accordion>
+            {hasMore && (
+                <div className="flex justify-center mt-4">
+                    <Button
+                        onClick={fetchStreams}
+                        disabled={loading}
+                    >
+                        {loading ? 'Loading...' : 'Load More'}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }

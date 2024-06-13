@@ -387,13 +387,16 @@ exports.getUserStreams = async (req, res) => {
     try {
         const { page } = req.params;
         const userId = req.userData.id;
-        const perPage = 10;
+        const perPage = 1;
         const streams = await StreamModel.find({ userId: userId })
             .skip((page - 1) * perPage)
             .limit(perPage)
             .populate('userId', 'username')
             .populate('supportReceived.user', 'username')
             .exec();
+
+        const totalStreams = await StreamModel.countDocuments({ userId: userId });
+        const hasMore = (page * perPage) < totalStreams;
 
         const responseData = streams.map(stream => {
             const topContributors = stream.supportReceived
@@ -422,7 +425,7 @@ exports.getUserStreams = async (req, res) => {
             };
         });
 
-        res.status(200).json(responseData);
+        res.status(200).json({ streams: responseData, hasMore });
     } catch (error) {
         console.error('Error fetching stream data:', error);
         res.status(500).json({ message: 'Internal server error' });
